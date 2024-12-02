@@ -1,0 +1,35 @@
+﻿using CMS;
+using CMS.Base;
+using CMS.Core;
+using CMS.DataEngine;
+
+using Kentico.Xperience.Aira.Admin;
+using Kentico.Xperience.Aira;
+
+using Microsoft.Extensions.DependencyInjection;
+
+[assembly: RegisterModule(type: typeof(AiraModule))]
+
+namespace Kentico.Xperience.Aira;
+
+internal class AiraModule : Module
+{
+    private IAiraModuleInstaller installer = null!;
+
+    public AiraModule() : base(nameof(AiraModule))
+    {
+    }
+
+    protected override void OnInit(ModuleInitParameters parameters)
+    {
+        base.OnInit(parameters);
+
+        var services = parameters.Services;
+
+        installer = services.GetRequiredService<IAiraModuleInstaller>();
+
+        ApplicationEvents.Initialized.Execute += InitializeModule;
+    }
+
+    private void InitializeModule(object? sender, EventArgs e) => installer.Install();
+}

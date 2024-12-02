@@ -62,6 +62,8 @@ builder.Services.AddLocalization()
 
 builder.Services.AddDancingGoatServices();
 
+builder.Services.AddKenticoAira();
+
 builder.Services.AddSingleton<IEmailActivityTrackingEvaluator, EmailActivityTrackingEvaluator>();
 
 ConfigureMembershipServices(builder.Services);
