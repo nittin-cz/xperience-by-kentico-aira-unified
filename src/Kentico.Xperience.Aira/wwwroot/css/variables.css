@@ -1,0 +1,15 @@
+:root {
+  --k-primary: #f0561a;
+  --k-primary-hover: #C64300;
+  --k-primary-active: #6A2000;
+  --k-secondary: #8107c1;
+  --k-secondary-hover: #5a0487;
+  --k-secondary-active: #4c0272;
+  --k-border-radius: 2.5rem;
+  --k-border-radius-2: 1.5rem;
+  --k-card-bg: #efe6f9;
+  --k-app-bg: #fff;
+  --k-app-card-bg: #fff;
+}
+
+/*# sourceMappingURL=variables.css.map */

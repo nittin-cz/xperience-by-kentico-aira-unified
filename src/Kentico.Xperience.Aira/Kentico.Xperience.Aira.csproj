@@ -17,15 +17,23 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="Views\Shared\_AiraLayout.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute">
 		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="Views\Shared\_AiraLayout.cshtml" />
 	</ItemGroup>
 	
   <ItemGroup>
     <Folder Include="Admin\InfoModels\" />
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="Htmx" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
 		<PackageReference Include="Kentico.Xperience.Admin" />
 		<PackageReference Include="Kentico.Xperience.WebApp" />
