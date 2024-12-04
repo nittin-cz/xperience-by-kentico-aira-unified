@@ -10,8 +10,5 @@ public sealed class AiraCompanionAppController : Controller
 {
     [Route("/aira")]
     [AllowAnonymous]
-    public async Task<IActionResult> Index()
-    {
-        
-    }
+    public async Task<IActionResult> Index() => throw new NotImplementedException();
 }

@@ -1,5 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AddRazorSupportForMvc>True</AddRazorSupportForMvc>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<Product></Product>
 		<Title>$(Product)</Title>
 		<PackageId></PackageId>
@@ -17,16 +23,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Remove="Views\Shared\_AiraLayout.cshtml" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute">
 		</AssemblyAttribute>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Include="Views\Shared\_AiraLayout.cshtml" />
 	</ItemGroup>
 	
   <ItemGroup>

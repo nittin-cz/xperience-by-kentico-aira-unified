@@ -1,5 +1,6 @@
-﻿@using Connection.Extensions;
-@using Kentico.Activities.Web.Mvc
+﻿@using CMS.DataEngine;
+@using Kentico.Xperience.Aira;
+@using Kentico.Activities.Web.Mvc;
 
 @{
     var baseUrl = Context.Request.GetBaseUrl();
@@ -50,7 +51,7 @@
     @RenderSection("scripts", required: false)
 
     <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
-    
+
     <vc:custom-scripts head="false" />
     <script src="lib/htmx/htmx.min.js" asp-append-version="true"></script>
     <script src="@baseUrl/_content/Kentico.Xperience.Aira/js/vendor/bootstrap.bundle.min.js"></script>
