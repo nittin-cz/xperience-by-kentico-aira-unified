@@ -26,10 +26,6 @@
 		<AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute">
 		</AssemblyAttribute>
 	</ItemGroup>
-	
-  <ItemGroup>
-    <Folder Include="Admin\InfoModels\" />
-  </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Htmx" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
