@@ -8,7 +8,8 @@ namespace Kentico.Xperience.Aira;
 [Route("[controller]/[action]")]
 public sealed class AiraCompanionAppController : Controller
 {
-    [Route("/aira")]
+    [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> Index() => throw new NotImplementedException();
+    public async Task<IActionResult> Index() =>
+        Ok();
 }

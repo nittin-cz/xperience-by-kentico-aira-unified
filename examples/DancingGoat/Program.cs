@@ -83,6 +83,8 @@ app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.Kentico().MapRoutes();
 
+app.UseAiraEndpoints();
+
 app.MapControllerRoute(
    name: "error",
    pattern: "error/{code}",

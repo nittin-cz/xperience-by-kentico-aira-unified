@@ -1,5 +1,7 @@
 ﻿using Kentico.Xperience.Aira.Admin;
 
+using Microsoft.AspNetCore.Routing;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class AiraServiceCollectionExtensions
@@ -8,5 +10,14 @@ public static class AiraServiceCollectionExtensions
         => services.AddKenticoAiraInternal();
 
     private static IServiceCollection AddKenticoAiraInternal(this IServiceCollection services)
-        => services.AddSingleton<IAiraModuleInstaller, AiraModuleInstaller>();
+        => services.AddSingleton<IAiraModuleInstaller, AiraModuleInstaller>()
+        .AddSingleton<AiraEndpointDataSource>()
+        .AddScoped<AiraConfigurationService>();
+
+    public static void UseAiraEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        var dataSource = endpoints.ServiceProvider.GetService<AiraEndpointDataSource>()
+            ?? throw new InvalidOperationException("Did you forget to call Services.AddKenticoAira()?");
+        endpoints.DataSources.Add(dataSource);
+    }
 }

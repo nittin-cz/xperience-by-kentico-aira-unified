@@ -17,21 +17,27 @@ using Kentico.Xperience.Aira.Admin.UIPages;
 namespace Kentico.Xperience.Aira.Admin.UIPages;
 
 [UIEvaluatePermission(SystemPermissions.UPDATE)]
-internal class AiraConfigurationEditPage : BaseAiraConfigurationEditPage
+internal class AiraConfigurationEditPage : ModelEditPage<AiraConfigurationModel>
 {
     private AiraConfigurationModel? model = null;
+    private readonly AiraConfigurationService airaConfigurationService;
+    private readonly IInfoProvider<AiraConfigurationItemInfo> airaConfigurationProvider;
 
     public AiraConfigurationEditPage(Xperience.Admin.Base.Forms.Internal.IFormItemCollectionProvider formItemCollectionProvider,
         IFormDataBinder formDataBinder,
+        AiraConfigurationService airaConfigurationService,
         IInfoProvider<AiraConfigurationItemInfo> airaConfigurationProvider)
-        : base(formItemCollectionProvider, formDataBinder, airaConfigurationProvider)
-    { }
+        : base(formItemCollectionProvider, formDataBinder)
+    {
+        this.airaConfigurationService = airaConfigurationService;
+        this.airaConfigurationProvider = airaConfigurationProvider;
+    }
 
     protected override AiraConfigurationModel Model
     {
         get
         {
-            var configurationInfo = AiraConfigurationProvider.Get().TopN(2).GetEnumerableTypedResult().SingleOrDefault();
+            var configurationInfo = airaConfigurationProvider.Get().TopN(2).GetEnumerableTypedResult().SingleOrDefault();
 
             model ??= new AiraConfigurationModel(configurationInfo ?? new());
 
@@ -41,15 +47,15 @@ internal class AiraConfigurationEditPage : BaseAiraConfigurationEditPage
 
     protected override async Task<ICommandResponse> ProcessFormData(AiraConfigurationModel model, ICollection<IFormItem> formItems)
     {
-        var result = await ValidateAndProcess(model);
+        bool result = await airaConfigurationService.TrySaveOrUpdateConfiguration(model);
 
         var response = ResponseFrom(new FormSubmissionResult(
-            result == AiraConfiguratioResult.Success
+            result
             ? FormSubmissionStatus.ValidationSuccess
             : FormSubmissionStatus.ValidationFailure
         ));
 
-        _ = result == AiraConfiguratioResult.Success
+        _ = result
             ? response.AddSuccessMessage("Aira configuration updated.")
             : response.AddErrorMessage("Could not update aira configuration.");
 

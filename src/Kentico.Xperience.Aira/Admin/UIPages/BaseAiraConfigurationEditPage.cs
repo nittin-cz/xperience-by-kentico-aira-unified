@@ -1,62 +1,58 @@
-﻿using CMS.DataEngine;
-using CMS.DataEngine.Query;
+﻿//using CMS.DataEngine;
+//using CMS.DataEngine.Query;
 
-using Kentico.Xperience.Admin.Base;
-using Kentico.Xperience.Admin.Base.Forms;
-using Kentico.Xperience.Aira.Admin.InfoModels;
+//using Kentico.Xperience.Admin.Base;
+//using Kentico.Xperience.Admin.Base.Forms;
+//using Kentico.Xperience.Aira.Admin.InfoModels;
 
-using IFormItemCollectionProvider = Kentico.Xperience.Admin.Base.Forms.Internal.IFormItemCollectionProvider;
+//using IFormItemCollectionProvider = Kentico.Xperience.Admin.Base.Forms.Internal.IFormItemCollectionProvider;
 
-namespace Kentico.Xperience.Aira.Admin.UIPages;
+//namespace Kentico.Xperience.Aira.Admin.UIPages;
 
-internal abstract class BaseAiraConfigurationEditPage : ModelEditPage<AiraConfigurationModel>
-{
-    protected readonly IInfoProvider<AiraConfigurationItemInfo> AiraConfigurationProvider;
+//internal abstract class BaseAiraConfigurationEditPage : ModelEditPage<AiraConfigurationModel>
+//{
+//    protected BaseAiraConfigurationEditPage(
+//        IFormItemCollectionProvider formItemCollectionProvider,
+//        IFormDataBinder formDataBinder)
+//        : base(formItemCollectionProvider, formDataBinder) { }
 
-    protected BaseAiraConfigurationEditPage(
-        IFormItemCollectionProvider formItemCollectionProvider,
-        IFormDataBinder formDataBinder,
-        IInfoProvider<AiraConfigurationItemInfo> airaConfigurationProvider)
-        : base(formItemCollectionProvider, formDataBinder)
-    => AiraConfigurationProvider = airaConfigurationProvider;
+//    protected async Task<AiraConfiguratioResult> ValidateAndProcess(AiraConfigurationModel configuration)
+//    {
+//        var existingConfiguration = (await AiraConfigurationProvider.Get().GetEnumerableTypedResultAsync()).SingleOrDefault();
 
-    protected async Task<AiraConfiguratioResult> ValidateAndProcess(AiraConfigurationModel configuration)
-    {
-        var existingConfiguration = (await AiraConfigurationProvider.Get().GetEnumerableTypedResultAsync()).SingleOrDefault();
+//        if (existingConfiguration is null)
+//        {
+//            if (!string.IsNullOrWhiteSpace(configuration.RelativePathBase))
+//            {
+//                int configurationCount = await AiraConfigurationProvider.Get().GetCountAsync();
 
-        if (existingConfiguration is null)
-        {
-            if (!string.IsNullOrWhiteSpace(configuration.RelativePathBase))
-            {
-                int configurationCount = await AiraConfigurationProvider.Get().GetCountAsync();
+//                if (configurationCount > 0)
+//                {
+//                    return AiraConfiguratioResult.Failure;
+//                }
 
-                if (configurationCount > 0)
-                {
-                    return AiraConfiguratioResult.Failure;
-                }
+//                var newConfigurationInfo = new AiraConfigurationItemInfo
+//                {
+//                    AiraConfigurationItemAiraPathBase = configuration.RelativePathBase
+//                };
 
-                var newConfigurationInfo = new AiraConfigurationItemInfo
-                {
-                    AiraConfigurationItemAiraPathBase = configuration.RelativePathBase
-                };
+//                AiraConfigurationProvider.Set(newConfigurationInfo);
 
-                AiraConfigurationProvider.Set(newConfigurationInfo);
+//                return AiraConfiguratioResult.Success;
+//            }
 
-                return AiraConfiguratioResult.Success;
-            }
+//            return AiraConfiguratioResult.Failure;
+//        }
 
-            return AiraConfiguratioResult.Failure;
-        }
+//        existingConfiguration.AiraConfigurationItemAiraPathBase = configuration.RelativePathBase;
+//        AiraConfigurationProvider.Set(existingConfiguration);
 
-        existingConfiguration.AiraConfigurationItemAiraPathBase = configuration.RelativePathBase;
-        AiraConfigurationProvider.Set(existingConfiguration);
+//        return AiraConfiguratioResult.Success;
+//    }
+//}
 
-        return AiraConfiguratioResult.Success;
-    }
-}
-
-internal enum AiraConfiguratioResult
-{
-    Success,
-    Failure
-}
+//internal enum AiraConfiguratioResult
+//{
+//    Success,
+//    Failure
+//}
