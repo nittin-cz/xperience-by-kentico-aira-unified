@@ -12,8 +12,6 @@
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <meta charset="UTF-8">
 
-    @* @await Html.PartialAsync("~/Views/Shared/Partials/_favicon.cshtml") *@
-
     <link color="#5bbad5" href="/content/images/safari-pinned-tab.svg" rel="mask-icon">
     <meta content="#da532c" name="msapplication-TileColor">
 
@@ -50,11 +48,6 @@
 
     @RenderSection("scripts", required: false)
 
-    <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
-
     <vc:custom-scripts head="false" />
-    <script src="lib/htmx/htmx.min.js" asp-append-version="true"></script>
-    <script src="@baseUrl/_content/Kentico.Xperience.Aira/js/vendor/bootstrap.bundle.min.js"></script>
-    <script src="@baseUrl/_content/Kentico.Xperience.Aira/js/index.js"></script>
 </body>
 </html>
