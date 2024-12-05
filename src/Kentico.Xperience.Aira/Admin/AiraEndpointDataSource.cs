@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Kentico.Xperience.Aira.Admin;
 
@@ -37,8 +41,31 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
         return
         [
             CreateEndpoint($"{configuration.AiraConfigurationItemAiraPathBase}/index", async context => {
-                var controller = new AiraCompanionAppController();
-                await controller.Index();
+                var routeData = new RouteData();
+                routeData.Values["controller"] = "AiraCompanionApp";
+                routeData.Values["action"] = "Index";
+
+                var actionDescriptor = new ControllerActionDescriptor
+                {
+                    ControllerName = "AiraCompanionApp",
+                    ActionName = "Index",
+                    ControllerTypeInfo = typeof(AiraCompanionAppController).GetTypeInfo()
+                };
+
+                var actionContext = new ActionContext(context, routeData, actionDescriptor);
+                var controllerContext = new ControllerContext(actionContext);
+                var controllerFactory = context.RequestServices.GetRequiredService<IControllerFactory>();
+                object controller = controllerFactory.CreateController(controllerContext);
+
+                if (controller is AiraCompanionAppController airaController)
+                {
+                    airaController.ControllerContext = controllerContext;
+                    airaController.ControllerContext.HttpContext = context;
+
+                    var result = await airaController.Index();
+
+                    await result.ExecuteResultAsync(controllerContext);
+                }
             })
         ];
     }

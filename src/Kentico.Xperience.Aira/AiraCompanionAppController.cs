@@ -11,5 +11,5 @@ public sealed class AiraCompanionAppController : Controller
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> Index() =>
-        Ok();
+        View("~/Views/Chat.cshtml");
 }
