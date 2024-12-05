@@ -1,7 +1,15 @@
-﻿import { createApp } from 'vue';
-import Chat from './Chat.vue';
+﻿import { createApp } from "vue";
 
-const app = createApp({});
-app.component('chat-component', Chat);
+// A basic Vue component (optional)
+const App = {
+    template: "<div>Vue is working! This is {{ message }}</div>",
+    data() {
+        return {
+            message: "a simple Vue app",
+        };
+    },
+};
 
-app.mount('#app');
+// Mount Vue to a specific DOM element
+const app = createApp(App);
+app.mount("#vue-app");
