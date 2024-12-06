@@ -7,8 +7,11 @@ using Kentico.Xperience.Aira.Admin;
 using Kentico.Xperience.Aira;
 
 using Microsoft.Extensions.DependencyInjection;
+using Kentico.PageBuilder.Web.Mvc;
+using Kentico.Xperience.Aira.Widgets;
 
 [assembly: RegisterModule(type: typeof(AiraModule))]
+[assembly: RegisterWidget("Kentico.Xperience.Aira.RegistrationWidget", typeof(RegistrationWidgetViewComponent), "Registration Widget", typeof(RegistrationWidgetProperties))]
 
 namespace Kentico.Xperience.Aira;
 

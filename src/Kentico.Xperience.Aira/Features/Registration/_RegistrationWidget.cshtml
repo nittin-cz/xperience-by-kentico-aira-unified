@@ -1,0 +1,51 @@
+﻿@using Kentico.PageBuilder.Web.Mvc
+@using Kentico.Web.Mvc
+@using Kentico.Xperience.Aira.Widgets
+@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.Http
+
+@model RegistrationWidgetProperties
+
+<form method="post" hx-swap="outerHTML" hx-trigger hx-post="/AiraRegistrationWidget/Register"
+      id="registerForm" test-id="register">
+
+    <div class="form">
+        <div class="ktc-default-section">
+            <div asp-validation-summary="ModelOnly" class="field-validation-error"></div>
+
+            <div class="form-field">
+                <label asp-for="Model.UserName" class="control-label">Nickname</label>
+                <div class="editing-form-control-nested-control">
+                    <input asp-for="Model.UserName" class="form-control" test-id="userName">
+                    <span asp-validation-for="Model.UserName" class="field-validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Model.Email" class="control-label">Email</label>
+                <div class="editing-form-value-cell">
+                    <input asp-for="Model.Email" class="form-control" test-id="email">
+                    <span asp-validation-for="Model.Email" class="field-validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Model.Password" class="control-label">Password</label>
+                <div class="editing-form-value-cell">
+                    <input asp-for="Model.Password" class="form-control" test-id="password">
+                    <span asp-validation-for="Model.Password" class="field-validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label asp-for="Model.PasswordConfirmation" class="control-label">Password confirmation</label>
+                <div class="editing-form-value-cell">
+                    <input asp-for="Model.PasswordConfirmation" class="form-control" test-id="passwordConfirmation">
+                    <span asp-validation-for="Model.PasswordConfirmation" class="field-validation-error"></span>
+                </div>
+            </div>
+
+            <button id="register" type="submit" class="btn btn--primary">Register</button>
+        </div>
+    </div>
+</form>

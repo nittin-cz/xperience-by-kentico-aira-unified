@@ -1,5 +1,6 @@
 ﻿using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.Membership;
 using CMS.Modules;
 
 using Kentico.Xperience.Aira.Admin.InfoModels;
@@ -11,14 +12,19 @@ internal interface IAiraModuleInstaller
     void Install();
 }
 
-internal class AiraModuleInstaller(IInfoProvider<ResourceInfo> resourceInfoProvider) : IAiraModuleInstaller
+internal class AiraModuleInstaller(
+    IInfoProvider<ResourceInfo> resourceInfoProvider,
+    IRoleInfoProvider roleInfoProvider
+    ) : IAiraModuleInstaller
 {
     private readonly IInfoProvider<ResourceInfo> resourceInfoProvider = resourceInfoProvider;
+    private readonly IRoleInfoProvider roleInfoProvider = roleInfoProvider;
 
     public void Install()
     {
         var resourceInfo = InstallModule();
         InstallModuleClasses(resourceInfo);
+        CreateAdminRole();
     }
     private ResourceInfo InstallModule()
     {
@@ -95,6 +101,22 @@ internal class AiraModuleInstaller(IInfoProvider<ResourceInfo> resourceInfoProvi
         else
         {
             info.ClassFormDefinition = form.GetXmlDefinition();
+        }
+    }
+    private void CreateAdminRole()
+    {
+        var existingRole = roleInfoProvider.Get(AiraConstants.AiraRoleName);
+
+        if (existingRole == null)
+        {
+            RoleInfo newRole = new()
+            {
+                RoleDisplayName = AiraConstants.AiraRoleDisplayName,
+                RoleName = AiraConstants.AiraRoleName,
+                RoleDescription = AiraConstants.AiraRoleDescription
+            };
+
+            roleInfoProvider.Set(newRole);
         }
     }
 }

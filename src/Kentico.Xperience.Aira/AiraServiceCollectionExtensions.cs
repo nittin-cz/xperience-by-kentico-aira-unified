@@ -10,9 +10,16 @@ public static class AiraServiceCollectionExtensions
         => services.AddKenticoAiraInternal();
 
     private static IServiceCollection AddKenticoAiraInternal(this IServiceCollection services)
-        => services.AddSingleton<IAiraModuleInstaller, AiraModuleInstaller>()
-        .AddSingleton<AiraEndpointDataSource>()
-        .AddScoped<AiraConfigurationService>();
+    {
+        services.AddControllersWithViews();
+
+        services
+            .AddSingleton<IAiraModuleInstaller, AiraModuleInstaller>()
+            .AddSingleton<AiraEndpointDataSource>()
+            .AddScoped<AiraConfigurationService>();
+
+        return services;
+    }
 
     public static void UseAiraEndpoints(this IEndpointRouteBuilder endpoints)
     {
