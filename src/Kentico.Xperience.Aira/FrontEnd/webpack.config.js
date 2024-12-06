@@ -11,7 +11,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const config = {
     entry: "./src/main.js",
     output: {
-        path: _resolve(__dirname, "../wwwroot/js"), // Adjusted for clarity
+        path: _resolve(__dirname, "../wwwroot/js"),
         filename: "index.js",
         module: true,
     },
