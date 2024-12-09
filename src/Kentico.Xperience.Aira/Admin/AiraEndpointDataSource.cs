@@ -1,6 +1,7 @@
 ﻿using CMS.DataEngine;
 
 using Kentico.Xperience.Aira.Admin.InfoModels;
+using Kentico.Xperience.Aira.Chat.Models;
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
@@ -50,7 +51,7 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
                 nameof(AiraCompanionAppController.Index),
                 controller => controller.Index()
             ),
-            CreateAiraEndpoint<List<AiraChatMessageModel>>(configuration,
+            CreateAiraEndpoint<AiraChatRequest>(configuration,
                 "chat/message",
                 controllerShortName,
                 nameof(AiraCompanionAppController.PostChatMessage),

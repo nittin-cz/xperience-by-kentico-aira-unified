@@ -3,6 +3,8 @@
 using HotChocolate.Authorization;
 
 using Kentico.Xperience.Aira.Admin.InfoModels;
+using Kentico.Xperience.Aira.Chat.Models;
+using Kentico.Xperience.Aira.NavBar;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,27 +25,37 @@ public sealed class AiraCompanionAppController : Controller
     {
         var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
 
-        var chatModel = new AiraPathsModel
+        var chatModel = new ChatViewModel
         {
-            PathBase = configuration.First().AiraConfigurationItemAiraPathBase,
-            ChatMessagePath = "chat/message"
+            PathsModel = new AiraPathsModel
+            {
+                PathBase = configuration.First().AiraConfigurationItemAiraPathBase,
+                ChatMessagePath = "chat/message",
+            },
+            NavBarViewModel = new NavBarViewModel
+            {
+                LogoImgRelativePath = AiraCompanionAppConstants.RelativeLogoUrl,
+                TitleImagePath = AiraCompanionAppConstants.RelativeChatImgUrl,
+                TitleText = AiraCompanionAppConstants.ChatTitle,
+                ChatItem = new MenuItemModel
+                {
+                    Title = AiraCompanionAppConstants.ChatTitle,
+                    ImagePath = AiraCompanionAppConstants.RelativeChatImgUrl,
+                    Url = AiraCompanionAppConstants.ChatRelativeUrl
+                },
+                SmartUploadItem = new MenuItemModel
+                {
+                    Title = AiraCompanionAppConstants.SmartUploadTitle,
+                    ImagePath = AiraCompanionAppConstants.RelativeSmartUploadUrl,
+                    Url = AiraCompanionAppConstants.ChatRelativeUrl
+                }
+            }
         };
 
-        return View("~/Views/Chat.cshtml", chatModel);
+        return View("~/Chat/Chat.cshtml", chatModel);
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostChatMessage([FromBody] List<AiraChatMessageModel> request) => Ok();
-}
-
-public class AiraChatMessageModel
-{
-    public string Role { get; set; } = string.Empty;
-    public string Text { get; set; } = string.Empty;
-}
-
-public class AiraPathsModel
-{
-    public string PathBase { get; set; } = string.Empty;
-    public string ChatMessagePath { get; set; } = string.Empty;
+    public async Task<IActionResult> PostChatMessage([FromBody] AiraChatRequest request)
+        => Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
 }

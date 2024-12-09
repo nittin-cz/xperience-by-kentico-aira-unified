@@ -1,0 +1,14 @@
+@using Kentico.Xperience.Aira;
+
+@model Kentico.Xperience.Aira.Chat.Models.ChatViewModel
+
+@{
+    Layout = "_AiraLayout";
+    var baseUrl = Context.Request.GetBaseUrl();
+}
+
+<div id="chat-app"
+     data-paths-model='@Html.Raw(Json.Serialize(Model.PathsModel))'
+     data-base-url="@baseUrl"
+     data-nav-bar-model='@Html.Raw(Json.Serialize(Model.NavBarViewModel))'>
+</div>

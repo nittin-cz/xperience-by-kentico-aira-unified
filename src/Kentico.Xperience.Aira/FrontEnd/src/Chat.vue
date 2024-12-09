@@ -1,17 +1,58 @@
 <template>
     <div class="c-app_inner">
         <div id="loading" class="c-loading">
-            <img :src="`${baseUrl}/_content/Kentico.Xperience.Aira/img/spinner.svg`" class="c-loading_spinner" alt="loading spinner" />
+            <img :src="`${this.baseUrl}/_content/Kentico.Xperience.Aira/img/spinner.svg`" class="c-loading_spinner" alt="loading spinner" />
         </div>
 
         <div class="c-app_header">
+            <NavBarComponent :airaPathBase="pathsModel.pathBase" :navBarModel="navBarModel" :baseUrl="baseUrl"/>
         </div>
 
         <div class="c-app_body">
             <div class="container">
-                <deep-chat 
+                <deep-chat
+                    :dropupStyles="{
+                        button: {
+                            styles: {
+                                container: {
+                                    default: { backgroundColor: '#eff8ff'},
+                                    hover: { backgroundColor: '#e4f3ff'},
+                                    click: { backgroundColor: '#d7edff'}
+                                }
+                            }
+                        },
+                        menu: {
+                            container: {
+                                boxShadow: '#e2e2e2 0px 1px 3px 2px'
+                            },
+                            item: {
+                                hover: {
+                                    backgroundColor: '#e1f2ff'
+                                },
+                                click: {
+                                    backgroundColor: '#cfeaff'
+                                }
+                            },
+                            iconContainer: {
+                                width: '1.8em'
+                            },
+                            text: {
+                                fontSize: '1.05em'
+                            }
+                        }
+                    }"
+                    :images="{
+                        button: { 
+                            position: 'dropup-menu' 
+                        }
+                    }"
+                    :camera="{
+                        button: {
+                            position: 'dropup-menu'
+                        }
+                    }"
                     :connect="{
-                        url: `${baseUrl}/${pathsModel.PathBase}/${pathsModel.ChatMessagePath}`,
+                        url: `${this.baseUrl}${this.pathsModel.pathBase}/${pathsModel.chatMessagePath}`,
                         method: 'POST'
                     }"
                     :chatStyle="{ height: '100%', width: '100%' }"
@@ -38,11 +79,16 @@
 
 <script>
 import 'deep-chat';
+import NavBarComponent from "./Navigation.vue";
 
 export default {
+    components: {
+        NavBarComponent
+    },
     props: {
         pathsModel: null,
-        baseUrl: null
+        baseUrl: null,
+        navBarModel: null
     },
     data() {
         return {
@@ -71,28 +117,42 @@ export default {
                 }, 500);
             }, 1000);
 
-            if (!this.started) {
-                this.started = true;
+            this.$refs.chatElementRef.onComponentRender = async () => {
+                this.setBorders();
 
-                document.addEventListener('visibilitychange', function () {
-                    if (document.visibilityState === 'visible') {
-                        app.$refs.chatElementRef.scrollToBottom();
-                    }
-                });
+                if (!this.started) {
+                    this.started = true;
+                    document.addEventListener('visibilitychange', function () {
+                        if (document.visibilityState === 'visible') {
+                            this.$refs.chatElementRef.scrollToBottom();
+                        }
+                    });
 
-                this.$refs.chatElementRef.onComponentRender = async () => {
-                    this.$refs.chatElementRef.style.borderLeftStyle = 'none';
-                    this.$refs.chatElementRef.style.borderTopStyle = 'none';
-                    this.$refs.chatElementRef.style.borderRightStyle = 'none';
-                    this.$refs.chatElementRef.style.borderBottomStyle = 'none';
-                    console.log(this.$refs.chatElementRef.shadowRoot);
-                    const newSubmitButton = this.$refs.chatElementRef.shadowRoot.querySelector('.input-button');
-                    if (this.submitButton !== newSubmitButton) {
-                        this.submitButton = newSubmitButton;
-                        this.addClassesToShadowRoot();
-                    }
-                };
-            }
+                    this.setRequestInterceptor();
+                }
+
+                const newSubmitButton = this.$refs.chatElementRef.shadowRoot.querySelector('.input-button');
+                if (this.submitButton !== newSubmitButton) {
+                    this.submitButton = newSubmitButton;
+                    this.addClassesToShadowRoot();
+                }
+            };
+        },
+        setRequestInterceptor()
+        {
+            this.$refs.chatElementRef.requestInterceptor = async (requestDetails) => {
+            const newMessageText = requestDetails.body.messages[0].text;
+            //db.chatItems.add({ messageType: 1, message: newMessageText });
+
+            requestDetails.body.messages = [{ role: 'user', text: newMessageText }];
+            console.log(requestDetails);
+            return requestDetails 
+        };},
+        setBorders(){
+            this.$refs.chatElementRef.style.borderLeftStyle = 'none';
+            this.$refs.chatElementRef.style.borderTopStyle = 'none';
+            this.$refs.chatElementRef.style.borderRightStyle = 'none';
+            this.$refs.chatElementRef.style.borderBottomStyle = 'none';
         },
         enableSubmitButtonForUpload() {
             //this.submitButton.addEventListener('click', this.customSubmitFunction);
