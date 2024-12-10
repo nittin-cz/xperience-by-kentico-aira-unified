@@ -14,5 +14,4 @@ public class SignInViewModel
     [DisplayName("Password")]
     [MaxLength(100, ErrorMessage = "Maximum allowed length of the input text is {1}")]
     public string Password { get; set; } = "";
-    public bool StaySignedIn { get; set; }
 }

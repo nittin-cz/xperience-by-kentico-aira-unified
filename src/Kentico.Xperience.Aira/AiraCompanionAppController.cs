@@ -66,8 +66,8 @@ public sealed class AiraCompanionAppController(
 
     [HttpGet]
     [AllowAnonymous]
-    public Task<IActionResult> SignIn()
-        => Task.FromResult((IActionResult)View("~/Authentication/_SignIn.cshtml"));
+    public Task<IActionResult> Signin()
+        => Task.FromResult((IActionResult)View("~/Features/Authentication/SignIn.cshtml"));
 
     [HttpPost]
     [AllowAnonymous]
@@ -76,10 +76,10 @@ public sealed class AiraCompanionAppController(
     {
         if (!ModelState.IsValid)
         {
-            return PartialView("~/Authentication/_SignIn.cshtml", model);
+            return PartialView("~/Features/Authentication/_SignIn.cshtml", model);
         }
 
-        var signInResult = SignInResult.Failed;
+        SignInResult signInResult;
         try
         {
             var member = await GetMember();
@@ -90,7 +90,7 @@ public sealed class AiraCompanionAppController(
             }
             else if (!member.Enabled)
             {
-                return PartialView("~/Authentication/_SignIn.cshtml", model);
+                return PartialView("~/Features/Authentication/_SignIn.cshtml", model);
             }
             else
             {
@@ -106,10 +106,14 @@ public sealed class AiraCompanionAppController(
         {
             ModelState.AddModelError(string.Empty, "Your sign-in attempt was not successful. Please try again.");
 
-            return PartialView("~/Authentication/_SignIn.cshtml", model);
+            return PartialView("~/Features/Authentication/_SignIn.cshtml", model);
         }
 
-        string redirectUrl = $"{Request.PathBase}/aira/chat";
+        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
+        string airaPathBase = configuration.First().AiraConfigurationItemAiraPathBase;
+
+        string baseUrl = $"{Request.Scheme}://{Request.Host}";
+        string redirectUrl = $"{baseUrl}{airaPathBase}/chat";
 
         Response.Htmx(h => h.Redirect(redirectUrl));
 
