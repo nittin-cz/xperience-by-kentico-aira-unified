@@ -66,12 +66,13 @@ public sealed class AiraCompanionAppController(
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Signin() => View("~/Authentication/_SignIn.cshtml");
+    public Task<IActionResult> SignIn()
+        => Task.FromResult((IActionResult)View("~/Authentication/_SignIn.cshtml"));
 
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> SignIn([FromForm] SignInViewModel model)
+    public async Task<IActionResult> SignIn([FromForm] SignInViewModel model)
     {
         if (!ModelState.IsValid)
         {

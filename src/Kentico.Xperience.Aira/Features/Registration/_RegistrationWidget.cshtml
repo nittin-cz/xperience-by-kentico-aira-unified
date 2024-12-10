@@ -6,7 +6,7 @@
 
 @model RegistrationWidgetProperties
 
-<form method="post" hx-swap="outerHTML" hx-trigger hx-post="/AiraRegistrationWidget/Register"
+<form method="post" hx-swap="outerHTML" hx-trigger="submit" hx-post hx-controller="AiraRegistrationWidget" hx-action="Register"
       id="registerForm" test-id="register">
 
     <div class="form">
@@ -49,3 +49,11 @@
         </div>
     </div>
 </form>
+
+<script>
+    if (!window.htmx) {
+        var script = document.createElement('script');
+        script.src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.js"
+        document.head.appendChild(script);
+    }
+</script>

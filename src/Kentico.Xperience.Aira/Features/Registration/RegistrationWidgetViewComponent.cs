@@ -5,9 +5,16 @@ using CMS.Membership;
 using Kentico.Membership;
 using Kentico.Membership.Internal;
 using Kentico.Xperience.Aira.Models;
+using Kentico.PageBuilder.Web.Mvc;
+using Kentico.Xperience.Aira.Widgets;
+
+[assembly: RegisterWidget(
+    identifier: RegistrationWidgetViewComponent.IDENTIFIER,
+    viewComponentType: typeof(RegistrationWidgetViewComponent),
+    name: "Registration Widget",
+    propertiesType: typeof(RegistrationWidgetProperties))]
 
 namespace Kentico.Xperience.Aira.Widgets;
-
 public class RegistrationWidgetViewComponent(
         AdminUserManager adminUserManager,
         IUserInfoProvider userInfoProvider,
@@ -21,6 +28,8 @@ public class RegistrationWidgetViewComponent(
     private readonly UserManager<ApplicationUser> userManager = userManager;
     private readonly IInfoProvider<RoleInfo> roleInfoProvider = roleInfoProvider;
     private readonly IUserManagementService userManagementService = userManagementService;
+
+    public const string IDENTIFIER = "Kentico.Xperience.Aira.RegistrationWidget";
 
     public IViewComponentResult Invoke(RegistrationWidgetProperties properties)
     {

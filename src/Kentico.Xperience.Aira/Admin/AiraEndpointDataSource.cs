@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System.Reflection;
 using System.Text.Json;
+using Kentico.Xperience.Aira.Models;
 
 namespace Kentico.Xperience.Aira.Admin;
 
@@ -46,7 +47,7 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
         return
         [
             CreateAiraEndpoint(configuration,
-                nameof(AiraCompanionAppController.Index).ToLowerInvariant(),
+                "chat",
                 controllerShortName,
                 nameof(AiraCompanionAppController.Index),
                 controller => controller.Index()
@@ -56,6 +57,18 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
                 controllerShortName,
                 nameof(AiraCompanionAppController.PostChatMessage),
                 (controller, request) => controller.PostChatMessage(request)
+            ),
+            CreateAiraEndpoint<SignInViewModel>(configuration,
+                "signin",
+                controllerShortName,
+                nameof(AiraCompanionAppController.SignIn),
+                (controller, request) => controller.SignIn(request)
+            ),
+            CreateAiraEndpoint(configuration,
+                "signin",
+                controllerShortName,
+                nameof(AiraCompanionAppController.SignIn),
+                controller => controller.SignIn()
             )
         ];
     }

@@ -103,6 +103,7 @@ internal class AiraModuleInstaller(
             info.ClassFormDefinition = form.GetXmlDefinition();
         }
     }
+
     private void CreateAdminRole()
     {
         var existingRole = roleInfoProvider.Get(AiraConstants.AiraRoleName);
