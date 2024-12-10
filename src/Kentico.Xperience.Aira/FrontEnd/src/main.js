@@ -1,15 +1,16 @@
-﻿import { createApp } from "vue";
+﻿import ChatComponent from "./Chat.vue";
+import { createApp } from "vue";
 
-// A basic Vue component (optional)
-const App = {
-    template: "<div>Vue is working! This is {{ message }}</div>",
-    data() {
-        return {
-            message: "a simple Vue app",
-        };
-    },
-};
+const chatElement = document.getElementById("chat-app");
 
-// Mount Vue to a specific DOM element
-const app = createApp(App);
-app.mount("#vue-app");
+if (chatElement) {
+    const pathsModel = JSON.parse(chatElement.dataset.pathsModel || "{}");
+    const baseUrl = chatElement.dataset.baseUrl || "";
+    const navBarModel = JSON.parse(chatElement.dataset.navBarModel || "{}");
+
+    createApp(ChatComponent, {
+        pathsModel,
+        baseUrl,
+        navBarModel
+    }).mount("#chat-app");
+}
