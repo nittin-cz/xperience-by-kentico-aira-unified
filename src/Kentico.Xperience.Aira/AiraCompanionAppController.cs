@@ -20,14 +20,10 @@ namespace Kentico.Xperience.Aira;
 [Route("[controller]/[action]")]
 public sealed class AiraCompanionAppController(
     SignInManager<ApplicationUser> signInManager,
-    UserManager<ApplicationUser> userManager
+    UserManager<ApplicationUser> userManager,
+    IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider
 ) : Controller
 {
-    private readonly IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider;
-
-    public AiraCompanionAppController(IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider)
-        => this.airaConfigurationInfoProvider = airaConfigurationInfoProvider;
-
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> Index()
@@ -67,8 +63,6 @@ public sealed class AiraCompanionAppController(
     [HttpPost]
     public async Task<IActionResult> PostChatMessage([FromBody] AiraChatRequest request)
         => Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
-    public async Task<IActionResult> Index() =>
-        View("~/Views/Chat.cshtml");
 
     [HttpGet]
     [AllowAnonymous]

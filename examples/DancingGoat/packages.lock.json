@@ -992,12 +992,29 @@
       "kentico.xperience.aira": {
         "type": "Project",
         "dependencies": {
+          "Htmx": "[1.8.1, )",
+          "Htmx.TagHelpers": "[1.8.1, )",
           "Kentico.Xperience.Admin": "[29.7.2, )",
           "Kentico.Xperience.WebApp": "[29.7.2, )",
           "Microsoft.AspNetCore.Components.Web": "[8.0.11, )",
           "Microsoft.Extensions.Configuration.UserSecrets": "[6.0.1, )",
           "Microsoft.Extensions.DependencyInjection": "[8.0.1, )"
         }
+      },
+      "Htmx": {
+        "type": "CentralTransitive",
+        "requested": "[1.8.1, )",
+        "resolved": "1.8.1",
+        "contentHash": "TYPHnpytmi7eVZGJFON+6diLF53PMgmvNc0KN2WV1WcWsRAgPN9l+kadqIF7EOl/eRfsHdTsE1lbjiKl85tPZQ==",
+        "dependencies": {
+          "System.Text.Json": "6.0.10"
+        }
+      },
+      "Htmx.TagHelpers": {
+        "type": "CentralTransitive",
+        "requested": "[1.8.1, )",
+        "resolved": "1.8.1",
+        "contentHash": "tXsy0dK0PHsL02WeGZf2Yi1XTj5fy4P17B7ihLcFor7VTdd+ArIHXjrfe9gJtH6jLJvS4YschuHirYSwPAtI4g=="
       },
       "Microsoft.AspNetCore.Components.Web": {
         "type": "CentralTransitive",
