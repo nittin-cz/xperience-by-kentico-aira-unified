@@ -1,4 +1,6 @@
-﻿using Kentico.Xperience.Admin.Base.Forms;
+﻿using CMS.EmailEngine;
+
+using Kentico.Xperience.Admin.Base.Forms;
 using Kentico.Xperience.Aira.Admin;
 using Kentico.Xperience.Aira.Assets;
 
@@ -20,7 +22,8 @@ public static class AiraServiceCollectionExtensions
             .AddSingleton<AiraEndpointDataSource>()
             .AddScoped<ContentItemAssetUploaderComponent>()
             .AddScoped<AiraConfigurationService>()
-            .AddScoped<IAiraAiraAssetService, AiraAssetService>();
+            .AddScoped<IAiraAiraAssetService, AiraAssetService>()
+            .AddScoped<SystemEmailOptions>();
 
         return services;
     }

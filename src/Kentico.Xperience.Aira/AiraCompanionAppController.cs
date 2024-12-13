@@ -16,6 +16,7 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.AspNetCore.Http;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
+using Kentico.Xperience.Aira.Registration;
 
 namespace Kentico.Xperience.Aira;
 
@@ -98,7 +99,15 @@ public sealed class AiraCompanionAppController(
             }
             else if (!member.Enabled)
             {
-                return PartialView("~/Authentication/_SignIn.cshtml", model);
+                var emailConfirmationModel = new EmailConfirmationViewModel()
+                {
+                    State = EmailConfirmationState.Failure_NotYetConfirmed,
+                    Message = "This Email Is Not Verified Yet",
+                    SendButtonText = "Send Verification Email",
+                    Username = member.UserName!
+                };
+
+                return PartialView("~/Registration/_EmailConfirmation.cshtml", emailConfirmationModel);
             }
             else
             {
