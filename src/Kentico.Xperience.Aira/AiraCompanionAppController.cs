@@ -1,18 +1,21 @@
 ﻿using CMS.DataEngine;
 
 using HotChocolate.Authorization;
+using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Aira.Admin.InfoModels;
 using Kentico.Xperience.Aira.Chat.Models;
 using Kentico.Xperience.Aira.NavBar;
 using Htmx;
 
 using Kentico.Membership;
-using Kentico.Xperience.Aira.Models;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+using Microsoft.AspNetCore.Http;
+using Kentico.Xperience.Aira.Authentication;
+using Kentico.Xperience.Aira.Assets;
 
 namespace Kentico.Xperience.Aira;
 
@@ -21,7 +24,8 @@ namespace Kentico.Xperience.Aira;
 public sealed class AiraCompanionAppController(
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
-    IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider
+    IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider,
+    IAiraAiraAssetService airaAssetService
 ) : Controller
 {
     [HttpGet]
@@ -61,13 +65,17 @@ public sealed class AiraCompanionAppController(
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostChatMessage([FromBody] AiraChatRequest request)
-        => Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
+    public async Task<IActionResult> PostChatMessage(IFormCollection request)
+    {
+        await airaAssetService.HandleFileUpload(request.Files);
+
+        return Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
+    }
 
     [HttpGet]
     [AllowAnonymous]
     public Task<IActionResult> Signin()
-        => Task.FromResult((IActionResult)View("~/Features/Authentication/SignIn.cshtml"));
+        => Task.FromResult((IActionResult)View("~/Authentication/SignIn.cshtml"));
 
     [HttpPost]
     [AllowAnonymous]
@@ -76,7 +84,7 @@ public sealed class AiraCompanionAppController(
     {
         if (!ModelState.IsValid)
         {
-            return PartialView("~/Features/Authentication/_SignIn.cshtml", model);
+            return PartialView("~/Authentication/_SignIn.cshtml", model);
         }
 
         SignInResult signInResult;
@@ -90,7 +98,7 @@ public sealed class AiraCompanionAppController(
             }
             else if (!member.Enabled)
             {
-                return PartialView("~/Features/Authentication/_SignIn.cshtml", model);
+                return PartialView("~/Authentication/_SignIn.cshtml", model);
             }
             else
             {
@@ -106,7 +114,7 @@ public sealed class AiraCompanionAppController(
         {
             ModelState.AddModelError(string.Empty, "Your sign-in attempt was not successful. Please try again.");
 
-            return PartialView("~/Features/Authentication/_SignIn.cshtml", model);
+            return PartialView("~/Authentication/_SignIn.cshtml", model);
         }
 
         var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
