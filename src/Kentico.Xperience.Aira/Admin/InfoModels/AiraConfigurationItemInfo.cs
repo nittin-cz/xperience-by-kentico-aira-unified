@@ -66,12 +66,6 @@ public partial class AiraConfigurationItemInfo : AbstractInfo<AiraConfigurationI
     protected override void SetObject() => Provider.Set(this);
 
 
-    protected AiraConfigurationItemInfo(SerializationInfo info, StreamingContext context)
-        : base(info, context)
-    {
-    }
-
-
     public AiraConfigurationItemInfo()
         : base(TYPEINFO)
     {

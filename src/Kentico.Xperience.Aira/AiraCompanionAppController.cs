@@ -68,7 +68,7 @@ public sealed class AiraCompanionAppController(
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request)
     {
-        await airaAssetService.HandleFileUpload(request.Files);
+        await airaAssetService.HandleFileUpload(request.Files, 53);
 
         return Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
     }

@@ -6,7 +6,6 @@ namespace Kentico.Xperience.Aira.Admin;
 internal class AiraConfigurationModel
 {
     [RequiredValidationRule]
-    [AssetSelectorComponent]
     [TextInputComponent(Label = "Relative Path Base", Order = 0, ExplanationText = "Relative path where the ACA is available.")]
     public string RelativePathBase { get; set; } = string.Empty;
 
