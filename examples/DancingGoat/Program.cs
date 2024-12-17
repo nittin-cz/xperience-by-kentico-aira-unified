@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Mvc;
 using Samples.DancingGoat;
 
 using CMS.Base;
+using CMS.EmailEngine;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -128,7 +130,21 @@ static void ConfigureMembershipServices(IServiceCollection services)
         .AddUserStore<ApplicationUserStore<ApplicationUser>>()
         .AddRoleStore<NoOpApplicationRoleStore>()
         .AddUserManager<UserManager<ApplicationUser>>()
-        .AddSignInManager<SignInManager<ApplicationUser>>();
+        .AddSignInManager<SignInManager<ApplicationUser>>()
+        .AddDefaultTokenProviders();
+
+    services.AddXperienceSystemSmtp(options =>
+    {
+        options.Server = new SmtpServer
+        {
+            Host = "smtp.gmail.com",
+            Port = 587,
+            UserName = "ivana.tacikova@gmail.com",
+            Password = "gfsx twjx jyhr adni"
+        };
+        options.Encoding = Encoding.UTF8;
+        options.TransferEncoding = System.Net.Mime.TransferEncoding.QuotedPrintable;
+    });
 
     services.ConfigureApplicationCookie(options =>
     {
