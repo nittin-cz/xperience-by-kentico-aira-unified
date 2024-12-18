@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Registration;
+using Kentico.Xperience.Aira.Services;
 
 namespace Kentico.Xperience.Aira;
 
@@ -26,7 +27,8 @@ public sealed class AiraCompanionAppController(
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
     IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider,
-    IAiraAiraAssetService airaAssetService
+    IAiraAiraAssetService airaAssetService,
+    AiraUIService airaUIService
 ) : Controller
 {
     [HttpGet]
@@ -42,24 +44,7 @@ public sealed class AiraCompanionAppController(
                 PathBase = configuration.First().AiraConfigurationItemAiraPathBase,
                 ChatMessagePath = "chat/message",
             },
-            NavBarViewModel = new NavBarViewModel
-            {
-                LogoImgRelativePath = AiraCompanionAppConstants.RelativeLogoUrl,
-                TitleImagePath = AiraCompanionAppConstants.RelativeChatImgUrl,
-                TitleText = AiraCompanionAppConstants.ChatTitle,
-                ChatItem = new MenuItemModel
-                {
-                    Title = AiraCompanionAppConstants.ChatTitle,
-                    ImagePath = AiraCompanionAppConstants.RelativeChatImgUrl,
-                    Url = AiraCompanionAppConstants.ChatRelativeUrl
-                },
-                SmartUploadItem = new MenuItemModel
-                {
-                    Title = AiraCompanionAppConstants.SmartUploadTitle,
-                    ImagePath = AiraCompanionAppConstants.RelativeSmartUploadUrl,
-                    Url = AiraCompanionAppConstants.ChatRelativeUrl
-                }
-            }
+            NavBarViewModel = airaUIService.GetNavBarViewModel("chat")
         };
 
         return View("~/Chat/Chat.cshtml", chatModel);

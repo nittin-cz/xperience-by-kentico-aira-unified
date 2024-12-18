@@ -3,6 +3,7 @@
 using Kentico.Xperience.Admin.Base.Forms;
 using Kentico.Xperience.Aira.Admin;
 using Kentico.Xperience.Aira.Assets;
+using Kentico.Xperience.Aira.Services;
 
 using Microsoft.AspNetCore.Routing;
 
@@ -23,6 +24,7 @@ public static class AiraServiceCollectionExtensions
             .AddScoped<ContentItemAssetUploaderComponent>()
             .AddScoped<AiraConfigurationService>()
             .AddScoped<IAiraAiraAssetService, AiraAssetService>()
+            .AddScoped<AiraUIService>()
             .AddScoped<SystemEmailOptions>();
 
         return services;
