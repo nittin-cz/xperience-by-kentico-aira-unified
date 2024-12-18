@@ -4,7 +4,6 @@ using HotChocolate.Authorization;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Aira.Admin.InfoModels;
 using Kentico.Xperience.Aira.Chat.Models;
-using Kentico.Xperience.Aira.NavBar;
 using Htmx;
 
 using Kentico.Membership;
@@ -37,6 +36,8 @@ public sealed class AiraCompanionAppController(
     {
         var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
 
+        var assets = await airaAssetService.GetUsersUploadedAssetUrls(53);
+
         var chatModel = new ChatViewModel
         {
             PathsModel = new AiraPathsModel
@@ -44,7 +45,11 @@ public sealed class AiraCompanionAppController(
                 PathBase = configuration.First().AiraConfigurationItemAiraPathBase,
                 ChatMessagePath = "chat/message",
             },
-            NavBarViewModel = airaUIService.GetNavBarViewModel("chat")
+            NavBarViewModel = airaUIService.GetNavBarViewModel("chat"),
+            History = assets.Select(x => new AiraChatMessage
+            {
+                Url = x
+            }).ToList()
         };
 
         return View("~/Chat/Chat.cshtml", chatModel);

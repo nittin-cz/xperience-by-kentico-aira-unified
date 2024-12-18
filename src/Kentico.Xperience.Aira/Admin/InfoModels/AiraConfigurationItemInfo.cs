@@ -39,12 +39,14 @@ public partial class AiraConfigurationItemInfo : AbstractInfo<AiraConfigurationI
         set => SetValue(nameof(AiraConfigurationItemId), value);
     }
 
+
     [DatabaseField]
     public virtual Guid AiraConfigurationItemGuid
     {
-        get => ValidationHelper.GetGuid(GetValue(nameof(AiraConfigurationItemGuid)), default);
+        get => ValidationHelper.GetGuid(GetValue(nameof(AiraConfigurationItemGuid)), Guid.Empty);
         set => SetValue(nameof(AiraConfigurationItemGuid), value);
     }
+
 
     [DatabaseField]
     [Required]
