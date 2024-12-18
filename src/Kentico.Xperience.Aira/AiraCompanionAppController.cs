@@ -16,15 +16,14 @@ using Microsoft.AspNetCore.Http;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Registration;
-using Kentico.Xperience.Aira.Services;
 
 namespace Kentico.Xperience.Aira;
 
 [ApiController]
 [Route("[controller]/[action]")]
 public sealed class AiraCompanionAppController(
-    SignInManager<ApplicationUser> signInManager,
-    UserManager<ApplicationUser> userManager,
+    SignInManager<Member> signInManager,
+    UserManager<Member> userManager,
     IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider,
     IAiraAiraAssetService airaAssetService,
     AiraUIService airaUIService
@@ -128,7 +127,7 @@ public sealed class AiraCompanionAppController(
         ? Ok()
         : Redirect(redirectUrl);
 
-        async Task<ApplicationUser?> GetMember()
+        async Task<Member?> GetMember()
         {
             var member = await userManager.FindByNameAsync(model.UserNameOrEmail);
 
