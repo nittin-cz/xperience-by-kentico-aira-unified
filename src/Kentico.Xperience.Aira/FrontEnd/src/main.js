@@ -7,10 +7,12 @@ if (chatElement) {
     const pathsModel = JSON.parse(chatElement.dataset.pathsModel || "{}");
     const baseUrl = chatElement.dataset.baseUrl || "";
     const navBarModel = JSON.parse(chatElement.dataset.navBarModel || "{}");
+    const history = JSON.parse(chatElement.dataset.history || {});
 
     createApp(ChatComponent, {
         pathsModel,
         baseUrl,
-        navBarModel
+        navBarModel,
+        history
     }).mount("#chat-app");
 }

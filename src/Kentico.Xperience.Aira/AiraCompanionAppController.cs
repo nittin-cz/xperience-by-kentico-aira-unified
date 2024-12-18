@@ -35,6 +35,8 @@ public sealed class AiraCompanionAppController(
     {
         var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
 
+        var assets = await airaAssetService.GetUsersUploadedAssetUrls(53);
+
         var chatModel = new ChatViewModel
         {
             PathsModel = new AiraPathsModel
@@ -59,10 +61,12 @@ public sealed class AiraCompanionAppController(
                     ImagePath = AiraCompanionAppConstants.RelativeSmartUploadUrl,
                     Url = AiraCompanionAppConstants.ChatRelativeUrl
                 }
-            }
+            },
+            History = assets.Select(x => new AiraChatMessage
+            {
+                Url = x
+            }).ToList()
         };
-
-        await airaAssetService.GetUsersUploadedAssets(53);
 
         return View("~/Chat/Chat.cshtml", chatModel);
     }

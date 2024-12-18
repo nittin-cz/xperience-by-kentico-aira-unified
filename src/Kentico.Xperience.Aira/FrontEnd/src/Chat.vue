@@ -56,6 +56,7 @@
                         method: 'POST'
                     }"
                     :chatStyle="{ height: '100%', width: '100%' }"
+                    :history="[]"
                     id="chatElement"
                     ref="chatElementRef"
                     :requestBodyLimits="{ maxMessages: 1 }"
@@ -88,7 +89,8 @@ export default {
     props: {
         pathsModel: null,
         baseUrl: null,
-        navBarModel: null
+        navBarModel: null,
+        history: []
     },
     data() {
         return {
@@ -129,6 +131,7 @@ export default {
                     });
 
                     this.setRequestInterceptor();
+                    this.setHistory();
                 }
 
                 const newSubmitButton = this.$refs.chatElementRef.shadowRoot.querySelector('.input-button');
@@ -303,6 +306,26 @@ export default {
                     }
                 }`
             shadowRoot.appendChild(style);
+        },
+        setHistory() {
+            for (const x of this.history) {
+                const viewModel = this.getMessageViewModel(x)
+                this.$refs.chatElementRef.history.push(viewModel);
+            }
+        },
+        getMessageViewModel(message) {
+            if (message.url !== null)
+            {
+                return {
+                    role: "user",
+                    files: [
+                        {
+                            src: message.url,
+                            type: "image"
+                        }
+                    ]
+                };
+            }
         },
         isJSONWithProperty(string, property) {
             try {
