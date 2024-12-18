@@ -47,9 +47,14 @@ public sealed class AiraCompanionAppController(
             NavBarViewModel = airaUIService.GetNavBarViewModel("chat"),
             History = assets.Select(x => new AiraChatMessage
             {
-                Url = x
-            }).ToList()
+                Url = x,
+                Role = "user"
+            }).ToList(),
         };
+
+        chatModel.InitialAiraMessage = chatModel.History.Count == 0
+            ? "This is initial Aira message"
+            : "What can I help you with ?";
 
         return View("~/Chat/Chat.cshtml", chatModel);
     }
@@ -59,7 +64,7 @@ public sealed class AiraCompanionAppController(
     {
         await airaAssetService.HandleFileUpload(request.Files, 53);
 
-        return Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
+        return Ok(new AiraChatMessage { Role = "ai", Message = "Ok" });
     }
 
     [HttpGet]

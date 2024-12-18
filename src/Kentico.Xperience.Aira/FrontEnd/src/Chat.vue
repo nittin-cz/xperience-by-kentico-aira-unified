@@ -55,6 +55,11 @@
                         url: `${this.baseUrl}${this.pathsModel.pathBase}/${pathsModel.chatMessagePath}`,
                         method: 'POST'
                     }"
+                    :names="{
+                        ai: { text: 'AIRA' },
+                        default: { text: '' },
+                        user: { text: '' }
+                    }"
                     :chatStyle="{ height: '100%', width: '100%' }"
                     :history="[]"
                     id="chatElement"
@@ -90,7 +95,8 @@ export default {
         pathsModel: null,
         baseUrl: null,
         navBarModel: null,
-        history: []
+        history: [],
+        initialAiraMessage: null
     },
     data() {
         return {
@@ -131,6 +137,7 @@ export default {
                     });
 
                     this.setRequestInterceptor();
+                    this.setResponseInterceptor();
                     this.setHistory();
                 }
 
@@ -190,6 +197,11 @@ export default {
                 };
 
                 return modifiedRequestDetails;
+            };
+        },
+        setResponseInterceptor() {
+            this.$refs.chatElementRef.responseInterceptor = (response) => {
+                return this.getMessageViewModel(response);
             };
         },
         setBorders(){
@@ -312,6 +324,11 @@ export default {
                 const viewModel = this.getMessageViewModel(x)
                 this.$refs.chatElementRef.history.push(viewModel);
             }
+
+            this.$refs.chatElementRef.history.push({
+                role: "ai",
+                text: this.initialAiraMessage
+            });
         },
         getMessageViewModel(message) {
             if (message.url !== null)
@@ -325,6 +342,11 @@ export default {
                         }
                     ]
                 };
+            }
+
+            return {
+                role: message.role,
+                text: message.message
             }
         },
         isJSONWithProperty(string, property) {
