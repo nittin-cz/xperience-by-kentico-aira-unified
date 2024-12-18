@@ -12,6 +12,7 @@ using CMS.EmailEngine;
 using Kentico.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc;
 using Kentico.Content.Web.Mvc;
+using Kentico.Xperience.Aira.Membership;
 
 namespace Kentico.Xperience.Aira.Registration;
 
@@ -19,7 +20,7 @@ namespace Kentico.Xperience.Aira.Registration;
 public class AiraRegistrationWidgetController(
     AdminUserManager adminUserManager,
     IUserInfoProvider userInfoProvider,
-    UserManager<ApplicationUser> userManager,
+    UserManager<Member> userManager,
     IInfoProvider<RoleInfo> roleInfoProvider,
     IUserManagementService userManagementService,
     SystemEmailOptions systemEmailOptions,
@@ -30,7 +31,7 @@ public class AiraRegistrationWidgetController(
     [AllowAnonymous]
     public async Task<IActionResult> Register(RegistrationViewModel model)
     {
-        var member = new ApplicationUser
+        var member = new Member
         {
             UserName = model.UserName,
             Email = model.Email,
@@ -201,7 +202,7 @@ public class AiraRegistrationWidgetController(
         return View("~/Registration/_VerifyEmail.cshtml");
     }
 
-    private async Task SendVerificationEmail(ApplicationUser member)
+    private async Task SendVerificationEmail(Member member)
     {
         try
         {

@@ -18,6 +18,7 @@ using Samples.DancingGoat;
 using CMS.Base;
 using CMS.EmailEngine;
 using System.Text;
+using Kentico.Xperience.Aira.Membership;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -116,7 +117,7 @@ app.Run();
 
 static void ConfigureMembershipServices(IServiceCollection services)
 {
-    services.AddIdentity<ApplicationUser, NoOpApplicationRole>(options =>
+    services.AddIdentityCore<ApplicationUser>(options =>
     {
         options.Password.RequireDigit = false;
         options.Password.RequireNonAlphanumeric = false;
@@ -127,11 +128,18 @@ static void ConfigureMembershipServices(IServiceCollection services)
         // Ensures, that disabled member cannot sign in.
         options.SignIn.RequireConfirmedAccount = true;
     })
+        .AddRoles<NoOpApplicationRole>()
         .AddUserStore<ApplicationUserStore<ApplicationUser>>()
         .AddRoleStore<NoOpApplicationRoleStore>()
         .AddUserManager<UserManager<ApplicationUser>>()
-        .AddSignInManager<SignInManager<ApplicationUser>>()
-        .AddDefaultTokenProviders();
+        .AddSignInManager<SignInManager<ApplicationUser>>();
+
+    services.AddIdentityCore<Member>()
+        .AddRoles<NoOpApplicationRole>()
+        .AddUserStore<ApplicationUserStore<Member>>()
+        .AddRoleStore<NoOpApplicationRoleStore>()
+        .AddUserManager<UserManager<Member>>()
+        .AddSignInManager<SignInManager<Member>>();
 
     services.AddXperienceSystemSmtp(options =>
     {
