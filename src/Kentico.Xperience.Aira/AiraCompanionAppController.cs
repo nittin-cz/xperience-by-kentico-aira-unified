@@ -6,8 +6,6 @@ using Kentico.Xperience.Aira.Admin.InfoModels;
 using Kentico.Xperience.Aira.Chat.Models;
 using Htmx;
 
-using Kentico.Membership;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Registration;
+using Kentico.Xperience.Aira.Membership;
+using Kentico.Xperience.Aira.Services;
 
 namespace Kentico.Xperience.Aira;
 
