@@ -62,6 +62,8 @@ public sealed class AiraCompanionAppController(
             }
         };
 
+        await airaAssetService.GetUsersUploadedAssets(53);
+
         return View("~/Chat/Chat.cshtml", chatModel);
     }
 

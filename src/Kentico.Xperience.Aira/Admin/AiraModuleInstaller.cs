@@ -44,7 +44,11 @@ internal class AiraModuleInstaller(
         return resourceInfo;
     }
 
-    private static void InstallModuleClasses(ResourceInfo resourceInfo) => InstallAiraConfigurationClass(resourceInfo);
+    private static void InstallModuleClasses(ResourceInfo resourceInfo)
+    {
+        InstallAiraConfigurationClass(resourceInfo);
+        InstallAiraChatContentItemAssetReferenceClass(resourceInfo);
+    }
 
     private static void InstallAiraConfigurationClass(ResourceInfo resourceInfo)
     {
@@ -74,6 +78,93 @@ internal class AiraModuleInstaller(
             DataType = FieldDataType.Guid,
             Enabled = true,
             AllowEmpty = false
+        };
+        formInfo.AddFormItem(formItem);
+
+        SetFormDefinition(info, formInfo);
+
+        if (info.HasChanged)
+        {
+            DataClassInfoProvider.SetDataClassInfo(info);
+        }
+    }
+
+    private static void InstallAiraChatContentItemAssetReferenceClass(ResourceInfo resourceInfo)
+    {
+        var info = DataClassInfoProvider.GetDataClassInfo(AiraChatContentItemAssetReferenceInfo.OBJECT_TYPE) ??
+            DataClassInfo.New(AiraChatContentItemAssetReferenceInfo.OBJECT_TYPE);
+
+        info.ClassName = AiraChatContentItemAssetReferenceInfo.TYPEINFO.ObjectClassName;
+        info.ClassTableName = AiraChatContentItemAssetReferenceInfo.TYPEINFO.ObjectClassName.Replace(".", "_");
+        info.ClassDisplayName = "Aira Chat Content Item Asset Reference";
+        info.ClassResourceID = resourceInfo.ResourceID;
+        info.ClassType = ClassType.OTHER;
+        var formInfo = FormHelper.GetBasicFormDefinition(nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceId));
+
+        var formItem = new FormFieldInfo
+        {
+            Name = nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceGuid),
+            AllowEmpty = false,
+            Visible = false,
+            Precision = 0,
+            DataType = FieldDataType.Guid,
+            Enabled = true
+        };
+        formInfo.AddFormItem(formItem);
+
+        formItem = new FormFieldInfo
+        {
+            Name = nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceUserID),
+            AllowEmpty = false,
+            Visible = true,
+            Precision = 0,
+            DataType = FieldDataType.Integer,
+            ReferenceToObjectType = UserInfo.OBJECT_TYPE,
+            ReferenceType = ObjectDependencyEnum.Required
+        };
+        formInfo.AddFormItem(formItem);
+
+        formItem = new FormFieldInfo
+        {
+            Name = nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceContentTypeDataClassInfoID),
+            AllowEmpty = false,
+            Visible = true,
+            Precision = 0,
+            DataType = FieldDataType.Integer,
+            ReferenceToObjectType = DataClassInfo.OBJECT_TYPE,
+            ReferenceType = ObjectDependencyEnum.Required
+        };
+        formInfo.AddFormItem(formItem);
+
+        formItem = new FormFieldInfo
+        {
+            Name = nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceContentTypeAssetFieldName),
+            AllowEmpty = false,
+            Visible = true,
+            Precision = 0,
+            Size = 250,
+            DataType = FieldDataType.Text,
+            Enabled = true
+        };
+        formInfo.AddFormItem(formItem);
+
+        formItem = new FormFieldInfo
+        {
+            Name = nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceContentItemID),
+            AllowEmpty = false,
+            Visible = true,
+            Precision = 0,
+            DataType = FieldDataType.Integer
+        };
+        formInfo.AddFormItem(formItem);
+
+        formItem = new FormFieldInfo
+        {
+            Name = nameof(AiraChatContentItemAssetReferenceInfo.AiraChatContentItemAssetReferenceUploadTime),
+            Visible = true,
+            DataType = FieldDataType.DateTime,
+            Enabled = true,
+            AllowEmpty = false,
         };
         formInfo.AddFormItem(formItem);
 
