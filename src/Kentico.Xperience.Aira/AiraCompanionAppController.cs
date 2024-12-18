@@ -4,7 +4,6 @@ using HotChocolate.Authorization;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Aira.Admin.InfoModels;
 using Kentico.Xperience.Aira.Chat.Models;
-using Kentico.Xperience.Aira.NavBar;
 using Htmx;
 
 using Kentico.Membership;
@@ -17,7 +16,6 @@ using Microsoft.AspNetCore.Http;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Registration;
-using Kentico.Xperience.Aira.Membership;
 
 namespace Kentico.Xperience.Aira;
 
@@ -27,7 +25,8 @@ public sealed class AiraCompanionAppController(
     SignInManager<Member> signInManager,
     UserManager<Member> userManager,
     IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider,
-    IAiraAiraAssetService airaAssetService
+    IAiraAiraAssetService airaAssetService,
+    AiraUIService airaUIService
 ) : Controller
 {
     [HttpGet]
@@ -45,24 +44,7 @@ public sealed class AiraCompanionAppController(
                 PathBase = configuration.First().AiraConfigurationItemAiraPathBase,
                 ChatMessagePath = "chat/message",
             },
-            NavBarViewModel = new NavBarViewModel
-            {
-                LogoImgRelativePath = AiraCompanionAppConstants.RelativeLogoUrl,
-                TitleImagePath = AiraCompanionAppConstants.RelativeChatImgUrl,
-                TitleText = AiraCompanionAppConstants.ChatTitle,
-                ChatItem = new MenuItemModel
-                {
-                    Title = AiraCompanionAppConstants.ChatTitle,
-                    ImagePath = AiraCompanionAppConstants.RelativeChatImgUrl,
-                    Url = AiraCompanionAppConstants.ChatRelativeUrl
-                },
-                SmartUploadItem = new MenuItemModel
-                {
-                    Title = AiraCompanionAppConstants.SmartUploadTitle,
-                    ImagePath = AiraCompanionAppConstants.RelativeSmartUploadUrl,
-                    Url = AiraCompanionAppConstants.ChatRelativeUrl
-                }
-            },
+            NavBarViewModel = airaUIService.GetNavBarViewModel("chat"),
             History = assets.Select(x => new AiraChatMessage
             {
                 Url = x
