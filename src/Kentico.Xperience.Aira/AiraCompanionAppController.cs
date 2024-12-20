@@ -99,6 +99,43 @@ public sealed class AiraCompanionAppController(
         return View("~/AssetUploader/Assets.cshtml", model);
     }
 
+    [HttpGet("/_content/Kentico.Xperience.Aira/manifest.json")]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetPwaManifest()
+    {
+        var configuration = (await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync()).First();
+
+        string libraryBasePath = "/_content/Kentico.Xperience.Aira";
+
+        var manifest = new
+        {
+            name = "Aira",
+            short_name = "Aira",
+            start_url = $".{configuration.AiraConfigurationItemAiraPathBase}",
+            display = "standalone",
+            background_color = "#ffffff",
+            theme_color = "#ffffff",
+            scope = "./",
+            icons = new[]
+            {
+                new
+                {
+                    src = $"{libraryBasePath}/img/favicon/android-chrome-192x192.png",
+                    sizes = "192x192",
+                    type = "image/png"
+                },
+                new
+                {
+                    src = $"{libraryBasePath}/img/favicon/android-chrome-512x512.png",
+                    sizes = "512x512",
+                    type = "image/png"
+                }
+            }
+        };
+
+        return Json(manifest);
+    }
+
     [HttpGet]
     [AllowAnonymous]
     public Task<IActionResult> Signin()

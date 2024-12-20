@@ -18,3 +18,7 @@
      data-history='@Html.Raw(Json.Serialize(Model.History))'
      data-initial-aira-message='@Model.InitialAiraMessage'>
 </div>
+
+<script>
+    navigator.serviceWorker.register('/_content/Kentico.Xperience.Aira/sw.js')
+</script>

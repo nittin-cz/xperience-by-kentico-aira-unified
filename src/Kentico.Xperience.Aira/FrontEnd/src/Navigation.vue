@@ -63,15 +63,10 @@ export default {
         }
     },
     mounted() {
-        document.onreadystatechange = () => {
-            if (document.readyState === "complete") {
-                this.main();
-            }
-        }
+        this.main();
     },
     methods: {
         main() {
-
         }
     }
 }

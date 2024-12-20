@@ -25,7 +25,7 @@ if (assetsElement) {
     const pathsModel = JSON.parse(assetsElement.dataset.pathsModel || "{}");
     const baseUrl = assetsElement.dataset.baseUrl || "";
     const navBarModel = JSON.parse(assetsElement.dataset.navBarModel || "{}");
-
+    
     createApp(AssetsComponent, {
         pathsModel,
         baseUrl,

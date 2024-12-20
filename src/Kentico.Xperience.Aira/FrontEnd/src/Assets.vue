@@ -5,7 +5,7 @@
         </div>
 
         <div class="c-app_header">
-            <NavBarComponent :airaPathBase="pathsModel.pathsBase" :navBarModel="navBarModel" :baseUrl="baseUrl" />
+            <NavBarComponent :airaPathBase="pathsModel.pathBase" :navBarModel="navBarModel" :baseUrl="baseUrl" />
         </div>
 
         <template v-if="phase == 'uploading'">

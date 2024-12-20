@@ -1,7 +1,6 @@
 ﻿using CMS.DataEngine;
 
 using Kentico.Xperience.Aira.Admin.InfoModels;
-using Kentico.Xperience.Aira.Chat.Models;
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
@@ -76,6 +75,13 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
                 controller => controller.Signin(),
                 (controller, request) => controller.SignIn(request)
             )
+            //),
+            //CreateAiraEndpoint(configuration,
+            //    "manifest.json",
+            //    controllerShortName,
+            //    nameof(AiraCompanionAppController.GetPwaManifest),
+            //    controller => controller.GetPwaManifest()
+            //)
         ];
     }
     private Endpoint CreateAiraEndpoint<T>(AiraConfigurationItemInfo configurationInfo,
