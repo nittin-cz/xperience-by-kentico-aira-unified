@@ -6,8 +6,6 @@ using Kentico.Xperience.Aira.Admin.InfoModels;
 using Kentico.Xperience.Aira.Chat.Models;
 using Htmx;
 
-using Kentico.Membership;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Registration;
+using Kentico.Xperience.Aira.Membership;
+using Kentico.Xperience.Aira.Services;
 
 namespace Kentico.Xperience.Aira;
 
@@ -47,9 +47,14 @@ public sealed class AiraCompanionAppController(
             NavBarViewModel = airaUIService.GetNavBarViewModel("chat"),
             History = assets.Select(x => new AiraChatMessage
             {
-                Url = x
-            }).ToList()
+                Url = x,
+                Role = "user"
+            }).ToList(),
         };
+
+        chatModel.InitialAiraMessage = chatModel.History.Count == 0
+            ? "This is initial Aira message"
+            : "What can I help you with ?";
 
         return View("~/Chat/Chat.cshtml", chatModel);
     }
@@ -59,7 +64,7 @@ public sealed class AiraCompanionAppController(
     {
         await airaAssetService.HandleFileUpload(request.Files, 53);
 
-        return Ok(new AiraChatMessageModel { Role = "ai", Text = "Ok" });
+        return Ok(new AiraChatMessage { Role = "ai", Message = "Ok" });
     }
 
     [HttpGet]

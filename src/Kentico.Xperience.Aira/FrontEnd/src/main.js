@@ -8,11 +8,13 @@ if (chatElement) {
     const baseUrl = chatElement.dataset.baseUrl || "";
     const navBarModel = JSON.parse(chatElement.dataset.navBarModel || "{}");
     const history = JSON.parse(chatElement.dataset.history || {});
+    const initialAiraMessage = chatElement.dataset.initialAiraMessage;
 
     createApp(ChatComponent, {
         pathsModel,
         baseUrl,
         navBarModel,
-        history
+        history,
+        initialAiraMessage
     }).mount("#chat-app");
 }
