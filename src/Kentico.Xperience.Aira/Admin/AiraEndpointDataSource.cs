@@ -58,6 +58,11 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
                 nameof(AiraCompanionAppController.PostChatMessage),
                 (controller, request) => controller.PostChatMessage(request)
             ),
+            CreateAiraIFormCollectionEndpoint(configuration,
+                "assets/upload",
+                controllerShortName,
+                nameof(AiraCompanionAppController.PostImages),
+                (controller, request) => controller.PostImages(request)),
             CreateAiraEndpoint(configuration,
                 "assets",
                 controllerShortName,

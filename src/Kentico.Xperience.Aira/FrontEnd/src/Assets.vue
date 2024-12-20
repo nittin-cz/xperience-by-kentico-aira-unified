@@ -21,14 +21,14 @@
                     <svg viewBox="0 0 78.400003 58.227815"
                          xmlns="http://www.w3.org/2000/svg" class="c-checkmark">
                         <polyline class="path"
-                                  fill="none"
-                                  stroke-width="8"
-                                  stroke-linecap="round"
-                                  stroke-miterlimit="10"
-                                  stroke-dasharray="100"
-                                  stroke-dashoffset="-100"
-                                  points="74.4,4 25.7,52.6 4,31.5"
-                                  id="polyline1" />
+                                fill="none"
+                                stroke-width="8"
+                                stroke-linecap="round"
+                                stroke-miterlimit="10"
+                                stroke-dasharray="100"
+                                stroke-dashoffset="-100"
+                                points="74.4,4 25.7,52.6 4,31.5"
+                                id="polyline1" />
                     </svg>
                 </div>
                 <div>
@@ -96,14 +96,6 @@
                                     </button>
                                 </div>
                             </div>
-
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" id="meta-tagging-checkbox" name="meta-tagging-checkbox" type="checkbox" v-model="useMetaTagging" />
-                            </div>
-
-                            <div class="mt-3">
-                                <p class="c-note">AIRA will automatically assign meta tags for all of your pictures</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -136,19 +128,11 @@
                 files: [],
                 phase: 'empty', // 'uploading', 'selection', 'empty'
                 formIsValid: true,
-                currentStreamingIndex: -1,
                 uploading: false,
-                useMetaTagging: false,
                 filesPromiseResolve: null,
                 filesPromise: null,
 
                 // old state
-                uploadInstance: {},
-                dbg: {},
-                title: "",
-                productDetailCta: "",
-                languageCode: 'EN',
-                navigation: [],
                 isLoaded: true
             }
         },
@@ -200,196 +184,36 @@
                 this.validateState();
             },
             fireUpload() {
-                const uploadCreateBody = {
-                    files: []
-                };
-                this.files.forEach((f, idx) => {
-                    uploadCreateBody.files.push({ fileId: null, fileName: f.name, index: idx });
-                });
-                uploadCreateBody.useMetaTagging = this.useMetaTagging;
+                const formData = new FormData();
 
-                fetch(`@baseUrl/aira/upload`, {
-                    method: 'POST',
-                    body: JSON.stringify(uploadCreateBody),
-                    mode: "same-origin",
-                    credentials: "same-origin",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                })
-                    .then(async (r) => {
-                        this.uploadInstance = await r.json();
-                        this.phase = 'uploading';
-
-                        setTimeout(() => {
-                            var modal = document.querySelector('#loading');
-
-                            if (modal) {
-                                modal.classList.remove('is-hidden');
-                            }
-                            setTimeout(function () {
-                                modal.parentNode.removeChild(modal);
-                                setTimeout(() => {
-                                    if (document.querySelector(".c-checkmark")) {
-                                        document.querySelector(".c-checkmark").classList.add("do-animation");
-                                    }
-                                })
-                            }, 500);
-                        }, 1000);
-
-                        const ui = this.uploadInstance;
-                        const ids = [];
-                        const data = new FormData();
-                        this.files.forEach((f, idx) => {
-                            data.append('files', f, f.name);
-                            ids.push(ui.files[idx].fileId);
-                        });
-                        data.append("ids", ids);
-
-                        const uploadId = ui.uploadId;
-                        const route = `./fireUpload/${uploadId}`;
-                        fetch(route, {
-                            method: 'POST',
-                            // mode: "same-origin",
-                            // credentials: "same-origin",
-                            body: data,
-                        }).then(async (response) => {
-                            const reader = response.body?.getReader();
-                            while (!!reader) {
-                                const { done, value } = await reader.read();
-                                if (done) break;
-                                let dec = new TextDecoder().decode(value);
-
-                                const decCleared = dec.replace(/^[\[\],]*/gi, '').replace(/[\[\],]*$/gi, '');
-                                let current = '';
-                                let level = 0;
-                                for (let letter of decCleared) {
-                                    if (letter == '{') {
-                                        level = level + 1;
-                                    }
-
-                                    if (level > 0) {
-                                        current += letter;
-                                    }
-
-                                    if (letter == '}') {
-                                        level = level - 1;
-                                        if (level == 0) {
-                                            const p = JSON.parse(current);
-                                            const file = this.uploadInstance.files.find(f => f.fileId === p.fileId);
-                                            if (file) {
-                                                file.progress = p.progress;
-                                                this.currentStreamingIndex = this.uploadInstance.files.indexOf(file);
-                                                this.uploading = this.uploadInstance.files.reduce((acc, f) => acc || f.progress < 100, false);
-                                            }
-                                            current = '';
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    });
-            },
-            removeFile(file) {
-                console.log(`removeFile`, file);
-                const uploadId = this.uploadInstance?.uploadId;
-                fetch(`./upload/${uploadId}/deleteFile/${file.fileId}`, {
-                    method: 'DELETE',
-                    body: JSON.stringify({ files: [{ fileId: null, fileName: null }] }),
-                    mode: "same-origin",
-                    credentials: "same-origin",
-                    headers: {
-                        "Content-Type": "application/json",
-                        // 'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                })
-                    .then(async (r) => {
-                        this.uploadInstance.files.splice(this.uploadInstance.files.indexOf(file), 1);
-                        this.dbg = JSON.stringify(this.uploadInstance, 2, 2);
-                    })
-            },
-            addFile() {
-                const uploadId = this.uploadInstance?.uploadId;
-                const route = !uploadId ? `./upload/addfile` : `./upload/${uploadId}/addfile`;
-
-                fetch(route, {
-                    method: 'POST',
-                    body: JSON.stringify({ files: [{ fileId: null, fileName: null }] }),
-                    mode: "same-origin",
-                    credentials: "same-origin",
-                    headers: {
-                        "Content-Type": "application/json",
-                        // 'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                })
-                    .then(async (r) => {
-                        const uploadInstance = await r.json();
-                        this.uploadInstance = uploadInstance;
-                        this.dbg = JSON.stringify(uploadInstance, 2, 2);
-                    });
-            },
-            startUpload() {
-                const ui = this.uploadInstance;
-                const data = new FormData();
-
-                const ids = [];
-                ui.files.forEach((f, idx) => {
-                    if (f.reftoinput) {
-                        const offset = f?.offset;
-                        if (offset) {
-                            data.append('files', f.reftoinput.slice(offset), f.reftoinput.name);
-                        } else {
-                            data.append('files', f.reftoinput, f.reftoinput.name);
-                        }
-                        ids.push(f.fileId);
-                    }
+                this.files.forEach((f) => {
+                    formData.append('files', f);
                 });
 
-                data.append("ids", ids);
-
-                const uploadId = this.uploadInstance?.uploadId;
-                const route = `./upload/${uploadId}/fire`;
-                fetch(route, {
+                fetch(`${this.baseUrl}${this.pathsModel.pathBase}/assets/upload`, {
                     method: 'POST',
-                    // mode: "same-origin",
-                    // credentials: "same-origin",
-                    body: data,
-                }).then(async (response) => {
-                    const reader = response.body?.getReader();
-                    while (!!reader) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        let dec = new TextDecoder().decode(value);
+                    body: formData,
+                    mode: "same-origin",
+                    credentials: "same-origin",
+                })
+                .then(async (r) => {
+                    this.phase = 'uploading';
 
-                        const decCleared = dec.replace(/^[\[\],]*/gi, '').replace(/[\[\],]*$/gi, '');
-                        console.log(decCleared);
-                        let current = '';
-                        let level = 0;
-                        for (let letter of decCleared) {
-                            if (letter == '{') {
-                                level = level + 1;
-                            }
+                    setTimeout(() => {
+                        var modal = document.querySelector('#loading');
 
-                            if (level > 0) {
-                                current += letter;
-                            }
-
-                            if (letter == '}') {
-                                level = level - 1;
-                                if (level == 0) {
-                                    const p = JSON.parse(current);
-                                    const file = this.uploadInstance.files.find(f => f.fileId === p.fileId);
-                                    if (file) {
-                                        file.progress = p.progress;
-                                    }
-
-
-                                    current = '';
-                                }
-                            }
+                        if (modal) {
+                            modal.classList.remove('is-hidden');
                         }
-
-                    }
+                        setTimeout(function () {
+                            modal.parentNode.removeChild(modal);
+                            setTimeout(() => {
+                                if (document.querySelector(".c-checkmark")) {
+                                    document.querySelector(".c-checkmark").classList.add("do-animation");
+                                }
+                            })
+                        }, 500);
+                    }, 1000);
                 });
             }
         }

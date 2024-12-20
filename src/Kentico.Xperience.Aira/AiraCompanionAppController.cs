@@ -68,19 +68,32 @@ public sealed class AiraCompanionAppController(
         return Ok(new AiraChatMessage { Role = "ai", Message = "Ok" });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> PostImages(IFormCollection request)
+    {
+        await airaAssetService.HandleFileUpload(request.Files, 53);
+        return Ok();
+    }
+
     [HttpGet]
     public async Task<IActionResult> Assets()
     {
-        var member = await userManager.GetUserAsync(User);
+        //var member = await userManager.GetUserAsync(User);
 
-        if (member is null)
-        {
-            return Redirect($"{Request.PathBase}/aira/signin");
-        }
+        //if (member is null)
+        //{
+        //    return Redirect($"{Request.PathBase}/aira/signin");
+        //}
+
+        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
 
         var model = new AssetsViewModel
         {
-            NavBarViewModel = airaUIService.GetNavBarViewModel("smart-upload")
+            NavBarViewModel = airaUIService.GetNavBarViewModel("smart-upload"),
+            PathsModel = new AiraPathsModel
+            {
+                PathBase = configuration.First().AiraConfigurationItemAiraPathBase
+            }
         };
 
         return View("~/AssetUploader/Assets.cshtml", model);
