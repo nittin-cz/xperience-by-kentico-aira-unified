@@ -46,13 +46,13 @@ namespace Kentico.Xperience.Aira.Services
                 {
                     Title = airaConfiguration.AiraConfigurationItemAiraChatTitle,
                     ImagePath = chatImageUrl,
-                    Url = "/Chat"
+                    Url = airaConfiguration.AiraConfigurationItemAiraRelativeChatUrl
                 },
                 SmartUploadItem = new MenuItemModel
                 {
-                    Title = "Smart Upload",
+                    Title = airaConfiguration.AiraConfigurationItemAiraSmartUploadTitle,
                     ImagePath = smartUploadImageUrl,
-                    Url = "/SmartUpload"
+                    Url = airaConfiguration.AiraConfigurationItemAiraRelativeSmartUploadUrl
                 }
             };
         }
