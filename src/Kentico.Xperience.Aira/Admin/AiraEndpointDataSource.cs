@@ -58,6 +58,12 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
                 nameof(AiraCompanionAppController.PostChatMessage),
                 (controller, request) => controller.PostChatMessage(request)
             ),
+            CreateAiraEndpoint(configuration,
+                "assets",
+                controllerShortName,
+                nameof(AiraCompanionAppController.Assets),
+                controller => controller.Assets()
+            ),
             CreateAiraEndpoint<SignInViewModel>(configuration,
                 "signin",
                 controllerShortName,

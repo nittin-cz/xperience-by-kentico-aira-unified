@@ -16,6 +16,7 @@ using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Registration;
 using Kentico.Xperience.Aira.Membership;
 using Kentico.Xperience.Aira.Services;
+using Kentico.Xperience.Aira.AssetUploader.Models;
 
 namespace Kentico.Xperience.Aira;
 
@@ -65,6 +66,24 @@ public sealed class AiraCompanionAppController(
         await airaAssetService.HandleFileUpload(request.Files, 53);
 
         return Ok(new AiraChatMessage { Role = "ai", Message = "Ok" });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Assets()
+    {
+        var member = await userManager.GetUserAsync(User);
+
+        if (member is null)
+        {
+            return Redirect($"{Request.PathBase}/aira/signin");
+        }
+
+        var model = new AssetsViewModel
+        {
+            NavBarViewModel = airaUIService.GetNavBarViewModel("smart-upload")
+        };
+
+        return View("~/AssetUploader/Assets.cshtml", model);
     }
 
     [HttpGet]
