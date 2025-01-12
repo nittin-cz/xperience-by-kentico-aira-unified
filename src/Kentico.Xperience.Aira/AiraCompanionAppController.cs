@@ -37,12 +37,11 @@ public sealed class AiraCompanionAppController(
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
-        string airaPathBase = configuration.First().AiraConfigurationItemAiraPathBase;
+        string airaPathBase = await GetAiraPathBase();
 
         var user = await userManager.GetUserAsync(User);
 
-        string signinRedirectUrl = $"{Request.PathBase}/{airaPathBase}/{AiraCompanionAppConstants.SigninRelativeUrl}";
+        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
@@ -72,12 +71,11 @@ public sealed class AiraCompanionAppController(
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request)
     {
-        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
-        string airaPathBase = configuration.First().AiraConfigurationItemAiraPathBase;
+        string airaPathBase = await GetAiraPathBase();
 
         var user = await userManager.GetUserAsync(User);
 
-        string signinRedirectUrl = $"{Request.PathBase}/{airaPathBase}/{AiraCompanionAppConstants.SigninRelativeUrl}";
+        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
@@ -97,12 +95,11 @@ public sealed class AiraCompanionAppController(
     [HttpPost]
     public async Task<IActionResult> PostImages(IFormCollection request)
     {
-        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
-        string airaPathBase = configuration.First().AiraConfigurationItemAiraPathBase;
+        string airaPathBase = await GetAiraPathBase();
 
         var user = await userManager.GetUserAsync(User);
 
-        string signinRedirectUrl = $"{Request.PathBase}/{airaPathBase}/{AiraCompanionAppConstants.SigninRelativeUrl}";
+        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
@@ -123,21 +120,20 @@ public sealed class AiraCompanionAppController(
     [HttpGet]
     public async Task<IActionResult> Assets()
     {
-        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
-        string airaPathBase = configuration.First().AiraConfigurationItemAiraPathBase;
+        string airaPathBase = await GetAiraPathBase();
 
         var user = await userManager.GetUserAsync(User);
 
-        string signinRedirectUrl = $"{Request.PathBase}/{airaPathBase}/{AiraCompanionAppConstants.SigninRelativeUrl}";
+        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
             return Redirect(signinRedirectUrl);
         }
 
-        bool hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.CREATE, user.UserID);
+        bool hasAiraCreatePermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.CREATE, user.UserID);
 
-        if (!hasAiraViewPermission)
+        if (!hasAiraCreatePermission)
         {
             return Redirect(signinRedirectUrl);
         }
@@ -186,6 +182,22 @@ public sealed class AiraCompanionAppController(
         };
 
         return Json(manifest);
+    }
+
+    private async Task<string> GetAiraPathBase()
+    {
+        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
+
+        var configurationItem = configuration.SingleOrDefault() ?? throw new InvalidOperationException("Aira is not configured");
+
+        return configurationItem.AiraConfigurationItemAiraPathBase;
+    }
+
+    private string GetRedirectUrl(string relativeUrl, string airaPathBase)
+    {
+        string baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+        return $"{baseUrl}{airaPathBase}/{relativeUrl}";
     }
 
     [HttpGet]
