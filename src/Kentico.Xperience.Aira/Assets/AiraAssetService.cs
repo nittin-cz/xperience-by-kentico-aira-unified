@@ -153,8 +153,7 @@ internal class AiraAssetService : IAiraAssetService
         {
             var createContentItemParameters = new CreateContentItemParameters(contentType.ClassName, null, file.FileName, languageName, "KenticoDefault");
 
-            int contentItemId = await CreateContentAssetItem(createContentItemParameters, file, userId, contentItemAssetColumnCodeName);
-            //CreateContentAssetItemChatReference(userId, contentType.ClassID, contentItemAssetColumnCodeName, contentItemId);
+            await CreateContentAssetItem(createContentItemParameters, file, userId, contentItemAssetColumnCodeName);
         }
     }
 
@@ -190,11 +189,6 @@ internal class AiraAssetService : IAiraAssetService
         var fileSource = new ContentItemAssetStreamSource((CancellationToken cancellationToken) => Task.FromResult<Stream>(fileStream));
         var assetMetadataWithSource = new ContentItemAssetMetadataWithSource(fileSource, assetMetadata);
 
-        //assetMetadataWithSource.SetOptimizationParameters(new ImageOptimizationParameters
-        //{
-        //    Quality = 100
-        //});
-
         var itemData = new ContentItemData(new Dictionary<string, object>{
             { contentItemAssetColumnCodeName, assetMetadataWithSource }
         });
@@ -205,19 +199,5 @@ internal class AiraAssetService : IAiraAssetService
         tempDirectory.Delete(true);
 
         return contentItemId;
-    }
-
-    private void CreateContentAssetItemChatReference(int userId, int classId, string fieldName, int contentItemId)
-    {
-        var referenceItem = new AiraChatContentItemAssetReferenceInfo
-        {
-            AiraChatContentItemAssetReferenceUserID = userId,
-            AiraChatContentItemAssetReferenceContentTypeDataClassInfoID = classId,
-            AiraChatContentItemAssetReferenceContentTypeAssetFieldName = fieldName,
-            AiraChatContentItemAssetReferenceUploadTime = DateTime.Now,
-            AiraChatContentItemAssetReferenceContentItemID = contentItemId
-        };
-
-        airaChatContentItemAssetReferenceProvider.Set(referenceItem);
     }
 }
