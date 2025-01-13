@@ -26,20 +26,33 @@ namespace Kentico.Xperience.Aira;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public sealed class AiraCompanionAppController(
-    AdminSignInManager signInManager,
-    AdminUserManager userManager,
+public sealed class AiraCompanionAppController : Controller
+{
+    private readonly AdminSignInManager signInManager;
+    private readonly AdminUserManager adminUserManager;
+    private readonly IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider;
+    private readonly IAiraAssetService airaAssetService;
+    private readonly AiraUIService airaUIService;
+
+    public AiraCompanionAppController(AdminSignInManager signInManager,
+    AdminUserManager adminUserManager,
     IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider,
     IAiraAssetService airaAssetService,
-    AiraUIService airaUIService
-) : Controller
-{
+    AiraUIService airaUIService)
+    {
+        this.adminUserManager = adminUserManager;
+        this.signInManager = signInManager;
+        this.airaConfigurationInfoProvider = airaConfigurationInfoProvider;
+        this.airaAssetService = airaAssetService;
+        this.airaUIService = airaUIService;
+    }
+
     [HttpGet]
     public async Task<IActionResult> Index()
     {
         string airaPathBase = await GetAiraPathBase();
 
-        var user = await userManager.GetUserAsync(User);
+        var user = await adminUserManager.GetUserAsync(User);
 
         string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
@@ -74,7 +87,7 @@ public sealed class AiraCompanionAppController(
     {
         string airaPathBase = await GetAiraPathBase();
 
-        var user = await userManager.GetUserAsync(User);
+        var user = await adminUserManager.GetUserAsync(User);
 
         string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
@@ -98,7 +111,7 @@ public sealed class AiraCompanionAppController(
     {
         string airaPathBase = await GetAiraPathBase();
 
-        var user = await userManager.GetUserAsync(User);
+        var user = await adminUserManager.GetUserAsync(User);
 
         string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
@@ -123,7 +136,7 @@ public sealed class AiraCompanionAppController(
     {
         string airaPathBase = await GetAiraPathBase();
 
-        var user = await userManager.GetUserAsync(User);
+        var user = await adminUserManager.GetUserAsync(User);
 
         string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
@@ -267,14 +280,14 @@ public sealed class AiraCompanionAppController(
 
         async Task<AdminApplicationUser?> AdminApplicationUser()
         {
-            var user = await userManager.FindByNameAsync(model.UserNameOrEmail);
+            var user = await adminUserManager.FindByNameAsync(model.UserNameOrEmail);
 
             if (user is not null)
             {
                 return user;
             }
 
-            return await userManager.FindByEmailAsync(model.UserNameOrEmail);
+            return await adminUserManager.FindByEmailAsync(model.UserNameOrEmail);
         }
     }
 }
