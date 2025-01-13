@@ -24,8 +24,6 @@ internal class AiraAssetService : IAiraAssetService
 
     public AiraAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
         IInfoProvider<SettingsKeyInfo> settingsKeyProvider,
-        IContentQueryExecutor contentQueryExecutor,
-        IContentItemAssetRetriever contentItemAssetRetriever,
         IInfoProvider<RoleInfo> roleProvider
         )
     {

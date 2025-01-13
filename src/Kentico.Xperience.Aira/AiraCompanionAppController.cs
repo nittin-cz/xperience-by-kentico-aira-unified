@@ -1,6 +1,4 @@
-﻿using CMS.DataEngine;
-
-using HotChocolate.Authorization;
+﻿using HotChocolate.Authorization;
 
 using Htmx;
 
@@ -8,7 +6,6 @@ using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.Authentication.Internal;
 
-using Kentico.Xperience.Aira.Admin.InfoModels;
 using Kentico.Xperience.Aira.Chat.Models;
 using Kentico.Xperience.Aira.Authentication;
 using Kentico.Xperience.Aira.Assets;
@@ -21,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Kentico.Xperience.Aira.Admin;
 using CMS.Membership;
+using Kentico.Xperience.Aira.NavBar;
 
 namespace Kentico.Xperience.Aira;
 
@@ -30,19 +28,19 @@ public sealed class AiraCompanionAppController : Controller
 {
     private readonly AdminSignInManager signInManager;
     private readonly AdminUserManager adminUserManager;
-    private readonly IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider;
+    private readonly IAiraConfigurationService airaConfigurationService;
     private readonly IAiraAssetService airaAssetService;
-    private readonly AiraUIService airaUIService;
+    private readonly INavBarService airaUIService;
 
     public AiraCompanionAppController(AdminSignInManager signInManager,
-    AdminUserManager adminUserManager,
-    IInfoProvider<AiraConfigurationItemInfo> airaConfigurationInfoProvider,
-    IAiraAssetService airaAssetService,
-    AiraUIService airaUIService)
+        AdminUserManager adminUserManager,
+        IAiraConfigurationService airaConfigurationService,
+        IAiraAssetService airaAssetService,
+        INavBarService airaUIService)
     {
         this.adminUserManager = adminUserManager;
+        this.airaConfigurationService = airaConfigurationService;
         this.signInManager = signInManager;
-        this.airaConfigurationInfoProvider = airaConfigurationInfoProvider;
         this.airaAssetService = airaAssetService;
         this.airaUIService = airaUIService;
     }
@@ -72,7 +70,7 @@ public sealed class AiraCompanionAppController : Controller
         {
             PathBase = airaPathBase,
             AIIconImagePath = $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PictureHatImgPath}",
-            NavBarViewModel = airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.ChatRelativeUrl)
+            NavBarViewModel = await airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.ChatRelativeUrl)
         };
 
         chatModel.InitialAiraMessage = chatModel.History.Count == 0
@@ -154,7 +152,7 @@ public sealed class AiraCompanionAppController : Controller
 
         var model = new AssetsViewModel
         {
-            NavBarViewModel = airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.SmartUploadRelativeUrl),
+            NavBarViewModel = await airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.SmartUploadRelativeUrl),
             PathBase = airaPathBase
         };
 
@@ -165,7 +163,7 @@ public sealed class AiraCompanionAppController : Controller
     [Produces("application/json")]
     public async Task<IActionResult> GetPwaManifest()
     {
-        var configuration = (await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync()).First();
+        var configuration = await airaConfigurationService.GetAiraConfiguration();
 
         string libraryBasePath = '/' + AiraCompanionAppConstants.RCLUrlPrefix;
 
@@ -200,11 +198,9 @@ public sealed class AiraCompanionAppController : Controller
 
     private async Task<string> GetAiraPathBase()
     {
-        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
+        var configuration = await airaConfigurationService.GetAiraConfiguration();
 
-        var configurationItem = configuration.SingleOrDefault() ?? throw new InvalidOperationException("Aira is not configured");
-
-        return configurationItem.AiraConfigurationItemAiraPathBase;
+        return configuration.AiraConfigurationItemAiraPathBase;
     }
 
     private string GetRedirectUrl(string relativeUrl, string airaPathBase)
@@ -266,8 +262,8 @@ public sealed class AiraCompanionAppController : Controller
             return PartialView("~/Authentication/_SignIn.cshtml", model);
         }
 
-        var configuration = await airaConfigurationInfoProvider.Get().GetEnumerableTypedResultAsync();
-        string airaPathBase = configuration.First().AiraConfigurationItemAiraPathBase;
+        var configuration = await airaConfigurationService.GetAiraConfiguration();
+        string airaPathBase = configuration.AiraConfigurationItemAiraPathBase;
 
         string baseUrl = $"{Request.Scheme}://{Request.Host}";
         string redirectUrl = $"{baseUrl}{airaPathBase}/{AiraCompanionAppConstants.ChatRelativeUrl}";

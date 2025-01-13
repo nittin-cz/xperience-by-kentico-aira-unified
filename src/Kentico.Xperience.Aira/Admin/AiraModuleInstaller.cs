@@ -20,6 +20,7 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
         var resourceInfo = InstallModule();
         InstallModuleClasses(resourceInfo);
     }
+
     private ResourceInfo InstallModule()
     {
         var resourceInfo = resourceInfoProvider.Get(AiraCompanionAppConstants.ResourceName)
