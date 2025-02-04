@@ -1,15 +1,18 @@
-﻿using HotChocolate.Authorization;
+﻿using CMS.Membership;
+
+using HotChocolate.Authorization;
 
 using Htmx;
 
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.Authentication.Internal;
-
-using Kentico.Xperience.Aira.Chat.Models;
-using Kentico.Xperience.Aira.Authentication;
+using Kentico.Xperience.Aira.Admin;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.AssetUploader.Models;
+using Kentico.Xperience.Aira.Authentication;
+using Kentico.Xperience.Aira.Chat.Models;
+using Kentico.Xperience.Aira.NavBar;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +25,9 @@ using Kentico.Xperience.Aira.NavBar;
 
 namespace Kentico.Xperience.Aira;
 
+/// <summary>
+/// The main controller exposing the PWA.
+/// </summary>
 [ApiController]
 [Route("[controller]/[action]")]
 public sealed class AiraCompanionAppController : Controller
@@ -45,21 +51,24 @@ public sealed class AiraCompanionAppController : Controller
         this.airaUIService = airaUIService;
     }
 
+    /// <summary>
+    /// Endpoint exposing access to the Chat page.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        string airaPathBase = await GetAiraPathBase();
+        var airaPathBase = await GetAiraPathBase();
 
         var user = await adminUserManager.GetUserAsync(User);
 
-        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
+        var signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
             return Redirect(signinRedirectUrl);
         }
 
-        bool hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.VIEW, user.UserID);
+        var hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.VIEW, user.UserID);
 
         if (!hasAiraViewPermission)
         {
@@ -87,21 +96,26 @@ public sealed class AiraCompanionAppController : Controller
         return View("~/Chat/Chat.cshtml", chatModel);
     }
 
+    /// <summary>
+    /// Endpoint allowing chat communication via the chat interface.
+    /// </summary>
+#pragma warning disable IDE0060 // Kept for development. We do not yet have AIRA AI api which we could give the messages to.
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request)
     {
-        string airaPathBase = await GetAiraPathBase();
+#pragma warning restore IDE0060 // 
+        var airaPathBase = await GetAiraPathBase();
 
         var user = await adminUserManager.GetUserAsync(User);
 
-        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
+        var signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
             return Redirect(signinRedirectUrl);
         }
 
-        bool hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.VIEW, user.UserID);
+        var hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.VIEW, user.UserID);
 
         if (!hasAiraViewPermission)
         {
@@ -111,21 +125,24 @@ public sealed class AiraCompanionAppController : Controller
         return Ok(new AiraChatMessage { Role = AiraCompanionAppConstants.AiraChatRoleName, Message = "Ok" });
     }
 
+    /// <summary>
+    /// Endpoint allowing upload of the files via smart upload.
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> PostImages(IFormCollection request)
     {
-        string airaPathBase = await GetAiraPathBase();
+        var airaPathBase = await GetAiraPathBase();
 
         var user = await adminUserManager.GetUserAsync(User);
 
-        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
+        var signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
             return Redirect(signinRedirectUrl);
         }
 
-        bool hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.CREATE, user.UserID);
+        var hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.CREATE, user.UserID);
 
         if (!hasAiraViewPermission)
         {
@@ -136,21 +153,24 @@ public sealed class AiraCompanionAppController : Controller
         return Ok();
     }
 
+    /// <summary>
+    /// Endpoint allowing accessing the smart upload page.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Assets()
     {
-        string airaPathBase = await GetAiraPathBase();
+        var airaPathBase = await GetAiraPathBase();
 
         var user = await adminUserManager.GetUserAsync(User);
 
-        string signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
+        var signinRedirectUrl = GetRedirectUrl(AiraCompanionAppConstants.SigninRelativeUrl, airaPathBase);
 
         if (user is null)
         {
             return Redirect(signinRedirectUrl);
         }
 
-        bool hasAiraCreatePermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.CREATE, user.UserID);
+        var hasAiraCreatePermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(SystemPermissions.CREATE, user.UserID);
 
         if (!hasAiraCreatePermission)
         {
@@ -166,13 +186,17 @@ public sealed class AiraCompanionAppController : Controller
         return View("~/AssetUploader/Assets.cshtml", model);
     }
 
+    /// <summary>
+    /// Endpoint exposing the manifest file for the PWA.
+    /// </summary>
+    /// <returns></returns>
     [HttpGet($"/{AiraCompanionAppConstants.RCLUrlPrefix}/manifest.json")]
     [Produces("application/json")]
     public async Task<IActionResult> GetPwaManifest()
     {
         var configuration = await airaConfigurationService.GetAiraConfiguration();
 
-        string libraryBasePath = '/' + AiraCompanionAppConstants.RCLUrlPrefix;
+        var libraryBasePath = '/' + AiraCompanionAppConstants.RCLUrlPrefix;
 
         var manifest = new
         {
@@ -212,16 +236,22 @@ public sealed class AiraCompanionAppController : Controller
 
     private string GetRedirectUrl(string relativeUrl, string airaPathBase)
     {
-        string baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
         return $"{baseUrl}{airaPathBase}/{relativeUrl}";
     }
 
+    /// <summary>
+    /// Endpoint retrieving the signin page.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public Task<IActionResult> Signin()
         => Task.FromResult((IActionResult)View("~/Authentication/SignIn.cshtml"));
 
+    /// <summary>
+    /// Endpoint for signin.
+    /// </summary>
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
@@ -270,10 +300,10 @@ public sealed class AiraCompanionAppController : Controller
         }
 
         var configuration = await airaConfigurationService.GetAiraConfiguration();
-        string airaPathBase = configuration.AiraConfigurationItemAiraPathBase;
+        var airaPathBase = configuration.AiraConfigurationItemAiraPathBase;
 
-        string baseUrl = $"{Request.Scheme}://{Request.Host}";
-        string redirectUrl = $"{baseUrl}{airaPathBase}/{AiraCompanionAppConstants.ChatRelativeUrl}";
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var redirectUrl = $"{baseUrl}{airaPathBase}/{AiraCompanionAppConstants.ChatRelativeUrl}";
 
         Response.Htmx(h => h.Redirect(redirectUrl));
 

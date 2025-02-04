@@ -92,12 +92,12 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
 
         foreach (var property in properties)
         {
-            if (property.Name == nameof(AiraConfigurationItemInfo.AiraConfigurationItemId))
+            if (string.Equals(property.Name, nameof(AiraConfigurationItemInfo.AiraConfigurationItemId)))
             {
                 continue; // Exclude AiraConfigurationItemId from the loop
             }
 
-            if (property.GetCustomAttributes(typeof(DatabaseFieldAttribute), true).FirstOrDefault() is DatabaseFieldAttribute databaseFieldAttribute)
+            if (property.GetCustomAttributes(typeof(DatabaseFieldAttribute), true).FirstOrDefault() is DatabaseFieldAttribute)
             {
                 var formItem = new FormFieldInfo()
                 {

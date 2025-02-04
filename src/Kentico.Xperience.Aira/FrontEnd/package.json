@@ -1,7 +1,7 @@
 {
-  "name": "razor-class-library",
+  "name": "kentico-xperience-aira",
   "version": "1.0.0",
-  "description": "A project for Razor Class Library with Vue.js",
+  "description": "Xperiece by Kentico Aira Companion App project.",
   "main": "webpack.config.js",
   "scripts": {
     "start": "npm run watch",

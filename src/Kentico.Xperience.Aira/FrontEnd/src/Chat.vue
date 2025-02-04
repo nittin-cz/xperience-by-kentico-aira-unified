@@ -92,7 +92,8 @@ export default {
         aiIconUrl: null,
         baseUrl: null,
         navBarModel: null,
-        history: []
+        history: [],
+        initialAiraMessage: null
     },
     data() {
         return {
