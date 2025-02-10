@@ -79,9 +79,16 @@ public sealed class AiraCompanionAppController : Controller
             NavBarViewModel = await airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.ChatRelativeUrl)
         };
 
-        chatModel.InitialAiraMessage = chatModel.History.Count == 0
-            ? AiraCompanionAppConstants.AiraChatInitialAIMessage
-            : AiraCompanionAppConstants.AiraChatAIWelcomeBackMessage;
+        if (chatModel.History.Count == 0)
+        {
+            chatModel.History.AddRange(
+                AiraCompanionAppConstants.AiraChatInitialAiraMessages.Select(x => new AiraChatMessage
+                {
+                    Message = x,
+                    Role = AiraCompanionAppConstants.AiraChatRoleName
+                })
+            );
+        }
 
         return View("~/Chat/Chat.cshtml", chatModel);
     }

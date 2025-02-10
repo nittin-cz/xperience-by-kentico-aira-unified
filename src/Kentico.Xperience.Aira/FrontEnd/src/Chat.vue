@@ -321,11 +321,6 @@ export default {
                 const viewModel = this.getMessageViewModel(x)
                 this.$refs.chatElementRef.history.push(viewModel);
             }
-
-            this.$refs.chatElementRef.history.push({
-                role: "ai",
-                text: this.initialAiraMessage
-            });
         },
         getMessageViewModel(message) {
             if (message.url !== null)
