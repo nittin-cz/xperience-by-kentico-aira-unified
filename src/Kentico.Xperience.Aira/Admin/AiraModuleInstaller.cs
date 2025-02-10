@@ -63,11 +63,6 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
         }
     }
 
-    /// <summary>
-    /// Ensure that the form is not upserted with any existing form
-    /// </summary>
-    /// <param name="info"></param>
-    /// <param name="form"></param>
     private static void SetFormDefinition(DataClassInfo info, FormInfo form)
     {
         if (info.ClassID > 0)
