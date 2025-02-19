@@ -28,12 +28,12 @@ public class ChatViewModel
     public string PathBase { get; set; } = string.Empty;
 
     /// <summary>
-    /// Initial message displayed by AIRA.
-    /// </summary>
-    public string InitialAiraMessage { get; set; } = string.Empty;
-
-    /// <summary>
-    /// AI Icon image path.
+    /// Relative path to the AI icon displayed in the chat as the avatar of the AI.
     /// </summary>
     public string AIIconImagePath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Relative path of the endpoint responsible for removing used suggested prompt group.
+    /// </summary>
+    public string RemovePromptUrl { get; set; } = string.Empty;
 }

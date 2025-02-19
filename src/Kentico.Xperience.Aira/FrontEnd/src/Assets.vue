@@ -48,7 +48,7 @@
     <div class="c-app_body">
         <div class="container">
             <form>
-                <input ref="fileInput" hidden type="file" accept=".jpg,.jpeg,.png,.bmp" class="d-none" multiple>
+                <input ref="fileInput" hidden type="file" :accept="fileInputAccept" class="d-none" multiple>
             </form>
             <template v-if="phase == 'empty'">
                 <div class="c-empty-page-layout">
@@ -111,19 +111,19 @@
         props: {
             airaBaseUrl: null,
             baseUrl: null,
-            navBarModel: null
+            navBarModel: null,
+            allowedFileExtensionsUrl: null
         },
         data() {
             return {
-                // NG STATE
                 files: [],
                 phase: 'empty', // 'uploading', 'selection', 'empty'
                 formIsValid: true,
                 uploading: false,
                 filesPromiseResolve: null,
                 filesPromise: null,
-
-                // old state
+                fileInputAccept: '',
+                allowedExtensions: [],
                 isLoaded: true
             }
         },
@@ -133,6 +133,7 @@
                     this.main();
                 }
             }
+            this.retrieveAllowedExtensions();
         },
         methods: {
             main() {
@@ -149,6 +150,27 @@
                     }, 500);
                 }, 1000);
             },
+            async retrieveAllowedExtensions() {
+                const response = await fetch(this.allowedFileExtensionsUrl, {
+                    method: 'GET'
+                });
+                if (!response.ok)
+                {
+                    console.error('An error occurred:', error.message);
+                    return;
+                }
+                const extensionsString = await response.text();
+                
+                if (extensionsString)
+                {
+                    this.allowedExtensions = extensionsString.split(';').map(ext => ext.toLowerCase());
+                    this.fileInputAccept = this.allowedExtensions.map(ext => `.${ext}`).join(',');
+                }
+                else
+                {
+                    console.error('Unexpected response format:', extensionsString);
+                }
+            },
             async pickImage(event) {
                 this.phase = 'selection';
                 this.filesPromise = new Promise(resolve => this.filesPromiseResolve = resolve);
@@ -157,9 +179,19 @@
                 this.filesPromise = null;
                 this.filesPromiseResolve = null;
                 Array.from(files).forEach(file => {
-                    this.files.push(file);
+                    if (this.validateFileFormat(file)) {
+                        this.files.push(file);
+                    }
                 });
                 this.validateState();
+            },
+            validateFileFormat(file) {
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (!this.allowedExtensions.includes(fileExtension)) {
+                    console.error(`Invalid file format: .${fileExtension}. Allowed formats are: ${this.allowedExtensions.join(', ')}`);
+                    return false;
+                }
+                return true;
             },
             createObjectURL(file) {
                 return URL.createObjectURL(file);
@@ -174,41 +206,28 @@
                 this.files.splice(index, 1);
                 this.validateState();
             },
-            fireUpload() {
+            async fireUpload() {
+                if (!this.formIsValid) return;
                 const formData = new FormData();
-
-                this.files.forEach((f) => {
-                    formData.append('files', f);
-                });
-
-                fetch(`${this.baseUrl}${this.airaBaseUrl}/${this.navBarModel.smartUploadItem.url}/upload`, {
-                    method: 'POST',
-                    body: formData,
-                    mode: "same-origin",
-                    credentials: "same-origin",
-                })
-                .then(async (r) => {
+                this.files.forEach(f => formData.append('files', f));
+                try {
                     this.phase = 'uploading';
-
-                    setTimeout(() => {
-                        var modal = document.querySelector('#loading');
-
-                        if (modal) {
-                            modal.classList.remove('is-hidden');
-                        }
-                        setTimeout(function () {
-                            modal.parentNode.removeChild(modal);
-                            setTimeout(() => {
-                                if (document.querySelector(".c-checkmark")) {
-                                    document.querySelector(".c-checkmark").classList.add("do-animation");
-                                }
-                            })
-                        }, 500);
-                    }, 1000);
-                });
+                    const response = await fetch(`${this.baseUrl}${this.airaBaseUrl}/${this.navBarModel.smartUploadItem.url}/upload`, {
+                        method: 'POST',
+                        body: formData,
+                        mode: "same-origin",
+                        credentials: "same-origin",
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Upload failed with status: ${response.status}`);
+                    }
+                    this.phase = 'done';
+                } catch (error) {
+                    this.phase = 'selection';
+                    console.error('Upload failed. Please try again.');
+                }
             }
         }
     }
-
 
 </script>
