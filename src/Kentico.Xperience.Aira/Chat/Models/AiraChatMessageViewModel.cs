@@ -3,7 +3,7 @@
 /// <summary>
 /// Model for the Aira chat message.
 /// </summary>
-public class AiraChatMessage
+public class AiraChatMessageViewModel
 {
     /// <summary>
     /// The text message.
@@ -34,4 +34,9 @@ public class AiraChatMessage
     /// Chat message creation time.
     /// </summary>
     public DateTime CreatedWhen { get; set; }
+
+    /// <summary>
+    /// True if the ai service is unavailable.
+    /// </summary>
+    public bool ServiceUnavailable { get; set; } = false;
 }

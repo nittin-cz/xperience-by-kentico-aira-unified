@@ -2,10 +2,12 @@
 using Kentico.Xperience.Aira.Admin;
 using Kentico.Xperience.Aira.Assets;
 using Kentico.Xperience.Aira.Chat;
+using Kentico.Xperience.Aira.Chat.Models;
 using Kentico.Xperience.Aira.Insights;
 using Kentico.Xperience.Aira.NavBar;
 
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -18,11 +20,12 @@ public static class AiraServiceCollectionExtensions
     /// Adds Aira services and custom module to application."/>
     /// </summary>
     /// <param name="services"><see cref="IServiceCollection"/>The application services.</param>
+    /// <param name="configuration">The application <see cref="IConfiguration"/>.</param>
     /// <returns><see cref="IServiceCollection"/>The application services.</returns>
-    public static IServiceCollection AddKenticoAira(this IServiceCollection services)
-        => services.AddKenticoAiraInternal();
+    public static IServiceCollection AddKenticoAira(this IServiceCollection services, IConfiguration configuration)
+        => services.AddKenticoAiraInternal(configuration);
 
-    private static IServiceCollection AddKenticoAiraInternal(this IServiceCollection services)
+    private static IServiceCollection AddKenticoAiraInternal(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllersWithViews();
 
@@ -35,7 +38,8 @@ public static class AiraServiceCollectionExtensions
             .AddScoped<IAiraInsightsService, AiraInsightsService>()
             .AddScoped<IAiraAssetService, AiraAssetService>()
             .AddScoped<IAiraChatService, AiraChatService>()
-            .AddScoped<INavBarService, NavBarService>();
+            .AddScoped<INavBarService, NavBarService>()
+            .Configure<AiraCompanionAppOptions>(configuration.GetSection(nameof(AiraCompanionAppOptions)));
 
         return services;
     }

@@ -2,6 +2,7 @@
 
 using CMS.DataEngine;
 using CMS.FormEngine;
+using CMS.Membership;
 using CMS.Modules;
 
 using Kentico.Xperience.Aira.Admin.InfoModels;
@@ -55,7 +56,15 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
             AiraChatPromptGroupInfo.OBJECT_TYPE,
             classDisplayName: "Aira Chat Prompt Group",
             typeof(AiraChatPromptGroupInfo),
-            nameof(AiraChatPromptGroupInfo.AiraChatPromptGroupId)
+            nameof(AiraChatPromptGroupInfo.AiraChatPromptGroupId),
+            [
+                new FormFieldDependencyModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = UserInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraChatPromptGroupInfo.AiraChatPromptUserId)
+                }
+            ]
         );
 
         InstallAiraClass(
@@ -64,20 +73,59 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
             AiraChatPromptInfo.OBJECT_TYPE,
             classDisplayName: "Aira Chat Prompt",
             typeof(AiraChatPromptInfo),
-            nameof(AiraChatPromptInfo.AiraChatPromptId)
+            nameof(AiraChatPromptInfo.AiraChatPromptId),
+            [
+                new FormFieldDependencyModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = AiraChatPromptGroupInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraChatPromptInfo.AiraChatPromptChatPromptGroupId)
+                }
+            ]
         );
 
         InstallAiraClass(
-          resourceInfo,
-          AiraChatMessageInfo.TYPEINFO.ObjectClassName,
-          AiraChatMessageInfo.OBJECT_TYPE,
-          classDisplayName: "Aira Chat Message",
-          typeof(AiraChatMessageInfo),
-          nameof(AiraChatMessageInfo.AiraChatMessageId)
-      );
+            resourceInfo,
+            AiraChatMessageInfo.TYPEINFO.ObjectClassName,
+            AiraChatMessageInfo.OBJECT_TYPE,
+            classDisplayName: "Aira Chat Message",
+            typeof(AiraChatMessageInfo),
+            nameof(AiraChatMessageInfo.AiraChatMessageId),
+            [
+                new FormFieldDependencyModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = UserInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraChatMessageInfo.AiraChatMessageUserId)
+                }
+            ]
+        );
+
+        InstallAiraClass(
+            resourceInfo,
+            AiraChatSummaryInfo.TYPEINFO.ObjectClassName,
+            AiraChatSummaryInfo.OBJECT_TYPE,
+            classDisplayName: "Aira Chat Summary",
+            typeof(AiraChatSummaryInfo),
+            nameof(AiraChatSummaryInfo.AiraChatSummaryId),
+            [
+                new FormFieldDependencyModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = UserInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraChatSummaryInfo.AiraChatSummaryUserId)
+                }
+            ]
+        );
     }
 
-    private static void InstallAiraClass(ResourceInfo resourceInfo, string objectClassName, string objectType, string classDisplayName, Type infoType, string idPropertyName)
+    private static void InstallAiraClass(ResourceInfo resourceInfo,
+        string objectClassName,
+        string objectType,
+        string classDisplayName,
+        Type infoType,
+        string idPropertyName,
+        List<FormFieldDependencyModel>? dependencies = null)
     {
         var info = DataClassInfoProvider.GetDataClassInfo(objectType) ??
             DataClassInfo.New(objectType);
@@ -88,14 +136,21 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
         info.ClassResourceID = resourceInfo.ResourceID;
         info.ClassType = ClassType.OTHER;
 
-        SetFormDefinition(info, infoType, idPropertyName);
+        SetFormDefinition(info, infoType, idPropertyName, dependencies);
     }
 
-    private static void SetFormDefinition(DataClassInfo info, Type infoType, string idPropertyName)
+    private sealed class FormFieldDependencyModel
+    {
+        public ObjectDependencyEnum ReferenceType { get; set; }
+        public string FormFieldName { get; set; } = string.Empty;
+        public string ReferenceToObjectType { get; set; } = string.Empty;
+    }
+
+    private static void SetFormDefinition(DataClassInfo info, Type infoType, string idPropertyName, List<FormFieldDependencyModel>? dependencies = null)
     {
         var formInfo = FormHelper.GetBasicFormDefinition(idPropertyName);
 
-        formInfo = AddFormItems(formInfo, infoType, idPropertyName);
+        formInfo = AddFormItems(formInfo, infoType, idPropertyName, dependencies);
 
         if (info.ClassID > 0)
         {
@@ -114,7 +169,7 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
         }
     }
 
-    private static FormInfo AddFormItems(FormInfo formInfo, Type infoType, string idPropertyName)
+    private static FormInfo AddFormItems(FormInfo formInfo, Type infoType, string idPropertyName, List<FormFieldDependencyModel>? dependencyProperties = null)
     {
         var properties = infoType.GetProperties();
 
@@ -144,6 +199,17 @@ internal class AiraModuleInstaller : IAiraModuleInstaller
                     Type t when t == typeof(DateTime) => FieldDataType.DateTime,
                     _ => formItem.DataType // Default case if no match is found
                 };
+
+                if (dependencyProperties is not null)
+                {
+                    var dependency = dependencyProperties.FirstOrDefault(x => x.FormFieldName == property.Name);
+
+                    if (dependency is not null)
+                    {
+                        formItem.ReferenceToObjectType = dependency.ReferenceToObjectType;
+                        formItem.ReferenceType = dependency.ReferenceType;
+                    }
+                }
 
                 formInfo.AddFormItem(formItem);
             }

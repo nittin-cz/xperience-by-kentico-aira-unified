@@ -302,20 +302,22 @@ internal class AiraEndpointDataSource : MutableEndpointDataSource
     {
         var adminUserManager = context.RequestServices.GetRequiredService<AdminUserManager>();
         var airaAssetService = context.RequestServices.GetRequiredService<IAiraAssetService>();
+        var userProvider = context.RequestServices.GetRequiredService<IInfoProvider<UserInfo>>();
 
         var user = await adminUserManager.GetUserAsync(context.User);
-        var signinRedirectUrl = $"{airaPathBase}/{AiraCompanionAppConstants.SigninRelativeUrl}";
 
-        if (user is null)
+        var signInRedirectUrl = $"{airaPathBase}/{AiraCompanionAppConstants.SigninRelativeUrl}";
+
+        if (user is null || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any())
         {
-            context.Response.Redirect(signinRedirectUrl);
+            context.Response.Redirect(signInRedirectUrl);
             return false;
         }
 
         var hasAiraViewPermission = await airaAssetService.DoesUserHaveAiraCompanionAppPermission(permission, user.UserID);
         if (!hasAiraViewPermission)
         {
-            context.Response.Redirect(signinRedirectUrl);
+            context.Response.Redirect(signInRedirectUrl);
             return false;
         }
 
