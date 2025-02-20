@@ -15,33 +15,19 @@
 <div class="c-app_inner is-loaded" id="aira-kentico-admin-signin"
     data-base-url="@baseUrl"
     data-aira-base-url="@Model.PathBase"
-    data-chat-url="@Model.ChatRelativeUrl">
+    data-chat-url="@Model.ChatRelativeUrl"
+    data-logo-img-relative-path="@Model.LogoImageRelativePath">
     
     <div class="c-app_header"></div>
     <div class="c-app_body login">
         <div class="container">
-            <div class="col-xl-10 col-xxl-9">
-                <div class="main">
-                    <h1 class="text-center k-dot">Sign in</h1>
-                </div>
-                <div class="signin-register">
-                    <div class="row">
-                        <div class="col-md-12 px-6 py-3">
-                            <div class="form-group-input">
-                                <div class="logon-page-background">
-                                    <div class="logon-panel">
-                                        <div class="form-horizontal">
-                                            <button id="loginButton" type="submit" class="btn btn-outline-primary">Continue with XbyK</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <h1 class="text-center k-dot">Sign in</h1>
+            <div class="px-6 pt-6 d-flex justify-content-center">
+                <button id="loginButton" type="submit" class="btn btn-outline-primary btn-lg">Continue with XbyK</button>
             </div>
         </div>
     </div>
+    <div id="install-dialog"></div>
     }
 </div>
 

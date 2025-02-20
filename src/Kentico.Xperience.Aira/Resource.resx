@@ -123,6 +123,21 @@
   <data name="InitialAiraMessagePromptExplanation" xml:space="preserve">
     <value>Every time you open the chat dialog you can ask me directly or you can use some pre-made requests called prompts</value>
   </data>
+  <data name="NavigationMenuMessage" xml:space="preserve">
+    <value>This is a PREVIEW version. Expect updates and improvements.</value>
+  </data>
+  <data name="ServicePageChatTryAgainLater" xml:space="preserve">
+    <value>Please try again later, we'll be back shortly!</value>
+  </data>
+  <data name="ServicePageChatUnavailable" xml:space="preserve">
+    <value>Sorry, Aira chat is currently unavailable due to maintenance.</value>
+  </data>
+  <data name="SmartUploadFilesUploadedMessage" xml:space="preserve">
+    <value>Images created as content items (in draft), added to your content hub</value>
+  </data>
+  <data name="SmartUploadSelectFilesButton" xml:space="preserve">
+    <value>SELECT FILES</value>
+  </data>
   <data name="WelcomeBackAiraMessage" xml:space="preserve">
     <value>What can I help you with ?</value>
   </data>

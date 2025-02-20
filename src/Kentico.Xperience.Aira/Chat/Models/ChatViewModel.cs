@@ -13,6 +13,11 @@ public class ChatViewModel
     public NavBarViewModel NavBarViewModel { get; set; } = new NavBarViewModel();
 
     /// <summary>
+    /// View model for the service page displayed when the ai service is unavailable.
+    /// </summary>
+    public ServicePageViewModel ServicePageViewModel { get; set; } = new ServicePageViewModel();
+
+    /// <summary>
     /// Count of messages in User's chat history.
     /// </summary>
     public int HistoryMessageCount { get; set; }
@@ -20,7 +25,7 @@ public class ChatViewModel
     /// <summary>
     /// User's chat history messages.
     /// </summary>
-    public List<AiraChatMessage> History { get; set; } = [];
+    public List<AiraChatMessageViewModel> History { get; set; } = [];
 
     /// <summary>
     /// Path base for the Chat page.

@@ -26,20 +26,20 @@ public sealed class AiraCompanionAppController : Controller
     private readonly IAiraConfigurationService airaConfigurationService;
     private readonly IAiraChatService airaChatService;
     private readonly IAiraAssetService airaAssetService;
-    private readonly INavBarService airaUIService;
+    private readonly INavBarService navBarService;
 
     public AiraCompanionAppController(
         AdminUserManager adminUserManager,
         IAiraConfigurationService airaConfigurationService,
         IAiraAssetService airaAssetService,
-        INavBarService airaUIService,
+        INavBarService navBarService,
         IAiraChatService airaChatService)
     {
         this.adminUserManager = adminUserManager;
         this.airaConfigurationService = airaConfigurationService;
         this.airaAssetService = airaAssetService;
         this.airaChatService = airaChatService;
-        this.airaUIService = airaUIService;
+        this.navBarService = navBarService;
     }
 
     /// <summary>
@@ -57,19 +57,26 @@ public sealed class AiraCompanionAppController : Controller
             // User can not be null, because he is already checked in the AiraEndpointDataSource middleware
             History = await airaChatService.GetUserChatHistory(user!.UserID),
             AIIconImagePath = $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PictureStarImgPath}",
-            NavBarViewModel = await airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.ChatRelativeUrl),
-            RemovePromptUrl = AiraCompanionAppConstants.RemoveUsedPromptGroupRelativeUrl
+            NavBarViewModel = await navBarService.GetNavBarViewModel(AiraCompanionAppConstants.ChatRelativeUrl),
+            RemovePromptUrl = AiraCompanionAppConstants.RemoveUsedPromptGroupRelativeUrl,
+            ServicePageViewModel = new ServicePageViewModel()
+            {
+                ChatAiraIconUrl = $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PictureStarImgPath}",
+                ChatUnavailableIconUrl = $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PictureChatBotSmileBubbleOrangeImgPath}",
+                ChatUnavailableMainMessage = Resource.ServicePageChatUnavailable,
+                ChatUnavailableTryAgainMessage = Resource.ServicePageChatTryAgainLater
+            }
         };
 
         if (chatModel.History.Count == 0)
         {
             chatModel.History = [
-                new AiraChatMessage
+                new AiraChatMessageViewModel
                 {
                     Message = Resource.InitialAiraMessageIntroduction,
                     Role = AiraCompanionAppConstants.AiraChatRoleName
                 },
-                new AiraChatMessage
+                new AiraChatMessageViewModel
                 {
                     Message = Resource.InitialAiraMessagePromptExplanation,
                     Role = AiraCompanionAppConstants.AiraChatRoleName
@@ -78,7 +85,7 @@ public sealed class AiraCompanionAppController : Controller
         }
         else
         {
-            chatModel.History.Add(new AiraChatMessage
+            chatModel.History.Add(new AiraChatMessageViewModel
             {
                 Message = Resource.WelcomeBackAiraMessage,
                 Role = AiraCompanionAppConstants.AiraChatRoleName
@@ -91,12 +98,13 @@ public sealed class AiraCompanionAppController : Controller
     /// <summary>
     /// Endpoint allowing chat communication via the chat interface.
     /// </summary>
+    /// <param name="request">The <see cref="IFormCollection"/> including the chat message.</param>
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request)
     {
         var user = await adminUserManager.GetUserAsync(User);
 
-        string? message = null;
+        string? message;
 
 #pragma warning disable IDE0079 // Kept for development. This will be restored in subsequent versions.
 #pragma warning disable S6932 // Kept for development. This will be restored in subsequent versions.
@@ -106,29 +114,68 @@ public sealed class AiraCompanionAppController : Controller
         }
 #pragma warning restore S6932 //
 #pragma warning restore IDE0079 //
-
-        AiraChatMessage response;
-
-        // User can not be null, because he is already checked in the AiraEndpointDataSource middleware
-        airaChatService.SaveMessage(message ?? "", user!.UserID, AiraCompanionAppConstants.UserChatRoleName);
-
-        response = new AiraChatMessage
+        else
         {
-            Role = AiraCompanionAppConstants.AiraChatRoleName,
-            Message = "Ok"
-        };
+            return Ok();
+        }
+        if (string.IsNullOrEmpty(message))
+        {
+            return Ok();
+        }
+
+        AiraChatMessageViewModel result;
 
         // User can not be null, because he is already checked in the AiraEndpointDataSource middleware
-        airaChatService.SaveMessage(response.Message ?? "", user!.UserID, AiraCompanionAppConstants.AiraChatRoleName);
+        airaChatService.SaveMessage(message, user!.UserID, AiraCompanionAppConstants.UserChatRoleName);
 
-        return Ok(response);
+        try
+        {
+            var aiResponse = await airaChatService.GetAIResponseOrNull(message, numberOfIncludedHistoryMessages: 5, user.UserID);
+
+            if (aiResponse is null)
+            {
+                result = new AiraChatMessageViewModel
+                {
+                    ServiceUnavailable = true,
+                };
+
+                return Ok(result);
+            }
+
+            airaChatService.SaveMessage(aiResponse.Response, user.UserID, AiraCompanionAppConstants.AiraChatRoleName);
+
+            airaChatService.UpdateChatSummary(user.UserID, message);
+
+            result = new AiraChatMessageViewModel
+            {
+                Role = AiraCompanionAppConstants.AiraChatRoleName,
+                Message = aiResponse.Response
+            };
+
+            if (aiResponse.SuggestedQuestions is not null)
+            {
+                var promptGroup = airaChatService.SaveAiraPrompts(user.UserID, aiResponse.SuggestedQuestions);
+                result.QuickPrompts = promptGroup.QuickPrompts;
+                result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            result = new AiraChatMessageViewModel
+            {
+                Role = AiraCompanionAppConstants.AiraChatRoleName,
+                ServiceUnavailable = true,
+                Message = $"Error: {ex.Message}"
+            };
+        }
+
+        return Ok(result);
     }
 
     /// <summary>
     /// Endpoint allowing removal of a used suggested prompt group.
     /// </summary>
     /// <param name="model">The <see cref="AiraUsedPromptGroupModel"/> with the information about the prompt group.</param>
-    /// <returns></returns>
     [HttpPost]
     public IActionResult RemoveUsedPromptGroup([FromBody] AiraUsedPromptGroupModel model)
     {
@@ -140,6 +187,7 @@ public sealed class AiraCompanionAppController : Controller
     /// <summary>
     /// Endpoint allowing upload of the files via smart upload.
     /// </summary>
+    /// <param name="request">The <see cref="IFormCollection"/> request containing the uploaded files.</param>
     [HttpPost]
     public async Task<IActionResult> PostImages(IFormCollection request)
     {
@@ -166,14 +214,19 @@ public sealed class AiraCompanionAppController : Controller
 
         var model = new AssetsViewModel
         {
-            NavBarViewModel = await airaUIService.GetNavBarViewModel(AiraCompanionAppConstants.SmartUploadRelativeUrl),
+            NavBarViewModel = await navBarService.GetNavBarViewModel(AiraCompanionAppConstants.SmartUploadRelativeUrl),
             PathBase = airaPathBase,
-            AllowedFileExtensionsUrl = $"{AiraCompanionAppConstants.SmartUploadRelativeUrl}/{AiraCompanionAppConstants.SmartUploadAllowedFileExtensionsUrl}"
+            AllowedFileExtensionsUrl = $"{AiraCompanionAppConstants.SmartUploadRelativeUrl}/{AiraCompanionAppConstants.SmartUploadAllowedFileExtensionsUrl}",
+            SelectFilesButton = Resource.SmartUploadSelectFilesButton,
+            FilesUploadedMessage = Resource.SmartUploadFilesUploadedMessage
         };
 
         return View("~/AssetUploader/Assets.cshtml", model);
     }
 
+    /// <summary>
+    /// Endpoint retrieving the allowed smart upload file extensions.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAllowedFileExtensions()
     {
@@ -185,7 +238,6 @@ public sealed class AiraCompanionAppController : Controller
     /// <summary>
     /// Endpoint exposing the manifest file for the PWA.
     /// </summary>
-    /// <returns></returns>
     [HttpGet($"/{AiraCompanionAppConstants.RCLUrlPrefix}/manifest.json")]
     [Produces("application/json")]
     public async Task<IActionResult> GetPwaManifest()
@@ -230,12 +282,15 @@ public sealed class AiraCompanionAppController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> SignIn()
     {
-        var airaPathBase = await GetAiraPathBase();
+        var airaConfiguration = await airaConfigurationService.GetAiraConfiguration();
+        var logoUrl = navBarService.GetMediaFileUrl(airaConfiguration.AiraConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        logoUrl = navBarService.GetSanitizedImageUrl(logoUrl, $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PictureStarImgPath}", "AIRA Logo");
 
         var model = new SignInViewModel
         {
-            PathBase = airaPathBase,
-            ChatRelativeUrl = AiraCompanionAppConstants.ChatRelativeUrl
+            PathBase = airaConfiguration.AiraConfigurationItemAiraPathBase,
+            ChatRelativeUrl = AiraCompanionAppConstants.ChatRelativeUrl,
+            LogoImageRelativePath = logoUrl
         };
 
         return View("~/Authentication/SignIn.cshtml", model);

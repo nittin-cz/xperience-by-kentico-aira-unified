@@ -28,7 +28,7 @@ internal class NavBarService : INavBarService
 
     public async Task<NavBarViewModel> GetNavBarViewModel(string activePage)
     {
-        var defaultImageUrl = "path-to-not-found/image.jpg";
+        var defaultImageUrl = "";
         var airaConfiguration = await airaConfigurationService.GetAiraConfiguration();
         var logoUrl = GetMediaFileUrl(airaConfiguration.AiraConfigurationItemAiraRelativeLogoId)?.RelativePath;
         var sanitizedLogoUrl = GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA Logo");
@@ -40,7 +40,11 @@ internal class NavBarService : INavBarService
              $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PictureNetworkGraphImgPath}"
              : $"/{AiraCompanionAppConstants.RCLUrlPrefix}/{AiraCompanionAppConstants.PicturePlaceholderImgPath}",
 
-            TitleText = activePage == AiraCompanionAppConstants.ChatRelativeUrl ? airaConfiguration.AiraConfigurationItemAiraChatTitle : airaConfiguration.AiraConfigurationItemAiraSmartUploadTitle,
+            TitleText = activePage == AiraCompanionAppConstants.ChatRelativeUrl ?
+                airaConfiguration.AiraConfigurationItemAiraChatTitle
+                : airaConfiguration.AiraConfigurationItemAiraSmartUploadTitle,
+
+            MenuMessage = Resource.NavigationMenuMessage,
 
             ChatItem = new MenuItemModel
             {
@@ -74,7 +78,7 @@ internal class NavBarService : INavBarService
         return default;
     }
 
-    private string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
+    public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
     {
         if (!string.IsNullOrEmpty(configuredUrl))
         {
