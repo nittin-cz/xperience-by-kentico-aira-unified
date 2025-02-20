@@ -6,12 +6,11 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Product></Product>
+		<Product>Aira Unified</Product>
 		<Title>$(Product)</Title>
-		<PackageId></PackageId>
-    <Description></Description>
-    <RepositoryUrl></RepositoryUrl>
-  </PropertyGroup>
+		<PackageId>Kentico.Xperience.AiraUnified</PackageId>
+		<Description>Xperience by Kentico AI chat and upload companion application.</Description>
+	</PropertyGroup>
 
 	<PropertyGroup>
 		<AdminOrgName>kentico</AdminOrgName>
@@ -26,20 +25,8 @@
 	<ItemGroup>
 		<AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute">
 		</AssemblyAttribute>
-
 	</ItemGroup>
 
-	<Target Name="NpmInstall" BeforeTargets="NpmBuild" Condition=" '$(Configuration)|$(Platform)' != 'Debug|AnyCPU' ">
-		<Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(MSBuildProjectDirectory)\FrontEnd" />
-	</Target>
-	<Target Name="NpmBuild" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)|$(Platform)' != 'Debug|AnyCPU' ">
-		<Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\FrontEnd" />
-	</Target>
-
-	<Target Name="NpmBuildCss" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)|$(Platform)' != 'Debug|AnyCPU' ">
-		<Exec Command="npm run build-css" WorkingDirectory="$(MSBuildProjectDirectory)\FrontEnd" />
-	</Target>
-	
 	<ItemGroup>
 	  <EmbeddedResource Include="Resource.resx">
 	    <Generator>ResXFileCodeGenerator</Generator>
