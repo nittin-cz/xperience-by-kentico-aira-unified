@@ -86,9 +86,9 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 ## Full Instructions
 
-Refer to the [Usage Guide](./docs/Usage-Guide.md) for detailed instructions.
+You can view and start the DancingGoat example project.
 
-You can also check out the **Dancing Goat** example project.
+To activate the communication of AIRA Unified app with the AIRA service, you need to request an activation key. Please contact us at productmanagement@xperience.io for more information.
 
 ## Contributing
 
@@ -108,4 +108,6 @@ This project has **Kentico Labs limited support**.
 
 For more information, see [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support).
 
-For security issues, refer to [`SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
+This feature is currently in a Preview mode, do not use for production instances.
+
+For any security issues see [`SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
