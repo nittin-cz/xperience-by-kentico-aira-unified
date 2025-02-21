@@ -40,14 +40,15 @@ dotnet add package Kentico.Xperience.AiraUnified
   "AiraUnifiedApiSubscriptionKey": "<your aira unified API key>"
 }
 ```
+2. Configure your project for [HTTPS](https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl).
 
-2. Include the `Kentico.Xperience.AiraUnified` package in your project:
+3. Include the `Kentico.Xperience.AiraUnified` package in your project:
 
    ```powershell
    dotnet add package Kentico.Xperience.AiraUnified
    ```
 
-3. Register the required services in `Program.cs`:
+4. Register the required services in `Program.cs`:
 
    ```csharp
    var builder = WebApplication.CreateBuilder(args);
@@ -67,7 +68,7 @@ dotnet add package Kentico.Xperience.AiraUnified
    app.Run();
    ```
 
-4. Configure the Aira Unified settings in the administration UI:
+5. Configure the Aira Unified settings in the administration UI:
    - **Relative Path Base**: Defines where Aira Unified is available.
    - **Logo**: Select an asset from the Media Library.
    - **Chat Title**: Title for the chat page.
@@ -75,14 +76,14 @@ dotnet add package Kentico.Xperience.AiraUnified
    
    ![Admin Configuration](/images/AiraUnifiedAdminConfiguration.png)
 
-5. Set up a `Content Type` for [Mass Asset Upload](https://docs.kentico.com/developers-and-admins/development/content-types#mass-asset-upload-configuration).
-6. Configure role-based permissions in the `Role Management` application:
+6. Set up a `Content Type` for [Mass Asset Upload](https://docs.kentico.com/developers-and-admins/development/content-types#mass-asset-upload-configuration).
+7. Configure role-based permissions in the `Role Management` application:
    - **View**: Access the Aira Unified chat.
    - **Create/Update**: Access and upload content via Smart Upload.
 
    ![Role Configuration](/images/ConfigureAiraUnifiedPermissions.png)
 
-7. Users can now access Aira Unified at the specified path.
+8. Users can now access Aira Unified at the specified path.
 
 ## Full Instructions
 
