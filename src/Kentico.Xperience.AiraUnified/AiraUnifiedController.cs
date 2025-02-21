@@ -54,7 +54,7 @@ public sealed class AiraUnifiedController : Controller
         var chatModel = new ChatViewModel
         {
             PathBase = airaUnifiedPathBase,
-            // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
+            // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
             History = await airaUnifiedChatService.GetUserChatHistory(user!.UserID),
             AIIconImagePath = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
             NavBarViewModel = await navBarService.GetNavBarViewModel(AiraUnifiedConstants.ChatRelativeUrl),
