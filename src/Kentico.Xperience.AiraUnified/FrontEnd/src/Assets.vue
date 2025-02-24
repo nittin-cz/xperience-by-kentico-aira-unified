@@ -6,7 +6,7 @@
         </div>
 
         <div class="c-app_header">
-            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :baseUrl="baseUrl" :navBarModel="navBarModel"/>
+            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl"/>
         </div>
 
         <div class="c-app_body" :style="{ overflowY: 'auto', overflowX: 'hidden' }">
@@ -103,10 +103,11 @@ export default {
     props: {
         airaUnifiedBaseUrl: null,
         baseUrl: null,
-        navBarModel: null,
         allowedFileExtensionsUrl: null,
         selectFilesButton: null,
         uploadSuccessfulMessage: null,
+        navigationUrl: null,
+        navigationPageIdentifier: null
     },
     data() {
         return {
@@ -119,6 +120,7 @@ export default {
             fileInputAccept: '',
             allowedExtensions: [],
             isLoaded: true,
+            navBarModel: null,
 
             alertResultIconUrl: "",
             uploadResultMessage: ""

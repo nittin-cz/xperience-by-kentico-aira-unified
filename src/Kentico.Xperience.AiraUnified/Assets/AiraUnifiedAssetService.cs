@@ -5,10 +5,14 @@ using CMS.Core;
 using CMS.DataEngine;
 using CMS.DataEngine.Query;
 using CMS.FormEngine;
+using CMS.MediaLibrary;
 using CMS.Membership;
 
+using Kentico.Content.Web.Mvc;
 using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Admin.UIPages;
+using Kentico.Xperience.AiraUnified.NavBar;
 
 using Microsoft.AspNetCore.Http;
 
@@ -21,6 +25,8 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 {
     private readonly IInfoProvider<ContentLanguageInfo> contentLanguageProvider;
     private readonly IInfoProvider<SettingsKeyInfo> settingsKeyProvider;
+    private readonly IMediaFileUrlRetriever mediaFileUrlRetriever;
+    private readonly IInfoProvider<MediaFileInfo> mediaFileInfoProvider;
     private readonly IInfoProvider<RoleInfo> roleProvider;
     private readonly IEventLogService eventLogService;
     private readonly ISettingsService settingsService;
@@ -29,9 +35,13 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         IInfoProvider<SettingsKeyInfo> settingsKeyProvider,
         IEventLogService eventLogService,
         IInfoProvider<RoleInfo> roleProvider,
-        ISettingsService settingsService
+        ISettingsService settingsService,
+        IMediaFileUrlRetriever mediaFileUrlRetriever,
+        IInfoProvider<MediaFileInfo> mediaFileInfoProvider
         )
     {
+        this.mediaFileUrlRetriever = mediaFileUrlRetriever;
+        this.mediaFileInfoProvider = mediaFileInfoProvider;
         this.contentLanguageProvider = contentLanguageProvider;
         this.roleProvider = roleProvider;
         this.eventLogService = eventLogService;
@@ -212,6 +222,42 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         tempDirectory.Delete(true);
 
         return true;
+    }
+
+    public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
+    {
+        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
+
+        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA unified Logo").TrimStart('~');
+    }
+
+    public IMediaFileUrl? GetMediaFileUrl(string identifier)
+    {
+        if (Guid.TryParse(identifier, out var identifierGuid))
+        {
+            var mediaLibraryFiles = mediaFileInfoProvider
+                .Get()
+                .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
+            if (mediaLibraryFiles.Any())
+            {
+                var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
+                return media;
+            }
+        }
+
+        return default;
+    }
+
+    public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
+    {
+        if (!string.IsNullOrEmpty(configuredUrl))
+        {
+            return configuredUrl;
+        }
+
+        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, "Configured URL is empty, using default");
+        return defaultUrl;
     }
 
     public string GetGlobalAllowedFileExtensions() => settingsService["CMSMediaFileAllowedExtensions"];

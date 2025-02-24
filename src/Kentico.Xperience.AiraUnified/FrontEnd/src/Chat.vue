@@ -5,7 +5,7 @@
         </div>
 
         <div class="c-app_header">
-            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navBarModel="navBarModel" :baseUrl="baseUrl"/>
+            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl"/>
         </div>
 
         <div class="c-app_body">
@@ -62,7 +62,7 @@
                     }
                 }"
                 :connect="{
-                    url: `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.navBarModel.chatItem.url}/message`,
+                    url: `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.chatUrl}`,
                     method: 'POST'
                 }"
               :chatStyle="{ height: '100%', width: '100%' }"
@@ -169,7 +169,7 @@
                     <p class="fs-2">{{`${this.servicePageModel.chatUnavailableTryAgainMessage}`}}</p>
                 </div>
             </div>
-          <InstallDialogComponent v-if="!isInstalledPWA" :baseUrl="baseUrl" :logoImgRelativePath="navBarModel.logoImgRelativePath" />
+          <InstallDialogComponent v-if="!isInstalledPWA" :baseUrl="baseUrl" :logoImgRelativePath="logoImgRelativePath" />
         </div>
     </div>
 </template>
@@ -189,9 +189,12 @@ export default {
         aiIconUrl: null,
         baseUrl: null,
         usePromptUrl: null,
-        navBarModel: null,
-        rawHistory: null,
-        servicePageModel: null
+        servicePageModel: null,
+        historyUrl: null,
+        navigationUrl: null,
+        navigationPageIdentifier: null,
+        chatUrl: null,
+        logoImgRelativePath: null
     },
     data() {
         return {
@@ -222,10 +225,11 @@ export default {
                 var modal = document.querySelector('#loading');
                 if (modal) {
                     modal.classList.add('is-hidden');
+
+                    setTimeout(function () {
+                        modal.parentNode.removeChild(modal);
+                    }, 500);
                 }
-                setTimeout(function () {
-                    modal.parentNode.removeChild(modal);
-                }, 500);
             }, 1000);
 
             this.$refs.chatElementRef.onComponentRender = async () => {
@@ -544,8 +548,20 @@ export default {
                 }`
             shadowRoot.appendChild(style);
         },
-        setHistory() {
-            for (const x of this.rawHistory) {
+        async setHistory() {
+            const historyFullUrl = `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.historyUrl}`;
+            const historyResponse = await fetch(historyFullUrl, {
+                method: 'GET'
+            });
+
+            if (!historyResponse.ok)
+            {
+                console.error('An error occurred:', error.message);
+                return;
+            }
+            const rawHistory = await historyResponse.json();
+            
+            for (const x of rawHistory) {
                 const messageViewModel = this.getMessageViewModel(x);
                 
                 this.history.push(messageViewModel);

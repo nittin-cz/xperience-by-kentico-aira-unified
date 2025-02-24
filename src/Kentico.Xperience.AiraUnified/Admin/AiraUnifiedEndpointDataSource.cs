@@ -8,6 +8,7 @@ using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.Chat.Models;
+using Kentico.Xperience.AiraUnified.NavBar;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -51,6 +52,18 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 AiraUnifiedConstants.ChatRelativeUrl,
                 nameof(AiraUnifiedController.Index),
                 controller => controller.Index(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpoint(configuration,
+                $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}",
+                nameof(AiraUnifiedController.GetChatHistory),
+                controller => controller.GetChatHistory(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpointFromBody<NavBarRequestModel>(configuration,
+                AiraUnifiedConstants.NavigationUrl,
+                nameof(AiraUnifiedController.Navigation),
+                (controller, model) => controller.Navigation(model),
                 requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraIFormCollectionEndpoint(configuration,
@@ -127,6 +140,66 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 if (requestObject is not null)
                 {
                     var result = actionWithModel.Invoke(airaUnifiedController, requestObject);
+                    await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsync("Invalid or missing request body.");
+                }
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON deserialization errors
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsync($"Invalid JSON format: {ex.Message}");
+            }
+        }
+        else
+        {
+            // Handle unsupported content types
+            context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+            await context.Response.WriteAsync("Unsupported content type. Expected 'application/json'.");
+        }
+    });
+
+    private static Endpoint CreateAiraEndpointFromBody<T>(
+        AiraUnifiedConfigurationItemInfo configurationInfo,
+        string subPath,
+        string actionName,
+        Func<AiraUnifiedController, T, Task<IActionResult>> actionWithModel,
+        string? requiredPermission = null
+    ) where T : class, new()
+    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
+    {
+        var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
+
+        if (!await CheckHttps(context))
+        {
+            return;
+        }
+
+        if (requiredPermission is not null && !await CheckAuthorizationOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        {
+            return;
+        }
+
+        if (context.Request.ContentType is not null &&
+            string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+        {
+            using var reader = new StreamReader(context.Request.Body);
+            var body = await reader.ReadToEndAsync();
+
+            try
+            {
+                var requestObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (requestObject is not null)
+                {
+                    var result = await actionWithModel.Invoke(airaUnifiedController, requestObject);
                     await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
                 }
                 else

@@ -1,4 +1,5 @@
-﻿using HotChocolate.Authorization;
+﻿using CMS.Base;
+using CMS.Core;
 
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
@@ -10,6 +11,7 @@ using Kentico.Xperience.AiraUnified.Chat;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.NavBar;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,20 +28,23 @@ public sealed class AiraUnifiedController : Controller
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IAiraUnifiedChatService airaUnifiedChatService;
     private readonly IAiraUnifiedAssetService airaUnifiedAssetService;
-    private readonly INavBarService navBarService;
+    private readonly INavigationService navBarService;
+    private readonly IEventLogService eventLogService;
 
     public AiraUnifiedController(
         AdminUserManager adminUserManager,
         IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IAiraUnifiedAssetService airaUnifiedAssetService,
-        INavBarService navBarService,
-        IAiraUnifiedChatService airaUnifiedChatService)
+        INavigationService navBarService,
+        IAiraUnifiedChatService airaUnifiedChatService,
+        IEventLogService eventLogService)
     {
         this.adminUserManager = adminUserManager;
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
         this.airaUnifiedAssetService = airaUnifiedAssetService;
         this.airaUnifiedChatService = airaUnifiedChatService;
         this.navBarService = navBarService;
+        this.eventLogService = eventLogService;
     }
 
     /// <summary>
@@ -48,16 +53,15 @@ public sealed class AiraUnifiedController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var user = await adminUserManager.GetUserAsync(User);
         var airaUnifiedPathBase = await GetAiraPathBase();
+
+        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
+        var logoUrl = airaUnifiedAssetService.GetSanitizedLogoUrl(configuration);
 
         var chatModel = new ChatViewModel
         {
             PathBase = airaUnifiedPathBase,
-            // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
-            History = await airaUnifiedChatService.GetUserChatHistory(user!.UserID),
             AIIconImagePath = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
-            NavBarViewModel = await navBarService.GetNavBarViewModel(AiraUnifiedConstants.ChatRelativeUrl),
             RemovePromptUrl = AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl,
             ServicePageViewModel = new ServicePageViewModel()
             {
@@ -65,12 +69,62 @@ public sealed class AiraUnifiedController : Controller
                 ChatUnavailableIconUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureChatBotSmileBubbleOrangeImgPath}",
                 ChatUnavailableMainMessage = Resource.ServicePageChatUnavailable,
                 ChatUnavailableTryAgainMessage = Resource.ServicePageChatTryAgainLater
-            }
+            },
+            NavigationUrl = AiraUnifiedConstants.NavigationUrl,
+            NavigationPageIdentifier = AiraUnifiedConstants.ChatRelativeUrl,
+            HistoryUrl = $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}",
+            ChatUrl = $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatMessageUrl}",
+            LogoImgRelativePath = logoUrl
         };
 
-        if (chatModel.History.Count == 0)
+        return View("~/Chat/Chat.cshtml", chatModel);
+    }
+
+    /// <summary>
+    /// Retrieves the navigation view model.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> Navigation([FromBody] NavBarRequestModel request)
+    {
+        if (!string.Equals(request.PageIdentifier, AiraUnifiedConstants.ChatRelativeUrl) &&
+            !string.Equals(request.PageIdentifier, AiraUnifiedConstants.SmartUploadRelativeUrl))
         {
-            chatModel.History = [
+            return BadRequest("The navigation menu for the specified page does not exist.");
+        }
+
+        var model = await navBarService.GetNavBarViewModel(request.PageIdentifier, baseUrl: HttpContext.Request.GetBaseUrl());
+
+        if (model.ChatItem.Url is null)
+        {
+            eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel), $"Invalid chat page url.");
+            return BadRequest("Invalid chat page url.");
+        }
+
+        if (model.SmartUploadItem.Url is null)
+        {
+            //var airaPathBase = 
+
+            //eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel), $"Invalid smart upload page url resulting from .");
+            return BadRequest("Invalid smart upload page url.");
+        }
+
+        return Ok(model);
+    }
+
+    /// <summary>
+    /// Endpoint exposing the user's chat history.
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetChatHistory()
+    {
+        var user = await adminUserManager.GetUserAsync(User);
+
+        // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
+        var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID);
+
+        if (history.Count == 0)
+        {
+            history = [
                 new AiraUnifiedChatMessageViewModel
                 {
                     Message = Resource.InitialAiraMessageIntroduction,
@@ -82,17 +136,17 @@ public sealed class AiraUnifiedController : Controller
                     Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
                 }
             ];
-        }
-        else
-        {
-            chatModel.History.Add(new AiraUnifiedChatMessageViewModel
-            {
-                Message = Resource.WelcomeBackAiraMessage,
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
-            });
+
+            return Ok(history);
         }
 
-        return View("~/Chat/Chat.cshtml", chatModel);
+        history.Add(new AiraUnifiedChatMessageViewModel
+        {
+            Message = Resource.WelcomeBackAiraMessage,
+            Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
+        });
+
+        return Ok(history);
     }
 
     /// <summary>
@@ -214,11 +268,12 @@ public sealed class AiraUnifiedController : Controller
 
         var model = new AssetsViewModel
         {
-            NavBarViewModel = await navBarService.GetNavBarViewModel(AiraUnifiedConstants.SmartUploadRelativeUrl),
             PathBase = airaUnifiedPathBase,
             AllowedFileExtensionsUrl = $"{AiraUnifiedConstants.SmartUploadRelativeUrl}/{AiraUnifiedConstants.SmartUploadAllowedFileExtensionsUrl}",
             SelectFilesButton = Resource.SmartUploadSelectFilesButton,
-            FilesUploadedMessage = Resource.SmartUploadFilesUploadedMessage
+            FilesUploadedMessage = Resource.SmartUploadFilesUploadedMessage,
+            NavigationPageIdentifier = AiraUnifiedConstants.SmartUploadRelativeUrl,
+            NavigationUrl = AiraUnifiedConstants.NavigationUrl
         };
 
         return View("~/AssetUploader/Assets.cshtml", model);
@@ -283,14 +338,11 @@ public sealed class AiraUnifiedController : Controller
     public async Task<IActionResult> SignIn()
     {
         var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
-        var logoUrl = navBarService.GetMediaFileUrl(airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        logoUrl = navBarService.GetSanitizedImageUrl(logoUrl, $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}", "Aira Unified Logo");
 
         var model = new SignInViewModel
         {
             PathBase = airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase,
             ChatRelativeUrl = AiraUnifiedConstants.ChatRelativeUrl,
-            LogoImageRelativePath = logoUrl
         };
 
         return View("~/Authentication/SignIn.cshtml", model);
