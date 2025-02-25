@@ -37,6 +37,7 @@ function mountAssets(assetsElement) {
     const uploadSuccessfulMessage = assetsElement.dataset.uploadSuccessfulMessage || "";
     const navigationUrl = assetsElement.dataset.navigationUrl || "";
     const navigationPageIdentifier = assetsElement.dataset.navigationPageIdentifier || "";
+    const uploadUrl = assetsElement.dataset.uploadUrl || "";
     
     createApp(AssetsComponent, {
         airaUnifiedBaseUrl,
@@ -44,6 +45,7 @@ function mountAssets(assetsElement) {
         allowedFileExtensionsUrl,
         selectFilesButton,
         uploadSuccessfulMessage,
+        uploadUrl,
         navigationUrl,
         navigationPageIdentifier
     }).mount("#assets-app");

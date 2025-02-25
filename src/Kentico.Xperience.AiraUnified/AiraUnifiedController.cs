@@ -1,9 +1,9 @@
-﻿using CMS.Base;
-using CMS.Core;
+﻿using CMS.Core;
 
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.AssetUploader.Models;
 using Kentico.Xperience.AiraUnified.Authentication;
@@ -28,14 +28,14 @@ public sealed class AiraUnifiedController : Controller
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IAiraUnifiedChatService airaUnifiedChatService;
     private readonly IAiraUnifiedAssetService airaUnifiedAssetService;
-    private readonly INavigationService navBarService;
+    private readonly INavigationService navigationService;
     private readonly IEventLogService eventLogService;
 
     public AiraUnifiedController(
         AdminUserManager adminUserManager,
         IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IAiraUnifiedAssetService airaUnifiedAssetService,
-        INavigationService navBarService,
+        INavigationService navigationService,
         IAiraUnifiedChatService airaUnifiedChatService,
         IEventLogService eventLogService)
     {
@@ -43,9 +43,11 @@ public sealed class AiraUnifiedController : Controller
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
         this.airaUnifiedAssetService = airaUnifiedAssetService;
         this.airaUnifiedChatService = airaUnifiedChatService;
-        this.navBarService = navBarService;
+        this.navigationService = navigationService;
         this.eventLogService = eventLogService;
     }
+
+    private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
 
     /// <summary>
     /// Endpoint exposing access to the Chat page.
@@ -53,16 +55,30 @@ public sealed class AiraUnifiedController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var airaUnifiedPathBase = await GetAiraPathBase();
+        var configuration = await GetConfiguration();
+        var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
 
-        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
-        var logoUrl = airaUnifiedAssetService.GetSanitizedLogoUrl(configuration);
+        // Only the URLs which origin from the input of the Admin user in aira unified need verification.
+        var removePromptUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl);
+        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
+        var historyUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl, AiraUnifiedConstants.ChatHistoryUrl);
+        var chatUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl, AiraUnifiedConstants.ChatMessageUrl);
+
+        if (removePromptUrl is null
+            || navigationUrl is null
+            || historyUrl is null
+            || chatUrl is null)
+        {
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(Index), InvalidPathBaseErrorMessage);
+
+            return BadRequest(InvalidPathBaseErrorMessage);
+        }
 
         var chatModel = new ChatViewModel
         {
-            PathBase = airaUnifiedPathBase,
+            PathBase = configuration.AiraUnifiedPathBase,
             AIIconImagePath = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
-            RemovePromptUrl = AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl,
+            RemovePromptUrl = removePromptUrl.ToString(),
             ServicePageViewModel = new ServicePageViewModel()
             {
                 ChatAiraIconUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
@@ -70,10 +86,10 @@ public sealed class AiraUnifiedController : Controller
                 ChatUnavailableMainMessage = Resource.ServicePageChatUnavailable,
                 ChatUnavailableTryAgainMessage = Resource.ServicePageChatTryAgainLater
             },
-            NavigationUrl = AiraUnifiedConstants.NavigationUrl,
+            NavigationUrl = navigationUrl.ToString(),
             NavigationPageIdentifier = AiraUnifiedConstants.ChatRelativeUrl,
-            HistoryUrl = $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}",
-            ChatUrl = $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatMessageUrl}",
+            HistoryUrl = historyUrl.ToString(),
+            ChatUrl = chatUrl.ToString(),
             LogoImgRelativePath = logoUrl
         };
 
@@ -92,20 +108,15 @@ public sealed class AiraUnifiedController : Controller
             return BadRequest("The navigation menu for the specified page does not exist.");
         }
 
-        var model = await navBarService.GetNavBarViewModel(request.PageIdentifier, baseUrl: HttpContext.Request.GetBaseUrl());
+        var model = await navigationService.GetNavBarViewModel(request.PageIdentifier, baseUrl: HttpContext.Request.GetBaseUrl());
 
-        if (model.ChatItem.Url is null)
+        // Only the URLs which origin from the input of the Admin user in aira unified need verification.
+        if (model.ChatItem.Url is null
+            || model.SmartUploadItem is null)
         {
-            eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel), $"Invalid chat page url.");
-            return BadRequest("Invalid chat page url.");
-        }
+            eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel), InvalidPathBaseErrorMessage);
 
-        if (model.SmartUploadItem.Url is null)
-        {
-            //var airaPathBase = 
-
-            //eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel), $"Invalid smart upload page url resulting from .");
-            return BadRequest("Invalid smart upload page url.");
+            return BadRequest(InvalidPathBaseErrorMessage);
         }
 
         return Ok(model);
@@ -264,16 +275,31 @@ public sealed class AiraUnifiedController : Controller
     [HttpGet]
     public async Task<IActionResult> Assets()
     {
-        var airaUnifiedPathBase = await GetAiraPathBase();
+        var configuration = await GetConfiguration();
+
+        // Only the URLs which origin from the input of the Admin user in aira unified need verification.
+        var allowedFileExtensionsUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl, AiraUnifiedConstants.SmartUploadAllowedFileExtensionsUrl);
+        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
+        var uploadUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl, AiraUnifiedConstants.SmartUploadUploadUrl);
+
+        if (allowedFileExtensionsUrl is null
+            || navigationUrl is null
+            || uploadUrl is null)
+        {
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(Assets), InvalidPathBaseErrorMessage);
+
+            return BadRequest(InvalidPathBaseErrorMessage);
+        }
 
         var model = new AssetsViewModel
         {
-            PathBase = airaUnifiedPathBase,
-            AllowedFileExtensionsUrl = $"{AiraUnifiedConstants.SmartUploadRelativeUrl}/{AiraUnifiedConstants.SmartUploadAllowedFileExtensionsUrl}",
+            PathBase = configuration.AiraUnifiedPathBase,
+            AllowedFileExtensionsUrl = allowedFileExtensionsUrl.ToString(),
             SelectFilesButton = Resource.SmartUploadSelectFilesButton,
             FilesUploadedMessage = Resource.SmartUploadFilesUploadedMessage,
             NavigationPageIdentifier = AiraUnifiedConstants.SmartUploadRelativeUrl,
-            NavigationUrl = AiraUnifiedConstants.NavigationUrl
+            NavigationUrl = navigationUrl.ToString(),
+            UploadUrl = uploadUrl.ToString()
         };
 
         return View("~/AssetUploader/Assets.cshtml", model);
@@ -339,19 +365,34 @@ public sealed class AiraUnifiedController : Controller
     {
         var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
 
+        var baseUrl = HttpContext.Request.GetBaseUrl();
+
+        // Only the URLs which origin from the input of the Admin user in aira unified need verification.
+        var chatUrl = navigationService.BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatRelativeUrl, AiraUnifiedConstants.ChatMessageUrl);
+
+        if (chatUrl is null)
+        {
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(SignIn), InvalidPathBaseErrorMessage);
+
+            return BadRequest(InvalidPathBaseErrorMessage);
+        }
+
         var model = new SignInViewModel
         {
             PathBase = airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase,
-            ChatRelativeUrl = AiraUnifiedConstants.ChatRelativeUrl,
+            ChatUrl = AiraUnifiedConstants.ChatRelativeUrl
         };
 
         return View("~/Authentication/SignIn.cshtml", model);
     }
 
-    private async Task<string> GetAiraPathBase()
-    {
-        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
+    private sealed record ConfigurationModel(string BaseUrl, string AiraUnifiedPathBase);
 
-        return configuration.AiraUnifiedConfigurationItemAiraPathBase;
+    private async Task<ConfigurationModel> GetConfiguration()
+    {
+        var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
+        var baseUrl = HttpContext.Request.GetBaseUrl();
+
+        return new ConfigurationModel(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase);
     }
 }

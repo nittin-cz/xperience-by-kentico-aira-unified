@@ -31,7 +31,7 @@
                                 <img :src="`${baseUrl}${navBarModel.chatItem.menuImage}`" class="c-icon text-primary" />
                                 {{ navBarModel.chatItem.title }}
                             </a>
-                            <a class="d-flex align-items-center gap-2 btn" v-if="navBarModel?.smartUploadItem" :href="`${baseUrl}${airaUnifiedBaseUrl}/${navBarModel.smartUploadItem.url}`">
+                            <a class="d-flex align-items-center gap-2 btn" v-if="navBarModel?.smartUploadItem" :href="`${navBarModel.smartUploadItem.url}`">
                                 <img :src="`${baseUrl}${navBarModel.smartUploadItem.menuImage}`" class="c-icon text-primary" />
                                 {{ navBarModel.smartUploadItem.title }}
                             </a>
@@ -83,9 +83,7 @@ export default {
     },
     methods: {
         async retrieveNavBar() {
-            const navBarUrl = `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.navigationUrl}`;
-
-            const response = await fetch(navBarUrl, {
+            const response = await fetch(this.navigationUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -44,13 +44,16 @@ public interface IAiraUnifiedAssetService
     /// <param name="configuredUrl"></param>
     /// <param name="defaultUrl"></param>
     /// <param name="imagePurpose"></param>
-    /// <returns></returns>
     string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose);
 
     /// <summary>
     /// Retrieves url of the aira unified logo specified in the configuration.
     /// </summary>
     /// <param name="configuration"></param>
-    /// <returns></returns>
     string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration);
+
+    /// <summary>
+    /// Retrieves url of the aira unified logo specified in the configuration.
+    /// </summary>
+    Task<string> GetSanitizedLogoUrl();
 }

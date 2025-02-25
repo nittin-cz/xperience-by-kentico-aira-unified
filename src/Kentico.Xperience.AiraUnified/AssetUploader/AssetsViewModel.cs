@@ -34,4 +34,9 @@ public class AssetsViewModel
     /// Identifier of the smart upload page recognised by the navigation <see cref="AiraUnifiedController.Navigation(NavBar.NavBarRequestModel)"/> endpoint.
     /// </summary>
     public string NavigationPageIdentifier { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Smart upload upload url.
+    /// </summary>
+    public string UploadUrl { get; set; } = string.Empty;
 }

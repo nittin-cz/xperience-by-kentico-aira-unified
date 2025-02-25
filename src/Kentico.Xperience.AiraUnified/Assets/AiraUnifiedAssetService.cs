@@ -24,6 +24,7 @@ namespace Kentico.Xperience.AiraUnified.Assets;
 internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 {
     private readonly IInfoProvider<ContentLanguageInfo> contentLanguageProvider;
+    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IInfoProvider<SettingsKeyInfo> settingsKeyProvider;
     private readonly IMediaFileUrlRetriever mediaFileUrlRetriever;
     private readonly IInfoProvider<MediaFileInfo> mediaFileInfoProvider;
@@ -32,6 +33,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
     private readonly ISettingsService settingsService;
 
     public AiraUnifiedAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
+        IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IInfoProvider<SettingsKeyInfo> settingsKeyProvider,
         IEventLogService eventLogService,
         IInfoProvider<RoleInfo> roleProvider,
@@ -47,6 +49,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         this.eventLogService = eventLogService;
         this.settingsService = settingsService;
         this.settingsKeyProvider = settingsKeyProvider;
+        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
     }
 
     public async Task<bool> DoesUserHaveAiraUnifiedPermission(string permission, int userId)
@@ -226,6 +229,16 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
     public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
     {
+        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
+
+        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA unified Logo").TrimStart('~');
+    }
+
+    public async Task<string> GetSanitizedLogoUrl()
+    {
+        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
+
         var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
 
         var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;

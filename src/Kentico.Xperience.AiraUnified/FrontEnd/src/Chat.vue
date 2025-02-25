@@ -62,7 +62,7 @@
                     }
                 }"
                 :connect="{
-                    url: `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.chatUrl}`,
+                    url: this.chatUrl,
                     method: 'POST'
                 }"
               :chatStyle="{ height: '100%', width: '100%' }"
@@ -230,6 +230,9 @@ export default {
                         modal.parentNode.removeChild(modal);
                     }, 500);
                 }
+
+                this.bindPromptButtons();
+
             }, 1000);
 
             this.$refs.chatElementRef.onComponentRender = async () => {
@@ -238,8 +241,11 @@ export default {
                 if (!this.started) {
                     this.started = true;
                     document.addEventListener('visibilitychange', function () {
-                        if (document.visibilityState === 'visible' && this.$refs.chatElementRef) {
-                            this.$refs.chatElementRef.scrollToBottom();
+                        if (this.$refs.chatElementRef)
+                        {
+                            if (document.visibilityState === 'visible') {
+                                this.$refs.chatElementRef.scrollToBottom();
+                            }
                         }
                     });
 
@@ -255,8 +261,6 @@ export default {
                     this.submitButton = newSubmitButton;
                     this.addClassesToShadowRoot();
                 }
-
-                this.bindPromptButtons();
             };
         },
         typeIntoInput(inputElement, text) {
@@ -291,14 +295,13 @@ export default {
                         this.typeIntoInput(textInput, text);
                     }, 50);
 
-                    const sendUsePromptUrl = `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.usePromptUrl}`;
-                    await this.removeUsedPromptGroup(buttonGroupId, sendUsePromptUrl);
+                    await this.removeUsedPromptGroup(buttonGroupId);
                 });
             });
         },
-        async removeUsedPromptGroup(groupId, sendUsePromptUrl) {
+        async removeUsedPromptGroup(groupId) {
             try {
-                await fetch(sendUsePromptUrl, {
+                await fetch(this.usePromptUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -549,8 +552,7 @@ export default {
             shadowRoot.appendChild(style);
         },
         async setHistory() {
-            const historyFullUrl = `${this.baseUrl}${this.airaUnifiedBaseUrl}/${this.historyUrl}`;
-            const historyResponse = await fetch(historyFullUrl, {
+            const historyResponse = await fetch(this.historyUrl, {
                 method: 'GET'
             });
 
