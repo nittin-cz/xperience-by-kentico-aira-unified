@@ -3,7 +3,6 @@
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.AiraUnified.Admin;
-using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.AssetUploader.Models;
 using Kentico.Xperience.AiraUnified.Authentication;
