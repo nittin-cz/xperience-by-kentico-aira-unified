@@ -4,6 +4,7 @@ using System.Data;
 using CMS;
 using CMS.DataEngine;
 using CMS.Helpers;
+using CMS.Workspaces;
 
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
@@ -78,6 +79,18 @@ public partial class AiraUnifiedConfigurationItemInfo : AbstractInfo<AiraUnified
     {
         get => ValidationHelper.GetString(GetValue(nameof(AiraUnifiedConfigurationItemAiraRelativeLogoId)), string.Empty);
         set => SetValue(nameof(AiraUnifiedConfigurationItemAiraRelativeLogoId), value);
+    }
+
+
+    /// <summary>
+    /// Workspace name.
+    /// </summary>
+    [DatabaseField]
+    [Required]
+    public virtual string AiraUnifiedConfigurationWorkspaceName
+    {
+        get => ValidationHelper.GetString(GetValue(nameof(AiraUnifiedConfigurationWorkspaceName)), string.Empty);
+        set => SetValue(nameof(AiraUnifiedConfigurationWorkspaceName), value);
     }
 
 

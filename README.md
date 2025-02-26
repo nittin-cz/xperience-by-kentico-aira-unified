@@ -73,6 +73,7 @@ dotnet add package Kentico.Xperience.AiraUnified
    - **Logo**: Select an asset from the Media Library.
    - **Chat Title**: Title for the chat page.
    - **Smart Upload Title**: Title for the smart upload page.
+   - **Workspace**: The workspace used by the smart uploader.
    
    ![Admin Configuration](/images/AiraUnifiedAdminConfiguration.png)
 
@@ -85,9 +86,7 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 At the moment the administrator user/role must be assigned to a custom role with the correct permission.
 
-8. In case of using this library in a project with XbyK versions > 30.2.0 the Aira Unified expects a workspace named "Kentico Default" (code name 'KenticoDefault'). In that case, add a workspace with a code name `KenticoDefault` workspace.
-
-9. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
+8. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
 
 ## Full Instructions
 

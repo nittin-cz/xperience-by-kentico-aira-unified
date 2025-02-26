@@ -21,17 +21,20 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 {
     private readonly IInfoProvider<ContentLanguageInfo> contentLanguageProvider;
     private readonly IInfoProvider<SettingsKeyInfo> settingsKeyProvider;
+    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IInfoProvider<RoleInfo> roleProvider;
     private readonly IEventLogService eventLogService;
     private readonly ISettingsService settingsService;
 
     public AiraUnifiedAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
         IInfoProvider<SettingsKeyInfo> settingsKeyProvider,
+        IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IEventLogService eventLogService,
         IInfoProvider<RoleInfo> roleProvider,
         ISettingsService settingsService
         )
     {
+        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
         this.contentLanguageProvider = contentLanguageProvider;
         this.roleProvider = roleProvider;
         this.eventLogService = eventLogService;
@@ -132,9 +135,11 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
         var contentItemAssetColumnCodeName = massAssetConfigurationInfo["AssetFieldName"];
 
+        var workspaceName = (await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration()).AiraUnifiedConfigurationWorkspaceName;
+
         foreach (var file in files)
         {
-            var createContentItemParameters = new CreateContentItemParameters(contentType.ClassName, null, file.FileName, languageName, "KenticoDefault");
+            var createContentItemParameters = new CreateContentItemParameters(contentType.ClassName, null, file.FileName, languageName, workspaceName);
 
             var fileCreated = await CreateContentAssetItem(createContentItemParameters, file, userId, contentItemAssetColumnCodeName);
 
