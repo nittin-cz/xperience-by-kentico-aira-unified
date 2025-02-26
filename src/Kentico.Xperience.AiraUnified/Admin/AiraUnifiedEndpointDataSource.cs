@@ -76,6 +76,11 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 nameof(AiraUnifiedController.SignIn),
                 (controller) => controller.SignIn()
             ),
+            CreateAiraEndpoint(configuration,
+                subPath: string.Empty,
+                nameof(AiraUnifiedController.SignIn),
+                controller => controller.SignIn()
+            ),
             CreateAiraEndpointFromBody<AiraUnifiedUsedPromptGroupModel>(configuration,
                 AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl,
                 nameof(AiraUnifiedController.RemoveUsedPromptGroup),
@@ -155,23 +160,32 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         string actionName,
         Func<AiraUnifiedController, Task<IActionResult>> action,
         string? requiredPermission = null)
-    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {
-        var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
+        var path = $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}";
 
-        if (!await CheckHttps(context))
+        if (!string.Equals(subPath, string.Empty))
         {
-            return;
+            path = $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}";
         }
 
-        if (requiredPermission is not null && !await CheckAuthorizationOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        return CreateEndpoint(path, async context =>
         {
-            return;
-        }
+            var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        var result = await action.Invoke(airaUnifiedController);
-        await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-    });
+            if (!await CheckHttps(context))
+            {
+                return;
+            }
+
+            if (requiredPermission is not null && !await CheckAuthorizationOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+            {
+                return;
+            }
+
+            var result = await action.Invoke(airaUnifiedController);
+            await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+        });
+    }
 
     private static Endpoint CreateAiraIFormCollectionEndpoint(AiraUnifiedConfigurationItemInfo configurationItemInfo,
         string subPath,
