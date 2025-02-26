@@ -309,14 +309,14 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         if (user is null || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any())
         {
-            context.Response.Redirect(signInRedirectUrl);
+            context.Response.Redirect($"{signInRedirectUrl}?{AiraUnifiedConstants.SigninMissingPermissionParameterName}={permission}");
             return false;
         }
 
         var hasAiraViewPermission = await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID);
         if (!hasAiraViewPermission)
         {
-            context.Response.Redirect(signInRedirectUrl);
+            context.Response.Redirect($"{signInRedirectUrl}?{AiraUnifiedConstants.SigninMissingPermissionParameterName}={permission}");
             return false;
         }
 

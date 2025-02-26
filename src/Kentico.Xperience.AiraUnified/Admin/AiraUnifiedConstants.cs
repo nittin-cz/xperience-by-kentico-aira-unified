@@ -36,6 +36,11 @@ public static class AiraUnifiedConstants
     public const string SigninRelativeUrl = "signin";
 
     /// <summary>
+    /// Name of the optional query parameter of the signIn endpoint.
+    /// </summary>
+    public const string SigninMissingPermissionParameterName = "missingPermission";
+
+    /// <summary>
     /// Relative path to the used prompt group removal endpoint.
     /// </summary>
     public const string RemoveUsedPromptGroupRelativeUrl = "prompt/use";

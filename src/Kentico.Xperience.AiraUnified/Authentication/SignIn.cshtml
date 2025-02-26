@@ -25,6 +25,12 @@
             <div class="px-6 pt-6 d-flex justify-content-center">
                 <button id="loginButton" type="submit" class="btn btn-outline-primary btn-lg">Continue with XbyK</button>
             </div>
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="d-flex justify-content-center pt-6">
+                    <div class="text-center text-danger field-validation-error">@Model.ErrorMessage</div>
+                </div>
+            }
         </div>
     </div>
     <div id="install-dialog"></div>

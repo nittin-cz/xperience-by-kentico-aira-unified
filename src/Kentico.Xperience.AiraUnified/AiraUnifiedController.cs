@@ -286,11 +286,20 @@ public sealed class AiraUnifiedController : Controller
         var logoUrl = navBarService.GetMediaFileUrl(airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
         logoUrl = navBarService.GetSanitizedImageUrl(logoUrl, $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}", "Aira Unified Logo");
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable S6932 // Kept, we are using the aira unified middleware, where we want to specify this parameter, therefore asp.net's query parameter should not be used, because we also want to reference the samme value in that middleware and we would not be able to use a variable for the query parameter.
+        var missingPermission = Request.Query[AiraUnifiedConstants.SigninMissingPermissionParameterName].ToString();
+#pragma warning restore S6932 //
+#pragma warning restore IDE0079 // Remove unnecessary suppression
+
+        var errorMessage = string.IsNullOrEmpty(missingPermission) ? null : $"You do not have the Aira Unified {missingPermission} permission.";
+
         var model = new SignInViewModel
         {
             PathBase = airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase,
             ChatRelativeUrl = AiraUnifiedConstants.ChatRelativeUrl,
-            LogoImageRelativePath = logoUrl
+            LogoImageRelativePath = logoUrl,
+            ErrorMessage = errorMessage
         };
 
         return View("~/Authentication/SignIn.cshtml", model);
