@@ -53,14 +53,5 @@ internal class NavigationService : INavigationService
     }
 
     public Uri? BuildUriOrNull(string baseUrl, string airaPathBase, params string[] relativePathParts)
-    {
-        var url = $"{baseUrl}{airaPathBase}/{string.Join('/', relativePathParts)}";
-
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-        {
-            return null; // Invalid base URL
-        }
-
-        return uri;
-    }
+        => Uri.TryCreate($"{baseUrl}{airaPathBase}/{string.Join('/', relativePathParts)}", UriKind.Absolute, out var uri) ? uri : null;
 }

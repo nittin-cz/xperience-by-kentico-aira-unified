@@ -247,19 +247,23 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
     public IMediaFileUrl? GetMediaFileUrl(string identifier)
     {
-        if (Guid.TryParse(identifier, out var identifierGuid))
+        if (!Guid.TryParse(identifier, out var identifierGuid))
         {
-            var mediaLibraryFiles = mediaFileInfoProvider
-                .Get()
-                .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
-            if (mediaLibraryFiles.Any())
-            {
-                var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
-                return media;
-            }
+            return null;
         }
 
-        return default;
+        var mediaLibraryFiles = mediaFileInfoProvider
+            .Get()
+            .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
+
+        if (!mediaLibraryFiles.Any())
+        {
+            return null;
+        }
+
+        var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
+
+        return media;
     }
 
     public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
