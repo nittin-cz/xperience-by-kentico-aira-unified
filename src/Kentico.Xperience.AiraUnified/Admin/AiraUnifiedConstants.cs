@@ -66,11 +66,6 @@ public static class AiraUnifiedConstants
     public const string AiraUnifiedAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
 
     /// <summary>
-    /// The ai endpoint.
-    /// </summary>
-    public const string AiraAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
-
-    /// <summary>
     /// The identifier of the ai role used to identify the role in the database.
     /// </summary>
     public const int AiraUnifiedChatRoleIdentifier = 0;
