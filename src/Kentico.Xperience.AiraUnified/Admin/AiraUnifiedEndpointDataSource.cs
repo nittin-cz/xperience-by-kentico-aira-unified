@@ -179,14 +179,15 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 return;
             }
 
-        if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        {
-            return;
-        }
+            if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+            {
+                return;
+            }
 
-        var result = await action.Invoke(airaUnifiedController);
-        await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-    });
+            var result = await action.Invoke(airaUnifiedController);
+            await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+        });
+    }
 
     private static Endpoint CreateAiraEndpointWithConditionalRedirect(AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
@@ -374,14 +375,14 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         var fullRedirectUrl = $"{airaUnifiedPathBase}/{redirectSubPath}";
 
-        if (user is not null
-            && userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any()
-            && await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID))
+        if (user is null
+            || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any()
+            || !await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID))
         {
-            context.Response.Redirect(fullRedirectUrl);
-            return true;
+            return false;
         }
 
-        return false;
+        context.Response.Redirect(fullRedirectUrl);
+        return true;
     }
 }
