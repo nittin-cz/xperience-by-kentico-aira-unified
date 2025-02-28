@@ -384,10 +384,12 @@ public sealed class AiraUnifiedController : Controller
 
         var errorMessage = string.IsNullOrEmpty(missingPermission) ? null : $"You do not have the Aira Unified {missingPermission} permission.";
 
+        var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
+
         var model = new SignInViewModel
         {
             PathBase = airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase,
-            ChatRelativeUrl = AiraUnifiedConstants.ChatRelativeUrl,
+            ChatUrl = AiraUnifiedConstants.ChatRelativeUrl,
             LogoImageRelativePath = logoUrl,
             ErrorMessage = errorMessage
         };

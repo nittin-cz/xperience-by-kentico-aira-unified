@@ -28,7 +28,6 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
     private readonly IInfoProvider<SettingsKeyInfo> settingsKeyProvider;
     private readonly IMediaFileUrlRetriever mediaFileUrlRetriever;
     private readonly IInfoProvider<MediaFileInfo> mediaFileInfoProvider;
-    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IInfoProvider<RoleInfo> roleProvider;
     private readonly IEventLogService eventLogService;
     private readonly ISettingsService settingsService;
@@ -36,7 +35,6 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
     public AiraUnifiedAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
         IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IInfoProvider<SettingsKeyInfo> settingsKeyProvider,
-        IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IEventLogService eventLogService,
         IInfoProvider<RoleInfo> roleProvider,
         ISettingsService settingsService,
@@ -46,7 +44,6 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
     {
         this.mediaFileUrlRetriever = mediaFileUrlRetriever;
         this.mediaFileInfoProvider = mediaFileInfoProvider;
-        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
         this.contentLanguageProvider = contentLanguageProvider;
         this.roleProvider = roleProvider;
         this.eventLogService = eventLogService;
