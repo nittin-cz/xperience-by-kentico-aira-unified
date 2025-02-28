@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-using CMS.DataEngine;
+﻿using CMS.DataEngine;
 using CMS.Membership;
 
 using Kentico.Xperience.Admin.Base;
