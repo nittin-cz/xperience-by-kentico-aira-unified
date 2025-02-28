@@ -181,7 +181,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             return;
         }
 
-        if (requiredPermission is not null && !await CheckAuthorizationOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
         {
             return;
         }
