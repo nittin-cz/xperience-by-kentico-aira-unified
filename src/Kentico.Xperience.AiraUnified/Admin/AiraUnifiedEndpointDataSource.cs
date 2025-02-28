@@ -91,6 +91,11 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 permissionToRedirectedEndpoint: SystemPermissions.VIEW,
                 redirectUrl: AiraUnifiedConstants.ChatRelativeUrl
             ),
+            CreateAiraEndpoint(configuration,
+                subPath: string.Empty,
+                nameof(AiraUnifiedController.SignIn),
+                controller => controller.SignIn()
+            ),
             CreateAiraEndpointFromBody<AiraUnifiedUsedPromptGroupModel>(configuration,
                 AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl,
                 nameof(AiraUnifiedController.RemoveUsedPromptGroup),
@@ -166,12 +171,12 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
         string actionName,
-        Func<AiraUnifiedController, T, Task<IActionResult>> actionWithModel,
-        string? requiredPermission = null
-    ) where T : class, new()
+        Func<AiraUnifiedController, Task<IActionResult>> action,
+        string? requiredPermission = null)
     => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {
-        var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
+        var path = string.Equals(subPath, string.Empty) ? $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}"
+            : $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}";
 
         if (!await CheckHttps(context) ||
             (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
@@ -234,9 +239,10 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             return;
         }
 
-        var result = await action.Invoke(airaUnifiedController);
-        await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-    });
+            var result = await action.Invoke(airaUnifiedController);
+            await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+        });
+    }
 
     private static Endpoint CreateAiraEndpointWithConditionalRedirect(AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
@@ -391,7 +397,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         if (user is null || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any())
         {
-            context.Response.Redirect(signInRedirectUrl);
+            context.Response.Redirect($"{signInRedirectUrl}?{AiraUnifiedConstants.SigninMissingPermissionParameterName}={permission}");
             return false;
         }
 

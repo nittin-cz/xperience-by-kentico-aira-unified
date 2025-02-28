@@ -11,4 +11,14 @@ public class SignInViewModel
     /// Aira unified base url.
     /// </summary>
     public string PathBase { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Path of the logo displayed in the PWA.
+    /// </summary>
+    public string LogoImageRelativePath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Error message displayed if the user misses a permission.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
 }
