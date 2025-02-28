@@ -71,7 +71,13 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                 {
                     ReferenceType = ObjectDependencyEnum.Required,
                     ReferenceToObjectType = UserInfo.OBJECT_TYPE,
-                    FormFieldName = nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptUserId)
+                    FormFieldName = nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupUserId)
+                },
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = AiraUnifiedChatThreadInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupThreadId)
                 }
             ]
         );
@@ -116,6 +122,29 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                 {
                     FormFieldName = nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageText),
                     FormFieldType = FieldDataType.LongText
+                },
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = AiraUnifiedChatThreadInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageThreadId)
+                }
+            ]
+        );
+
+        InstallAiraUnifiedClass(
+            resourceInfo,
+            AiraUnifiedChatThreadInfo.TYPEINFO.ObjectClassName,
+            AiraUnifiedChatThreadInfo.OBJECT_TYPE,
+            classDisplayName: "Aira Unified Chat Thread",
+            typeof(AiraUnifiedChatThreadInfo),
+            nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId),
+            [
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = UserInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId)
                 }
             ]
         );
@@ -223,6 +252,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                     Type t when t == typeof(int) => FieldDataType.Integer,
                     Type t when t == typeof(DateTime) => FieldDataType.DateTime,
                     Type t when t == typeof(Guid) => FieldDataType.Guid,
+                    Type t when t == typeof(bool) => FieldDataType.Boolean,
                     _ => formItem.DataType // Default case if no match is found
                 };
 

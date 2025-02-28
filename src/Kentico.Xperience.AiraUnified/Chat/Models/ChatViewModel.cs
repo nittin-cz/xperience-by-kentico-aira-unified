@@ -41,6 +41,16 @@ public class ChatViewModel
     public string NavigationPageIdentifier { get; set; } = string.Empty;
 
     /// <summary>
+    /// The name of the thread.
+    /// </summary>
+    public string ThreadName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The id of the thread.
+    /// </summary>
+    public int ThreadId { get; set; }
+
+    /// <summary>
     /// Relative path of the <see cref="AiraUnifiedController.PostChatMessage(Microsoft.AspNetCore.Http.IFormCollection)"/> endpoint.
     /// </summary>
     public string ChatUrl { get; set; } = string.Empty;

@@ -14,7 +14,7 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 /// <summary>
-/// Data conainer class for <see cref="AiraUnifiedChatPromptGroupInfo"/>.
+/// Data container class for <see cref="AiraUnifiedChatPromptGroupInfo"/>.
 /// </summary>
 internal class AiraUnifiedChatPromptGroupInfo : AbstractInfo<AiraUnifiedChatPromptGroupInfo, IInfoProvider<AiraUnifiedChatPromptGroupInfo>>
 {
@@ -32,7 +32,8 @@ internal class AiraUnifiedChatPromptGroupInfo : AbstractInfo<AiraUnifiedChatProm
         TouchCacheDependencies = true,
         DependsOn =
         [
-            new(nameof(AiraUnifiedChatPromptUserId), UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required)
+            new(nameof(AiraUnifiedChatPromptGroupUserId), UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required),
+            new(nameof(AiraUnifiedChatPromptGroupThreadId), AiraUnifiedChatThreadInfo.OBJECT_TYPE, ObjectDependencyEnum.Required)
         ],
         ContinuousIntegrationSettings =
         {
@@ -78,14 +79,26 @@ internal class AiraUnifiedChatPromptGroupInfo : AbstractInfo<AiraUnifiedChatProm
 
 
     /// <summary>
-    /// Chat prompt id.
+    /// Chat prompt user id.
     /// </summary>
     [DatabaseField]
     [Required]
-    public virtual int AiraUnifiedChatPromptUserId
+    public virtual int AiraUnifiedChatPromptGroupUserId
     {
-        get => ValidationHelper.GetInteger(GetValue(nameof(AiraUnifiedChatPromptUserId)), 0);
-        set => SetValue(nameof(AiraUnifiedChatPromptUserId), value);
+        get => ValidationHelper.GetInteger(GetValue(nameof(AiraUnifiedChatPromptGroupUserId)), 0);
+        set => SetValue(nameof(AiraUnifiedChatPromptGroupUserId), value);
+    }
+
+
+    /// <summary>
+    /// The chat thread id.
+    /// </summary>
+    [DatabaseField]
+    [Required]
+    public virtual int AiraUnifiedChatPromptGroupThreadId
+    {
+        get => ValidationHelper.GetInteger(GetValue(nameof(AiraUnifiedChatPromptGroupThreadId)), 0);
+        set => SetValue(nameof(AiraUnifiedChatPromptGroupThreadId), value);
     }
 
 

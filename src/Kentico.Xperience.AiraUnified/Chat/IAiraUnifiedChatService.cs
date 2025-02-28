@@ -11,16 +11,18 @@ public interface IAiraUnifiedChatService
     /// Returns the chat history of a user.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
     /// <returns>A Task returning a List of <see cref="AiraUnifiedChatMessageViewModel"/> in User's history.</returns>
-    Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId);
+    Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId);
 
     /// <summary>
     /// Generates new suggested prompts for a user and saves them in the history.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
     /// <param name="suggestions">The prompt suggestions.</param>
+    /// <param name="threadId">The chat thread id.</param>
     /// <returns>A task returning a <see cref="AiraUnifiedChatMessageViewModel"/> with the generated prompts.</returns>
-    AiraUnifiedPromptGroupModel SaveAiraPrompts(int userId, List<string> suggestions);
+    Task<AiraUnifiedPromptGroupModel> SaveAiraPrompts(int userId, List<string> suggestions, int threadId);
 
     /// <summary>
     /// Removes used prompt group.
@@ -29,12 +31,28 @@ public interface IAiraUnifiedChatService
     void RemoveUsedPrompts(string promptGroupId);
 
     /// <summary>
+    /// Gets a chat thread model of the specified id. If the id is null the latest used thread will be returned. If no thread for the user exists, a new thread for the user will be created.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The desired thread id or null.</param>
+    /// <returns>The task containing the desired <see cref="AiraUnifiedChatThreadModel"/>.</returns>
+    Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, int? threadId = null);
+
+    /// <summary>
+    /// Creates new chat thread for the specified user.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <returns></returns>
+    Task<AiraUnifiedChatThreadModel> CreateNewChatThread(int userId);
+
+    /// <summary>
     /// Saves a text message in the history.
     /// </summary>
     /// <param name="text">Text of the message.</param>
     /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
     /// <param name="role">Role of the chat member.</param>
-    void SaveMessage(string text, int userId, string role);
+    Task SaveMessage(string text, int userId, string role, int threadId);
 
     /// <summary>
     /// Calls the ai endpoint with a message from the user.
@@ -50,5 +68,5 @@ public interface IAiraUnifiedChatService
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="summary">New summary.</param>
-    void UpdateChatSummary(int userId, string summary);
+    Task UpdateChatSummary(int userId, string summary);
 }

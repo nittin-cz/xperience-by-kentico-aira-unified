@@ -1,4 +1,7 @@
-﻿using CMS.Core;
+﻿using System;
+
+using CMS.Core;
+using CMS.Membership;
 
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
@@ -50,9 +53,10 @@ public sealed class AiraUnifiedController : Controller
 
     /// <summary>
     /// Endpoint exposing access to the Chat page.
+    /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? chatThreadId = null)
     {
         var configuration = await GetConfiguration();
         var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
@@ -73,6 +77,11 @@ public sealed class AiraUnifiedController : Controller
             return BadRequest(InvalidPathBaseErrorMessage);
         }
 
+        var user = await adminUserManager.GetUserAsync(User);
+
+        // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
+        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, chatThreadId);
+
         var chatModel = new ChatViewModel
         {
             PathBase = configuration.AiraUnifiedPathBase,
@@ -89,10 +98,35 @@ public sealed class AiraUnifiedController : Controller
             NavigationPageIdentifier = AiraUnifiedConstants.ChatRelativeUrl,
             HistoryUrl = historyUrl.ToString(),
             ChatUrl = chatUrl.ToString(),
+            ThreadId = chatThread.ThreadId,
+            ThreadName = chatThread.ThreadName,
             LogoImgRelativePath = logoUrl
         };
 
         return View("~/Chat/Chat.cshtml", chatModel);
+    }
+
+    /// <summary>
+    /// Creates new chat thread and redirects to the new chat thread.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> NewChatThread()
+    {
+        var configuration = await GetConfiguration();
+
+        var user = await adminUserManager.GetUserAsync(User);
+
+        var chatThread = await airaUnifiedChatService.CreateNewChatThread(user!.UserID);
+        var chatRedirectUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl, chatThread.ThreadId.ToString());
+
+        if (chatRedirectUrl is null)
+        {
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(NewChatThread), InvalidPathBaseErrorMessage);
+
+            return BadRequest(InvalidPathBaseErrorMessage);
+        }
+
+        return Redirect(chatRedirectUrl.ToString());
     }
 
     /// <summary>
@@ -123,14 +157,15 @@ public sealed class AiraUnifiedController : Controller
 
     /// <summary>
     /// Endpoint exposing the user's chat history.
+    /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetChatHistory()
+    public async Task<IActionResult> GetChatHistory(int chatThreadId)
     {
         var user = await adminUserManager.GetUserAsync(User);
 
         // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
-        var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID);
+        var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID, chatThreadId);
 
         if (history.Count == 0)
         {
@@ -161,10 +196,11 @@ public sealed class AiraUnifiedController : Controller
 
     /// <summary>
     /// Endpoint allowing chat communication via the chat interface.
+    /// <param name = "chatThreadId" > The chat thread id.</param>
     /// </summary>
     /// <param name="request">The <see cref="IFormCollection"/> including the chat message.</param>
     [HttpPost]
-    public async Task<IActionResult> PostChatMessage(IFormCollection request)
+    public async Task<IActionResult> PostChatMessage(IFormCollection request, int chatThreadId)
     {
         var user = await adminUserManager.GetUserAsync(User);
 
@@ -190,7 +226,7 @@ public sealed class AiraUnifiedController : Controller
         AiraUnifiedChatMessageViewModel result;
 
         // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
-        airaUnifiedChatService.SaveMessage(message, user!.UserID, AiraUnifiedConstants.UserChatRoleName);
+        await airaUnifiedChatService.SaveMessage(message, user!.UserID, AiraUnifiedConstants.UserChatRoleName, chatThreadId);
 
         try
         {
@@ -206,9 +242,9 @@ public sealed class AiraUnifiedController : Controller
                 return Ok(result);
             }
 
-            airaUnifiedChatService.SaveMessage(aiResponse.Response, user.UserID, AiraUnifiedConstants.AiraUnifiedChatRoleName);
+            await airaUnifiedChatService.SaveMessage(aiResponse.Response, user.UserID, AiraUnifiedConstants.AiraUnifiedChatRoleName, chatThreadId);
 
-            airaUnifiedChatService.UpdateChatSummary(user.UserID, message);
+            await airaUnifiedChatService.UpdateChatSummary(user.UserID, message);
 
             result = new AiraUnifiedChatMessageViewModel
             {
@@ -218,7 +254,7 @@ public sealed class AiraUnifiedController : Controller
 
             if (aiResponse.SuggestedQuestions is not null)
             {
-                var promptGroup = airaUnifiedChatService.SaveAiraPrompts(user.UserID, aiResponse.SuggestedQuestions);
+                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, aiResponse.SuggestedQuestions, chatThreadId);
                 result.QuickPrompts = promptGroup.QuickPrompts;
                 result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
             }
