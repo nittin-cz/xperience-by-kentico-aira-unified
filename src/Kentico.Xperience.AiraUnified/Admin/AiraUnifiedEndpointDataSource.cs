@@ -209,10 +209,9 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             return;
         }
 
-            var result = await action.Invoke(airaUnifiedController);
-            await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-        });
-    }
+        var result = await action.Invoke(airaUnifiedController);
+        await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+    });
 
     private static Endpoint CreateAiraIFormCollectionEndpoint(AiraUnifiedConfigurationItemInfo configurationItemInfo,
         string subPath,
