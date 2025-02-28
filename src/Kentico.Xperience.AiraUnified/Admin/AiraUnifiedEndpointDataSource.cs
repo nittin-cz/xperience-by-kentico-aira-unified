@@ -163,23 +163,16 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         Func<AiraUnifiedController, Task<IActionResult>> action,
         string? requiredPermission = null)
     {
-        var path = $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}";
-
-        if (!string.Equals(subPath, string.Empty))
-        {
-            path = $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}";
-        }
+        var path = string.Equals(subPath, string.Empty) ? $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}"
+            : $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}";
 
         return CreateEndpoint(path, async context =>
         {
             var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-            if (!await CheckHttps(context))
-            {
-                return;
-            }
-
-            if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+            if (!await CheckHttps(context) ||
+                (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+            )
             {
                 return;
             }
