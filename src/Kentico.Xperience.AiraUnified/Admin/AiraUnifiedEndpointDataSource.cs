@@ -116,12 +116,9 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context))
-        {
-            return;
-        }
-
-        if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        if (!await CheckHttps(context) ||
+            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        )
         {
             return;
         }
@@ -176,12 +173,9 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context))
-        {
-            return;
-        }
-
-        if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        if (!await CheckHttps(context) ||
+            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        )
         {
             return;
         }
@@ -233,12 +227,9 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context))
-        {
-            return;
-        }
-
-        if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        if (!await CheckHttps(context) ||
+            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        )
         {
             return;
         }
@@ -257,12 +248,8 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context))
-        {
-            return;
-        }
-
-        if (await SetRedirectIfAuthorized(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, permissionToRedirectedEndpoint, redirectUrl))
+        if (!await CheckHttps(context) ||
+            await SetRedirectIfAuthorized(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, permissionToRedirectedEndpoint, redirectUrl))
         {
             return;
         }
@@ -278,14 +265,11 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         string? requiredPermission = null)
     => CreateEndpoint($"{configurationItemInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {
-        if (!await CheckHttps(context))
-        {
-            return;
-        }
-
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationItemInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        if (!await CheckHttps(context) ||
+            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationItemInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        )
         {
             return;
         }
@@ -432,14 +416,14 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         var fullRedirectUrl = $"{airaUnifiedPathBase}/{redirectSubPath}";
 
-        if (user is not null
-            && userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any()
-            && await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID))
+        if (user is null
+            || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any()
+            || !await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID))
         {
-            context.Response.Redirect(fullRedirectUrl);
-            return true;
+            return false;
         }
 
-        return false;
+        context.Response.Redirect(fullRedirectUrl);
+        return true;
     }
 }
