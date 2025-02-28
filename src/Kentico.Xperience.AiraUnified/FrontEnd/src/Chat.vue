@@ -241,11 +241,9 @@ export default {
                 if (!this.started) {
                     this.started = true;
                     document.addEventListener('visibilitychange', function () {
-                        if (this.$refs.chatElementRef)
+                        if (this.$refs.chatElementRef && document.visibilityState === 'visible')
                         {
-                            if (document.visibilityState === 'visible') {
-                                this.$refs.chatElementRef.scrollToBottom();
-                            }
+                            this.$refs.chatElementRef.scrollToBottom();
                         }
                     });
 

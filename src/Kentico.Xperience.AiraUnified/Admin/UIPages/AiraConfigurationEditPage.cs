@@ -49,7 +49,7 @@ internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfi
 
     protected override async Task<ICommandResponse> ProcessFormData(AiraUnifiedConfigurationModel model, ICollection<IFormItem> formItems)
     {
-        if (!IsValidSubpath(model.RelativePathBase))
+        if (!model.RelativePathBase.IsValidSubpath())
         {
             return ResponseFrom(new FormSubmissionResult(
                 FormSubmissionStatus.ValidationFailure
@@ -74,39 +74,5 @@ internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfi
         }
 
         return response;
-    }
-
-    private static bool IsValidSubpath(string path)
-    {
-        if (string.IsNullOrEmpty(path) || path[0] != '/')
-        {
-            return false;
-        }
-
-        if (path.Contains("//"))
-        {
-            return false;
-        }
-
-        // Ensure the path does not contain traversal sequences
-        if (path.Contains("..") || path.Contains("%2e%2e") || path.Contains("%2E%2E"))
-        {
-            return false;
-        }
-
-        // Allow only alphanumeric, hyphen, underscore, and single forward slashes
-        var pattern = @"^\/[a-zA-Z0-9-_\/]*$";
-        if (!Regex.IsMatch(path, pattern))
-        {
-            return false;
-        }
-
-        // Prevent trailing slashes to maintain consistency
-        if (path.Length > 1 && path.EndsWith('/'))
-        {
-            return false;
-        }
-
-        return true;
     }
 }

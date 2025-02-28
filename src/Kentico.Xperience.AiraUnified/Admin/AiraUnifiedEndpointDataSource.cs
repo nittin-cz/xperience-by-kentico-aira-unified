@@ -184,42 +184,41 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             return;
         }
 
-        if (context.Request.ContentType is not null &&
-            string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
-        {
-            using var reader = new StreamReader(context.Request.Body);
-            var body = await reader.ReadToEndAsync();
-
-            try
-            {
-                var requestObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (requestObject is not null)
-                {
-                    var result = await actionWithModel.Invoke(airaUnifiedController, requestObject);
-                    await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-                }
-                else
-                {
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await context.Response.WriteAsync("Invalid or missing request body.");
-                }
-            }
-            catch (JsonException ex)
-            {
-                // Handle JSON deserialization errors
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync($"Invalid JSON format: {ex.Message}");
-            }
-        }
-        else
+        if (context.Request.ContentType is null ||
+            !string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
         {
             // Handle unsupported content types
             context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
             await context.Response.WriteAsync("Unsupported content type. Expected 'application/json'.");
+            return;
+        }
+
+        using var reader = new StreamReader(context.Request.Body);
+        var body = await reader.ReadToEndAsync();
+
+        try
+        {
+            var requestObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (requestObject is not null)
+            {
+                var result = await actionWithModel.Invoke(airaUnifiedController, requestObject);
+                await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsync("Invalid or missing request body.");
+            }
+        }
+        catch (JsonException ex)
+        {
+            // Handle JSON deserialization errors
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsync($"Invalid JSON format: {ex.Message}");
         }
     });
 
