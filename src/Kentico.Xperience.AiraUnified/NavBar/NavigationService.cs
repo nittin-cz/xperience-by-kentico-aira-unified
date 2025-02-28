@@ -20,7 +20,7 @@ internal class NavigationService : INavigationService
         var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
         var sanitizedLogoUrl = airaUnifiedAssetService.GetSanitizedLogoUrl(airaUnifiedConfiguration);
 
-        var chatItemUrl = BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatRelativeUrl);
+        var chatItemUrl = BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatThreadSelectorRelativeUrl);
 
         var smartUploadUrl = BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl);
 

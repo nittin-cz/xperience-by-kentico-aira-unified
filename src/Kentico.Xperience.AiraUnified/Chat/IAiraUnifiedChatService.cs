@@ -46,6 +46,13 @@ public interface IAiraUnifiedChatService
     Task<AiraUnifiedChatThreadModel> CreateNewChatThread(int userId);
 
     /// <summary>
+    /// Gets an enumerable of user's threads ordered from first to last used.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <returns>IEnumerable of user's <see cref="AiraUnifiedChatThreadModel"/>s.</returns>
+    Task<IEnumerable<AiraUnifiedChatThreadModel>> GetThreads(int userId);
+
+    /// <summary>
     /// Saves a text message in the history.
     /// </summary>
     /// <param name="text">Text of the message.</param>

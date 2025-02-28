@@ -101,6 +101,18 @@ public class AiraUnifiedChatThreadInfo : AbstractInfo<AiraUnifiedChatThreadInfo,
 
 
     /// <summary>
+    /// Last time this chat thread has been used by the user.
+    /// </summary>
+    [DatabaseField]
+    [Required]
+    public DateTime AiraUnifiedChatThreadLastUsedWhen
+    {
+        get => ValidationHelper.GetDateTime(GetValue(nameof(AiraUnifiedChatThreadLastUsedWhen)), DateTime.MinValue);
+        set => SetValue(nameof(AiraUnifiedChatThreadLastUsedWhen), value);
+    }
+
+
+    /// <summary>
     /// Deletes the object using appropriate provider.
     /// </summary>
     protected override void DeleteObject() => Provider.Delete(this);

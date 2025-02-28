@@ -138,6 +138,18 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+    public async Task<IEnumerable<AiraUnifiedChatThreadModel>> GetThreads(int userId)
+    => (await airaUnifiedChatThreadProvider
+        .Get()
+        .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId), userId)
+        .OrderByDescending(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen))
+        .GetEnumerableTypedResultAsync())
+        .Select(x => new AiraUnifiedChatThreadModel
+        {
+            ThreadName = x.AiraUnifiedChatThreadName,
+            ThreadId = x.AiraUnifiedChatThreadId
+        });
+
     public async Task SaveMessage(string text, int userId, string role, int threadId)
     {
         var message = new AiraUnifiedChatMessageInfo

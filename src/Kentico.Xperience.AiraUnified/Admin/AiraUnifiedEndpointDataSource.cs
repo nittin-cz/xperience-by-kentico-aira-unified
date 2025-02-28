@@ -65,7 +65,20 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             CreateAiraEndpoint(configuration,
                 AiraUnifiedConstants.NewChatThreadRelativeUrl,
                 nameof(AiraUnifiedController.NewChatThread),
-                controller => controller.NewChatThread()
+                controller => controller.NewChatThread(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpoint(configuration,
+                $"{AiraUnifiedConstants.ChatThreadSelectorRelativeUrl}/{AiraUnifiedConstants.AllChatThreadsRelativeUrl}",
+                nameof(AiraUnifiedController.GetChatThreads),
+                controller => controller.GetChatThreads(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpoint(configuration,
+                AiraUnifiedConstants.ChatThreadSelectorRelativeUrl,
+                nameof(AiraUnifiedController.ChatThreadSelector),
+                controller => controller.ChatThreadSelector(),
+                requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraEndpointFromBody<NavBarRequestModel>(configuration,
                 AiraUnifiedConstants.NavigationUrl,

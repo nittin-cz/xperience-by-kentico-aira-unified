@@ -13,7 +13,17 @@ public static class AiraUnifiedConstants
     /// <summary>
     /// Relative path to create a new AIRA chat thread.
     /// </summary>
-    public const string NewChatThreadRelativeUrl = "new/thread";
+    public const string NewChatThreadRelativeUrl = "threads/new";
+
+    /// <summary>
+    /// Relative path to user's threads selector page.
+    /// </summary>
+    public const string ChatThreadSelectorRelativeUrl = "threads";
+
+    /// <summary>
+    /// Relative path to user's thread list.
+    /// </summary>
+    public const string AllChatThreadsRelativeUrl = "all";
 
     /// <summary>
     /// Relative path for sending chat messages to aira unified chat.

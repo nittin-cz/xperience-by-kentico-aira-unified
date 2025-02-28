@@ -1,7 +1,4 @@
-﻿using System;
-
-using CMS.Core;
-using CMS.Membership;
+﻿using CMS.Core;
 
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
@@ -84,7 +81,7 @@ public sealed class AiraUnifiedController : Controller
 
         var chatModel = new ChatViewModel
         {
-            PathBase = configuration.AiraUnifiedPathBase,
+            AiraUnifiedPathBase = configuration.AiraUnifiedPathBase,
             AIIconImagePath = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
             RemovePromptUrl = removePromptUrl.ToString(),
             ServicePageViewModel = new ServicePageViewModel()
@@ -104,6 +101,40 @@ public sealed class AiraUnifiedController : Controller
         };
 
         return View("~/Chat/Chat.cshtml", chatModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetChatThreads()
+    {
+        var user = await adminUserManager.GetUserAsync(User);
+
+        var chatThreads = await airaUnifiedChatService.GetThreads(user!.UserID);
+
+        return Ok(chatThreads);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ChatThreadSelector()
+    {
+        var configuration = await GetConfiguration();
+
+        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
+
+        if (navigationUrl is null)
+        {
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(ChatThreadSelector), InvalidPathBaseErrorMessage);
+
+            return BadRequest(InvalidPathBaseErrorMessage);
+        }
+
+        var model = new ChatThreadSelectorViewModel
+        {
+            NavigationPageIdentifier = AiraUnifiedConstants.ChatRelativeUrl,
+            AiraUnifiedBaseUrl = configuration.AiraUnifiedPathBase,
+            NavigationUrl = navigationUrl.ToString()
+        };
+
+        return View("~/Chat/ChatThreadSelector.cshtml", model);
     }
 
     /// <summary>

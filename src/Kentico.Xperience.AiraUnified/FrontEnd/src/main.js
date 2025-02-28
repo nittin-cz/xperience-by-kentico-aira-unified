@@ -1,6 +1,7 @@
 ﻿import ChatComponent from "./Chat.vue";
 import AssetsComponent from "./Assets.vue";
 import InstallDialogComponent from "./InstallDialog.vue";
+import ChatThreadSelectorComponent from "./ChatThreadSelector.vue";
 import { createApp } from "vue";
 
 function mountChat(chatElement) {
@@ -49,6 +50,20 @@ function mountAssets(assetsElement) {
         navigationUrl,
         navigationPageIdentifier
     }).mount("#assets-app");
+}
+
+function mountThreads(threadsElement) {
+    const airaUnifiedBaseUrl = threadsElement.dataset.airaUnifiedBaseUrl;
+    const baseUrl = threadsElement.dataset.baseUrl || "";
+    const navigationUrl = threadsElement.dataset.navigationUrl || "";
+    const navigationPageIdentifier = threadsElement.dataset.navigationPageIdentifier || "";
+
+    createApp(ChatThreadSelectorComponent, {
+        airaUnifiedBaseUrl,
+        baseUrl,
+        navigationUrl,
+        navigationPageIdentifier
+    }).mount("#thread-selector");
 }
 
 function mountSignin(signinElement) {
@@ -170,12 +185,11 @@ function openModalLogin(signinElement) {
     }
 }
 
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatElement = document.getElementById("chat-app");
     const assetsElement = document.getElementById("assets-app");
     const signinElement = document.getElementById("aira-unified-kentico-admin-signin");
+    const threadSelectorElement = document.getElementById("thread-selector")
 
     if (chatElement){
         mountChat(chatElement);
@@ -185,5 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     else if (signinElement){
         mountSignin(signinElement);
+    }
+    else if (threadSelectorElement){
+        mountThreads(threadSelectorElement);
     }
 });
