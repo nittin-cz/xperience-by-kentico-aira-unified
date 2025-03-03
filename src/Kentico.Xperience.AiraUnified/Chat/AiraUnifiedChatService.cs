@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 
+using CMS.Base;
 using CMS.ContactManagement;
 using CMS.DataEngine;
 using CMS.DataEngine.Query;
@@ -121,7 +122,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             return new AiraUnifiedChatThreadModel
             {
                 ThreadName = latestUsedThread.AiraUnifiedChatThreadName,
-                ThreadId = latestUsedThread.AiraUnifiedChatThreadId
+                ThreadId = latestUsedThread.AiraUnifiedChatThreadId,
             };
         }
 
@@ -138,24 +139,57 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
-    public async Task<IEnumerable<AiraUnifiedChatThreadModel>> GetThreads(int userId)
+    public async Task<AiraUnifiedChatThreadInfo?> GetAiraUnifiedThreadInfoOrNull(int userId, int threadId)
     => (await airaUnifiedChatThreadProvider
-        .Get()
-        .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId), userId)
-        .OrderByDescending(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen))
-        .GetEnumerableTypedResultAsync())
-        .Select(x => new AiraUnifiedChatThreadModel
-        {
-            ThreadName = x.AiraUnifiedChatThreadName,
-            ThreadId = x.AiraUnifiedChatThreadId
-        });
+    .Get()
+    .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId), threadId)
+    .TopN(1)
+    .GetEnumerableTypedResultAsync())
+    .FirstOrDefault();
 
-    public async Task SaveMessage(string text, int userId, string role, int threadId)
+
+    public async Task<List<AiraUnifiedChatThreadModel>> GetThreads(int userId)
+    => (await airaUnifiedChatThreadProvider
+    .Get()
+    .Source(x => x.LeftJoin<AiraUnifiedChatMessageInfo>(
+        nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastMessageId),
+        nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageId)
+    ))
+    .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId), userId)
+    .Columns(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId),
+        nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageCreatedWhen),
+        nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageText),
+        nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadName)
+    )
+    .GetEnumerableTypedResultAsync(x =>
+    {
+        var dataContainer = new DataRecordContainer(x);
+
+        var threadModel = new AiraUnifiedChatThreadModel
+        {
+            ThreadName = (string)dataContainer[nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadName)],
+            ThreadId = (int)dataContainer[nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId)]
+        };
+
+        if (dataContainer.TryGetValue(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageText), out var message) && message is string messageValue)
+        {
+            threadModel.LastMessage = messageValue;
+        }
+        if (dataContainer.TryGetValue(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageCreatedWhen), out var lastUsed) && lastUsed is DateTime lastUsedValue)
+        {
+            threadModel.LastUsed = lastUsedValue;
+        }
+
+        return threadModel;
+    }))
+    .ToList();
+
+    public async Task SaveMessage(string text, int userId, string role, AiraUnifiedChatThreadInfo thread)
     {
         var message = new AiraUnifiedChatMessageInfo
         {
             AiraUnifiedChatMessageCreatedWhen = DateTime.Now,
-            AiraUnifiedChatMessageThreadId = threadId,
+            AiraUnifiedChatMessageThreadId = thread.AiraUnifiedChatThreadId,
             AiraUnifiedChatMessageText = text,
             AiraUnifiedChatMessageUserId = userId,
             AiraUnifiedChatMessageRole = role == AiraUnifiedConstants.AiraUnifiedChatRoleName ?
@@ -164,6 +198,20 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         };
 
         await airaUnifiedChatMessageProvider.SetAsync(message);
+
+        thread.AiraUnifiedChatThreadLastMessageId = message.AiraUnifiedChatMessageId;
+    }
+
+    public async Task<bool> ValidateUserThread(int userId, int threadId)
+    {
+        var thread = (await airaUnifiedChatThreadProvider
+            .Get()
+            .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId), threadId)
+            .TopN(1)
+            .GetEnumerableTypedResultAsync())
+            .FirstOrDefault();
+
+        return thread is not null && thread.AiraUnifiedChatThreadUserId == userId;
     }
 
     public async Task<AiraUnifiedAIResponse?> GetAIResponseOrNull(string message, int numberOfIncludedHistoryMessages, int userId)

@@ -32,7 +32,8 @@ public class AiraUnifiedChatThreadInfo : AbstractInfo<AiraUnifiedChatThreadInfo,
         TouchCacheDependencies = true,
         DependsOn =
         [
-            new(nameof(AiraUnifiedChatThreadUserId), UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required)
+            new(nameof(AiraUnifiedChatThreadUserId), UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required),
+            new(nameof(AiraUnifiedChatThreadLastMessageId), AiraUnifiedChatMessageInfo.OBJECT_TYPE, ObjectDependencyEnum.NotRequired)
         ],
         ContinuousIntegrationSettings =
         {
@@ -101,14 +102,13 @@ public class AiraUnifiedChatThreadInfo : AbstractInfo<AiraUnifiedChatThreadInfo,
 
 
     /// <summary>
-    /// Last time this chat thread has been used by the user.
+    /// Last chat message in this thread.
     /// </summary>
     [DatabaseField]
-    [Required]
-    public DateTime AiraUnifiedChatThreadLastUsedWhen
+    public int AiraUnifiedChatThreadLastMessageId
     {
-        get => ValidationHelper.GetDateTime(GetValue(nameof(AiraUnifiedChatThreadLastUsedWhen)), DateTime.MinValue);
-        set => SetValue(nameof(AiraUnifiedChatThreadLastUsedWhen), value);
+        get => ValidationHelper.GetInteger(GetValue(nameof(AiraUnifiedChatThreadLastMessageId)), 0);
+        set => SetValue(nameof(AiraUnifiedChatThreadLastMessageId), value);
     }
 
 

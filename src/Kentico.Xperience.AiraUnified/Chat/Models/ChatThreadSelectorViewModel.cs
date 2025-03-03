@@ -19,4 +19,9 @@ public class ChatThreadSelectorViewModel
     /// Identifier of the chat page recognised by the navigation <see cref="AiraUnifiedController.Navigation(NavBar.NavBarRequestModel)"/> endpoint.
     /// </summary>
     public string NavigationPageIdentifier { get; set; } = string.Empty;
+
+    public string UserThreadCollectionUrl { get; set; } = string.Empty;
+    public string ChatUrl { get; set; } = string.Empty;
+    public string ChatQueryParameterName { get; set; } = string.Empty;
+    public string NewChatThreadUrl { get; set; } = string.Empty;
 }

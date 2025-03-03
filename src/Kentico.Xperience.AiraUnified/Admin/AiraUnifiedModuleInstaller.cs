@@ -145,6 +145,12 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                     ReferenceType = ObjectDependencyEnum.Required,
                     ReferenceToObjectType = UserInfo.OBJECT_TYPE,
                     FormFieldName = nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId)
+                },
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.NotRequired,
+                    ReferenceToObjectType = AiraUnifiedChatMessageInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastMessageId)
                 }
             ]
         );

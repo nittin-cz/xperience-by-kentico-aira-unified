@@ -57,12 +57,20 @@ function mountThreads(threadsElement) {
     const baseUrl = threadsElement.dataset.baseUrl || "";
     const navigationUrl = threadsElement.dataset.navigationUrl || "";
     const navigationPageIdentifier = threadsElement.dataset.navigationPageIdentifier || "";
+    const userThreadCollectionUrl = threadsElement.dataset.userThreadCollectionUrl || "";
+    const chatUrl = threadsElement.dataset.chatUrl || "";
+    const chatQueryParameterName = threadsElement.dataset.chatQueryParameterName || "";
+    const newChatThreadUrl = threadsElement.dataset.newChatThreadUrl || "";
 
     createApp(ChatThreadSelectorComponent, {
         airaUnifiedBaseUrl,
         baseUrl,
         navigationUrl,
-        navigationPageIdentifier
+        navigationPageIdentifier,
+        userThreadCollectionUrl,
+        chatUrl,
+        chatQueryParameterName,
+        newChatThreadUrl
     }).mount("#thread-selector");
 }
 

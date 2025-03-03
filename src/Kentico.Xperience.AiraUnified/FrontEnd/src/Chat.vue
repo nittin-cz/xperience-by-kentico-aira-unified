@@ -556,7 +556,7 @@ export default {
 
             if (!historyResponse.ok)
             {
-                console.error('An error occurred:', error.message);
+                console.error('An error occurred:', historyResponse.error);
                 return;
             }
             const rawHistory = await historyResponse.json();
