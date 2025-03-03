@@ -11,6 +11,7 @@ function mountChat(chatElement) {
     const usePromptUrl = chatElement.dataset.usePromptUrl || "";
     const servicePageModel = JSON.parse(chatElement.dataset.servicePageModel || {});
     const historyUrl = chatElement.dataset.historyUrl || "";
+    const promptLibraryUrl = chatElement.dataset.promptLibraryUrl || "";
     const navigationUrl = chatElement.dataset.navigationUrl || "";
     const navigationPageIdentifier = chatElement.dataset.navigationPageIdentifier || "";
     const chatUrl = chatElement.dataset.chatUrl || "";
@@ -29,6 +30,7 @@ function mountChat(chatElement) {
         chatUrl,
         logoImgRelativePath,
         threadId,
+        promptLibraryUrl
     }).mount("#chat-app");
 }
 

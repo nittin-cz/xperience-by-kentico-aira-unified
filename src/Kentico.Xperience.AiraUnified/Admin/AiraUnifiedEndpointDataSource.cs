@@ -80,6 +80,12 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 controller => controller.ChatThreadSelector(),
                 requiredPermission: SystemPermissions.VIEW
             ),
+            CreateAiraEndpoint(configuration,
+                $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatPromptLibraryUrl}",
+                nameof(AiraUnifiedController.GetPromptLibrary),
+                controller => controller.GetPromptLibrary(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
             CreateAiraEndpointFromBody<NavBarRequestModel>(configuration,
                 AiraUnifiedConstants.NavigationUrl,
                 nameof(AiraUnifiedController.Navigation),

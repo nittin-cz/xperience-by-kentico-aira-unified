@@ -35,6 +35,8 @@ public static class AiraUnifiedConstants
     /// </summary>
     public const string ChatHistoryUrl = "history";
 
+    public const string ChatPromptLibraryUrl = "prompts";
+
     /// <summary>
     /// Relative path for retrieval of the navigation model <see cref="NavBar.NavBarViewModel"/> data.
     /// </summary>

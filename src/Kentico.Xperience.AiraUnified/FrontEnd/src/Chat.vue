@@ -144,6 +144,44 @@
                     }
                 }">
             </deep-chat>
+            <div>
+                <!-- Suggestion Buttons -->
+                <div class="c-prompt-suggestions">
+                    <div class="c-prompt-suggestions_inner">
+                    <button class="btn btn-outline-secondary" @click="handleSuggestionClick('Tell me a fun fact')">Tell me a fun
+                        fact
+                    </button>
+                    <button class="btn btn-outline-secondary" @click="handleSuggestionClick('What\'s the weather like today?')">What�s
+                        the weather like today?
+                    </button>
+                    <button class="btn btn-outline-secondary" @click="handleSuggestionClick('Suggest a good movie')">Suggest a good
+                        movie
+                    </button>
+                    <button class="btn btn-outline-secondary" @click="showAllSuggestions = true">More</button>
+                    </div>
+                </div>
+
+                <!-- Full-Screen Overlay with Suggestions -->
+                <div v-if="showAllSuggestions" class="c-prompt-overlay">
+                    <div class="container">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3>Suggestions</h3>
+                            <button class="c-link primary-upper" @click="showAllSuggestions = false">
+                            Back
+                            </button>
+                        </div>
+                        <div v-for="promptCategory in promptLibraryData">
+                            <h4 class="mt-4">{{promptCategory.categoryName}}</h4>
+                            <div class="d-flex gap-2 flex-wrap mt-3" v-for="prompt in promptCategory.prompts">
+                                <button class="btn btn-outline-primary"
+                                    @click="showAllSuggestions = false; handleSuggestionClick(prompt)">
+                                {{prompt}}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="c-empty-page-layout justify-content-start" v-if="!serviceAvailable">
                 <div class="d-flex flex-wrap justify-content-center gap-3 text-center">
                     <svg class="c-image service-unavailable" width="150" height="189" viewBox="0 0 150 189" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -195,7 +233,8 @@ export default {
         navigationPageIdentifier: null,
         chatUrl: null,
         logoImgRelativePath: null,
-        threadId: null
+        threadId: null,
+        promptLibraryUrl: null
     },
     data() {
         return {
@@ -207,7 +246,8 @@ export default {
             history: [],
             showAllSuggestions: false,
             isInstalledPWA: false,
-            serviceAvailable: true
+            serviceAvailable: true,
+            promptLibraryData: []
         }
     },
     mounted() {
@@ -253,6 +293,7 @@ export default {
                     this.setOnError();
                     this.setResponseInterceptor();
                     this.setHistory();
+                    this.getPromptLibrary();
                 }
 
                 const newSubmitButton = this.$refs.chatElementRef.shadowRoot.querySelector('.input-button');
@@ -549,6 +590,20 @@ export default {
                     }
                 }`
             shadowRoot.appendChild(style);
+        },
+        async getPromptLibrary() {
+            const promptLibraryResponse = await fetch(this.promptLibraryUrl, {
+                method: 'GET'
+            });
+
+            if (!promptLibraryResponse.ok)
+            {
+                console.error('An error occured', historyResponse.error.message);
+            }
+
+            const promptLibrary = await promptLibraryResponse.json();
+
+            this.promptLibraryData = promptLibrary.promptCategories;
         },
         async setHistory() {
             const historyUrlWithThread = `${this.historyUrl}/${this.threadId}`;
