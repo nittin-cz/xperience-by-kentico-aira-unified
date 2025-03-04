@@ -62,7 +62,7 @@
                     }
                 }"
                 :connect="{
-                    url: this.chatUrl,
+                    url: `${this.chatUrl}/${this.threadId}`,
                     method: 'POST'
                 }"
               :chatStyle="{ height: '100%', width: '100%' }"
@@ -194,7 +194,8 @@ export default {
         navigationUrl: null,
         navigationPageIdentifier: null,
         chatUrl: null,
-        logoImgRelativePath: null
+        logoImgRelativePath: null,
+        threadId: null
     },
     data() {
         return {
@@ -550,23 +551,25 @@ export default {
             shadowRoot.appendChild(style);
         },
         async setHistory() {
-            const historyResponse = await fetch(this.historyUrl, {
+            const historyUrlWithThread = `${this.historyUrl}/${this.threadId}`;
+            const historyResponse = await fetch(historyUrlWithThread, {
                 method: 'GET'
             });
-
             if (!historyResponse.ok)
             {
                 console.error('An error occurred:', historyResponse.error);
                 return;
             }
             const rawHistory = await historyResponse.json();
-            
             for (const x of rawHistory) {
-                const messageViewModel = this.getMessageViewModel(x);
+                if (x.message !== "" && x.message !== null)
+                {
+                    const messageViewModel = this.getMessageViewModel(x);
                 
-                this.history.push(messageViewModel);
-                this.$refs.chatElementRef.history.push(messageViewModel);
-                this.$refs.chatElementRef.addMessage(messageViewModel);
+                    this.history.push(messageViewModel);
+                    this.$refs.chatElementRef.history.push(messageViewModel);
+                    this.$refs.chatElementRef.addMessage(messageViewModel);
+                }
 
                 if (x.quickPrompts.length > 0)
                 {

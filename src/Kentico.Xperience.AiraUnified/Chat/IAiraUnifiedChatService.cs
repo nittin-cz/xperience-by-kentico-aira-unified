@@ -37,9 +37,10 @@ public interface IAiraUnifiedChatService
     /// Gets a chat thread model of the specified id. If the id is null the latest used thread will be returned. If no thread for the user exists, a new thread for the user will be created.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
+    /// 
     /// <param name="threadId">The desired thread id or null.</param>
     /// <returns>The task containing the desired <see cref="AiraUnifiedChatThreadModel"/>.</returns>
-    Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, int? threadId = null);
+    Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, bool setAsLastUsed, int? threadId = null);
 
     /// <summary>
     /// Creates new chat thread for the specified user.

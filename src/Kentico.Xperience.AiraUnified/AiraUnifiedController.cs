@@ -77,7 +77,7 @@ public sealed class AiraUnifiedController : Controller
         var user = await adminUserManager.GetUserAsync(User);
 
         // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
-        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, chatThreadId);
+        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
 
         var chatModel = new ChatViewModel
         {

@@ -99,7 +99,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         .ToList();
     }
 
-    public async Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, int? threadId = null)
+    public async Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, bool setAsLastUsed, int? threadId = null)
     {
         if (threadId is null)
         {
@@ -116,8 +116,15 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             var latestUsedThread = airaUnifiedChatThreadProvider
                 .Get()
                 .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId), userId)
-                .WhereTrue(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadIsLatest))
+                .OrderByDescending(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen))
+                .TopN(1)
                 .SingleOrDefault() ?? throw new InvalidOperationException($"No thread exists for the user with id {userId}.");
+
+            if (setAsLastUsed)
+            {
+                latestUsedThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.Now;
+                await airaUnifiedChatThreadProvider.SetAsync(latestUsedThread);
+            }
 
             return new AiraUnifiedChatThreadModel
             {
@@ -131,6 +138,12 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId), userId)
             .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId), threadId.Value)
             .FirstOrDefault() ?? throw new InvalidOperationException($"The specified thread with id {threadId} for the specified user with id {userId} does not exist.");
+
+        if (setAsLastUsed)
+        {
+            chatThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.Now;
+            await airaUnifiedChatThreadProvider.SetAsync(chatThread);
+        }
 
         return new AiraUnifiedChatThreadModel
         {
@@ -161,6 +174,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageText),
         nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadName)
     )
+    .OrderByDescending(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen))
     .GetEnumerableTypedResultAsync(x =>
     {
         var dataContainer = new DataRecordContainer(x);
@@ -398,7 +412,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         var newChatThread = new AiraUnifiedChatThreadInfo
         {
             AiraUnifiedChatThreadUserId = userId,
-            AiraUnifiedChatThreadIsLatest = true,
+            AiraUnifiedChatThreadLastUsedWhen = DateTime.Now,
             AiraUnifiedChatThreadName = $"Chat {countOfThreads + 1}"
         };
 

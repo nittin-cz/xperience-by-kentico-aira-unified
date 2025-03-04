@@ -15,6 +15,7 @@ function mountChat(chatElement) {
     const navigationPageIdentifier = chatElement.dataset.navigationPageIdentifier || "";
     const chatUrl = chatElement.dataset.chatUrl || "";
     const logoImgRelativePath = chatElement.dataset.logoImgRelativePath || "";
+    const threadId = chatElement.dataset.threadId;
 
     createApp(ChatComponent, {
         airaUnifiedBaseUrl,
@@ -26,7 +27,8 @@ function mountChat(chatElement) {
         navigationUrl,
         navigationPageIdentifier,
         chatUrl,
-        logoImgRelativePath
+        logoImgRelativePath,
+        threadId,
     }).mount("#chat-app");
 }
 

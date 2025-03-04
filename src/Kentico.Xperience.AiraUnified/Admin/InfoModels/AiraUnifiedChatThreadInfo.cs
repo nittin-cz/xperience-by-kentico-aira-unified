@@ -91,13 +91,14 @@ public class AiraUnifiedChatThreadInfo : AbstractInfo<AiraUnifiedChatThreadInfo,
 
 
     /// <summary>
-    /// Is chat thread the latest used.
+    /// Chat thread last used when.
     /// </summary>
     [DatabaseField]
-    public bool AiraUnifiedChatThreadIsLatest
+    [Required]
+    public virtual DateTime AiraUnifiedChatThreadLastUsedWhen
     {
-        get => ValidationHelper.GetBoolean(GetValue(nameof(AiraUnifiedChatThreadIsLatest)), false);
-        set => SetValue(nameof(AiraUnifiedChatThreadIsLatest), value);
+        get => ValidationHelper.GetDateTime(GetValue(nameof(AiraUnifiedChatThreadLastUsedWhen)), DateTime.MinValue);
+        set => SetValue(nameof(AiraUnifiedChatThreadLastUsedWhen), value);
     }
 
 
