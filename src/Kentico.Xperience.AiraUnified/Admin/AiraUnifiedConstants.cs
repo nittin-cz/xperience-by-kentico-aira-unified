@@ -16,6 +16,16 @@ public static class AiraUnifiedConstants
     public const string ChatMessageUrl = "message";
 
     /// <summary>
+    /// Relative path for retrieval of user's chat history.
+    /// </summary>
+    public const string ChatHistoryUrl = "history";
+
+    /// <summary>
+    /// Relative path for retrieval of the navigation model <see cref="NavBar.NavBarViewModel"/> data.
+    /// </summary>
+    public const string NavigationUrl = "nav";
+
+    /// <summary>
     /// Relative path to the smart upload page in the PWA.
     /// </summary>
     public const string SmartUploadRelativeUrl = "assets";
@@ -34,6 +44,11 @@ public static class AiraUnifiedConstants
     /// Relative path to the PWA signIn page.
     /// </summary>
     public const string SigninRelativeUrl = "signin";
+
+    /// <summary>
+    /// Name of the optional query parameter of the signIn endpoint.
+    /// </summary>
+    public const string SigninMissingPermissionParameterName = "missingPermission";
 
     /// <summary>
     /// Relative path to the used prompt group removal endpoint.
@@ -59,11 +74,6 @@ public static class AiraUnifiedConstants
     /// The ai endpoint.
     /// </summary>
     public const string AiraUnifiedAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
-
-    /// <summary>
-    /// The ai endpoint.
-    /// </summary>
-    public const string AiraAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
 
     /// <summary>
     /// The identifier of the ai role used to identify the role in the database.

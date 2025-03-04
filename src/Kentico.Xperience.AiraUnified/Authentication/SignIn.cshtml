@@ -15,8 +15,7 @@
 <div class="c-app_inner is-loaded" id="aira-unified-kentico-admin-signin"
     data-base-url="@baseUrl"
     data-aira-unified-base-url="@Model.PathBase"
-    data-chat-url="@Model.ChatRelativeUrl"
-    data-logo-img-relative-path="@Model.LogoImageRelativePath">
+    data-chat-url="@Model.ChatUrl">
     
     <div class="c-app_header"></div>
     <div class="c-app_body login">
@@ -25,6 +24,12 @@
             <div class="px-6 pt-6 d-flex justify-content-center">
                 <button id="loginButton" type="submit" class="btn btn-outline-primary btn-lg">Continue with XbyK</button>
             </div>
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="d-flex justify-content-center pt-6">
+                    <div class="text-center text-danger field-validation-error">@Model.ErrorMessage</div>
+                </div>
+            }
         </div>
     </div>
     <div id="install-dialog"></div>
