@@ -46,6 +46,11 @@ public static class AiraUnifiedConstants
     public const string SigninRelativeUrl = "signin";
 
     /// <summary>
+    /// Name of the optional query parameter of the signIn endpoint.
+    /// </summary>
+    public const string SigninMissingPermissionParameterName = "missingPermission";
+
+    /// <summary>
     /// Relative path to the used prompt group removal endpoint.
     /// </summary>
     public const string RemoveUsedPromptGroupRelativeUrl = "prompt/use";
@@ -69,11 +74,6 @@ public static class AiraUnifiedConstants
     /// The ai endpoint.
     /// </summary>
     public const string AiraUnifiedAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
-
-    /// <summary>
-    /// The ai endpoint.
-    /// </summary>
-    public const string AiraAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
 
     /// <summary>
     /// The identifier of the ai role used to identify the role in the database.

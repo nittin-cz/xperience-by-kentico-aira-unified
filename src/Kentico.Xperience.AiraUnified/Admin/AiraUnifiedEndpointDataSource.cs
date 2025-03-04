@@ -91,6 +91,11 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 permissionToRedirectedEndpoint: SystemPermissions.VIEW,
                 redirectUrl: AiraUnifiedConstants.ChatRelativeUrl
             ),
+            CreateAiraEndpoint(configuration,
+                subPath: string.Empty,
+                nameof(AiraUnifiedController.SignIn),
+                controller => controller.SignIn()
+            ),
             CreateAiraEndpointFromBody<AiraUnifiedUsedPromptGroupModel>(configuration,
                 AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl,
                 nameof(AiraUnifiedController.RemoveUsedPromptGroup),
@@ -387,7 +392,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         if (user is null || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any())
         {
-            context.Response.Redirect(signInRedirectUrl);
+            context.Response.Redirect($"{signInRedirectUrl}?{AiraUnifiedConstants.SigninMissingPermissionParameterName}={permission}");
             return false;
         }
 
