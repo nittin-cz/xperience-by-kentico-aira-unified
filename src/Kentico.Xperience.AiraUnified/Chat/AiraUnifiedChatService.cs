@@ -122,7 +122,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
 
             if (setAsLastUsed)
             {
-                latestUsedThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.Now;
+                latestUsedThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.UtcNow;
                 await airaUnifiedChatThreadProvider.SetAsync(latestUsedThread);
             }
 
@@ -141,7 +141,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
 
         if (setAsLastUsed)
         {
-            chatThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.Now;
+            chatThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.UtcNow;
             await airaUnifiedChatThreadProvider.SetAsync(chatThread);
         }
 
@@ -202,7 +202,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     {
         var message = new AiraUnifiedChatMessageInfo
         {
-            AiraUnifiedChatMessageCreatedWhen = DateTime.Now,
+            AiraUnifiedChatMessageCreatedWhen = DateTime.UtcNow,
             AiraUnifiedChatMessageThreadId = thread.AiraUnifiedChatThreadId,
             AiraUnifiedChatMessageText = text,
             AiraUnifiedChatMessageUserId = userId,
@@ -357,7 +357,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     {
         var chatPromptGroup = new AiraUnifiedChatPromptGroupInfo
         {
-            AiraUnifiedChatPromptGroupCreatedWhen = DateTime.Now,
+            AiraUnifiedChatPromptGroupCreatedWhen = DateTime.UtcNow,
             AiraUnifiedChatPromptGroupUserId = userId,
             AiraUnifiedChatPromptGroupThreadId = threadId
         };
@@ -413,7 +413,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         var newChatThread = new AiraUnifiedChatThreadInfo
         {
             AiraUnifiedChatThreadUserId = userId,
-            AiraUnifiedChatThreadLastUsedWhen = DateTime.Now,
+            AiraUnifiedChatThreadLastUsedWhen = DateTime.UtcNow,
             AiraUnifiedChatThreadName = $"Chat {countOfThreads + 1}"
         };
 

@@ -209,7 +209,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         {
             Extension = extension,
             Identifier = Guid.NewGuid(),
-            LastModified = DateTime.Now,
+            LastModified = DateTime.UtcNow,
             Name = Path.GetFileName(tempFilePath),
             Size = fileStream.Length
         };

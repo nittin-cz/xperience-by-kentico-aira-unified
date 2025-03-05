@@ -22,7 +22,7 @@
                         <span class="c-thread_header">
                             <span class="c-thread_title">{{thread.threadName}}</span>
                             <span class="c-thread_indicator"></span>
-                            <span class="c-thread_time">{{thread.lastUsed}}</span>
+                            <span class="c-thread_time">{{timeAgo(thread.lastUsed)}}</span>
                         </span>
                         <span class="c-thread_content">
                             {{thread.lastMessage}}
@@ -99,8 +99,27 @@ export default {
             const data = await threadResponse.json();
 
             this.threadsData = data.chatThreads;
+        },
+        timeAgo(lastUsed) {
+            const lastUsedUtc = new Date(lastUsed + "Z"); // Force UTC interpretation
+            const nowUtc = new Date(); // Already in UTC
+
+            const diffMs = nowUtc.getTime() - lastUsedUtc.getTime(); // Difference in milliseconds
+
+            const diffMinutes = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays >= 1) {
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } else if (diffHours >= 1) {
+                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else {
+                return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+            }
         }
+
     }
-};
+}
 
 </script>
