@@ -58,6 +58,11 @@ public sealed class AiraUnifiedController : Controller
         var configuration = await GetConfiguration();
         var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
 
+        var user = await adminUserManager.GetUserAsync(User);
+
+        // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
+        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
+
         // Only the URLs which origin from the input of the Admin user in aira unified need verification.
         var removePromptUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl);
         var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
@@ -73,11 +78,6 @@ public sealed class AiraUnifiedController : Controller
 
             return BadRequest(InvalidPathBaseErrorMessage);
         }
-
-        var user = await adminUserManager.GetUserAsync(User);
-
-        // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
-        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
 
         var chatModel = new ChatViewModel
         {
@@ -295,9 +295,9 @@ public sealed class AiraUnifiedController : Controller
                 return Ok(result);
             }
 
-            await airaUnifiedChatService.SaveMessage(aiResponse.Response, user.UserID, AiraUnifiedConstants.AiraUnifiedChatRoleName, thread);
+            await airaUnifiedChatService.SaveMessage(aiResponse.Response, userId, AiraUnifiedConstants.AiraUnifiedChatRoleName, thread);
 
-            await airaUnifiedChatService.UpdateChatSummary(user.UserID, message);
+            await airaUnifiedChatService.UpdateChatSummary(userId, message);
 
             result = new AiraUnifiedChatMessageViewModel
             {
@@ -307,7 +307,7 @@ public sealed class AiraUnifiedController : Controller
 
             if (aiResponse.SuggestedQuestions is not null)
             {
-                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, aiResponse.SuggestedQuestions, chatThreadId);
+                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.SuggestedQuestions, chatThreadId);
                 result.QuickPrompts = promptGroup.QuickPrompts;
                 result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
             }

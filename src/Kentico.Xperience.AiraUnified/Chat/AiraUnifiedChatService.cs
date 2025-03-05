@@ -214,6 +214,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         await airaUnifiedChatMessageProvider.SetAsync(message);
 
         thread.AiraUnifiedChatThreadLastMessageId = message.AiraUnifiedChatMessageId;
+        await airaUnifiedChatThreadProvider.SetAsync(thread);
     }
 
     public async Task<bool> ValidateUserThread(int userId, int threadId)

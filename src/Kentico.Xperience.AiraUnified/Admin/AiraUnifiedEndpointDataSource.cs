@@ -133,15 +133,12 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             )
         ];
     }
-
     private static Endpoint CreateAiraEndpointWithQueryParams(AiraUnifiedConfigurationItemInfo configurationInfo, string subPath, string actionName, string actionParameterName, Func<AiraUnifiedController, int?, Task<IActionResult>> action, string? requiredPermission = null)
     => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {
         var airaController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context) ||
-            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        )
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
         {
             return;
         }
@@ -166,9 +163,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context) ||
-            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        )
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
         {
             return;
         }
@@ -197,9 +192,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context) ||
-            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        )
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
         {
             return;
         }
@@ -239,6 +232,61 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     });
 
     private static Endpoint CreateAiraEndpointFromBody<T>(
+       AiraUnifiedConfigurationItemInfo configurationInfo,
+       string subPath,
+       string actionName,
+       Func<AiraUnifiedController, T, IActionResult> actionWithModel,
+       string? requiredPermission = null
+    ) where T : class, new()
+    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
+    {
+        var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
+
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
+        {
+            return;
+        }
+
+        if (context.Request.ContentType is not null &&
+            string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+        {
+            using var reader = new StreamReader(context.Request.Body);
+            var body = await reader.ReadToEndAsync();
+
+            try
+            {
+                var requestObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (requestObject is not null)
+                {
+                    var result = actionWithModel.Invoke(airaUnifiedController, requestObject);
+                    await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await context.Response.WriteAsync("Invalid or missing request body.");
+                }
+            }
+            catch (JsonException ex)
+            {
+                // Handle JSON deserialization errors
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsync($"Invalid JSON format: {ex.Message}");
+            }
+        }
+        else
+        {
+            // Handle unsupported content types
+            context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+            await context.Response.WriteAsync("Unsupported content type. Expected 'application/json'.");
+        }
+    });
+
+    private static Endpoint CreateAiraEndpointFromBody<T>(
         AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
         string actionName,
@@ -249,9 +297,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context) ||
-            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        )
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
         {
             return;
         }
@@ -294,63 +340,6 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
     });
 
-    private static Endpoint CreateAiraEndpointFromBody<T>(
-       AiraUnifiedConfigurationItemInfo configurationInfo,
-       string subPath,
-       string actionName,
-       Func<AiraUnifiedController, T, IActionResult> actionWithModel,
-       string? requiredPermission = null
-   ) where T : class, new()
-   => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
-   {
-       var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
-
-       if (!await CheckHttps(context) ||
-           (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-       )
-       {
-           return;
-       }
-
-       if (context.Request.ContentType is not null &&
-           string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
-       {
-           using var reader = new StreamReader(context.Request.Body);
-           var body = await reader.ReadToEndAsync();
-
-           try
-           {
-               var requestObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions
-               {
-                   PropertyNameCaseInsensitive = true
-               });
-
-               if (requestObject is not null)
-               {
-                   var result = actionWithModel.Invoke(airaUnifiedController, requestObject);
-                   await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-               }
-               else
-               {
-                   context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                   await context.Response.WriteAsync("Invalid or missing request body.");
-               }
-           }
-           catch (JsonException ex)
-           {
-               // Handle JSON deserialization errors
-               context.Response.StatusCode = StatusCodes.Status400BadRequest;
-               await context.Response.WriteAsync($"Invalid JSON format: {ex.Message}");
-           }
-       }
-       else
-       {
-           // Handle unsupported content types
-           context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-           await context.Response.WriteAsync("Unsupported content type. Expected 'application/json'.");
-       }
-   });
-
     private static Endpoint CreateAiraEndpoint(AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
         string actionName,
@@ -360,9 +349,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context) ||
-            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        )
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
         {
             return;
         }
@@ -405,9 +392,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        if (!await CheckHttps(context) ||
-            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationItemInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-        )
+        if (!await ValidateRequestXorSetRedirect(context, configurationItemInfo, requiredPermission))
         {
             return;
         }
@@ -510,6 +495,10 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         return true;
     }
+
+    private static async Task<bool> ValidateRequestXorSetRedirect(HttpContext context, AiraUnifiedConfigurationItemInfo configurationInfo, string? requiredPermission = null)
+    => await CheckHttps(context)
+      && (requiredPermission is null || await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission));
 
     private static Endpoint CreateEndpoint(string pattern, RequestDelegate requestDelegate) =>
         new RouteEndpointBuilder(
