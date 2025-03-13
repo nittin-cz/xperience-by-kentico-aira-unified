@@ -1,5 +1,7 @@
 ﻿using CMS.Core;
 
+using GreenDonut;
+
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.AiraUnified.Admin;
@@ -152,6 +154,15 @@ public sealed class AiraUnifiedController : Controller
                 Message = message.Content,
                 Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
             });
+        }
+
+        var lastMessage = history[^1];
+
+        if (initialMessages.SuggestedQuestions is not null)
+        {
+            var promptGroup = airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.SuggestedQuestions);
+            lastMessage.QuickPrompts = promptGroup.QuickPrompts;
+            lastMessage.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
         }
 
         return Ok(history);
