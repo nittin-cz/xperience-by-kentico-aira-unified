@@ -172,7 +172,8 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     .Columns(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId),
         nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageCreatedWhen),
         nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageText),
-        nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadName)
+        nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadName),
+        nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen)
     )
     .OrderByDescending(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen))
     .GetEnumerableTypedResultAsync(x =>
@@ -189,7 +190,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             threadModel.LastMessage = messageValue;
         }
-        if (dataContainer.TryGetValue(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageCreatedWhen), out var lastUsed) && lastUsed is DateTime lastUsedValue)
+        if (dataContainer.TryGetValue(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastUsedWhen), out var lastUsed) && lastUsed is DateTime lastUsedValue)
         {
             threadModel.LastUsed = lastUsedValue;
         }
