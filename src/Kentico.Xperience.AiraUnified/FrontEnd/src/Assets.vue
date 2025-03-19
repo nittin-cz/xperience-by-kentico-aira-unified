@@ -6,7 +6,7 @@
         </div>
 
         <div class="c-app_header">
-            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl"/>
+            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl" :displayLogo="true"/>
         </div>
 
         <div class="c-app_body" :style="{ overflowY: 'auto', overflowX: 'hidden' }">

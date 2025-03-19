@@ -5,7 +5,7 @@
         </div>
 
         <div class="c-app_header">
-            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl"/>
+            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl" :displayLogo="false" />
         </div>
 
         <div class="c-app_body">
