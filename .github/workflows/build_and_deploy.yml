@@ -2,10 +2,11 @@ name: Build and deploy
 
 on:
   workflow_dispatch:
+  
 
 jobs:
   Get_version:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.get_version.outputs.new_version }}
