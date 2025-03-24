@@ -11,6 +11,21 @@ public static class AiraUnifiedConstants
     public const string ChatRelativeUrl = "chat";
 
     /// <summary>
+    /// Relative path to create a new AIRA chat thread.
+    /// </summary>
+    public const string NewChatThreadRelativeUrl = "threads/new";
+
+    /// <summary>
+    /// Relative path to user's threads selector page.
+    /// </summary>
+    public const string ChatThreadSelectorRelativeUrl = "threads";
+
+    /// <summary>
+    /// Relative path to user's thread list.
+    /// </summary>
+    public const string AllChatThreadsRelativeUrl = "all";
+
+    /// <summary>
     /// Relative path for sending chat messages to aira unified chat.
     /// </summary>
     public const string ChatMessageUrl = "message";
@@ -49,6 +64,11 @@ public static class AiraUnifiedConstants
     /// Name of the optional query parameter of the signIn endpoint.
     /// </summary>
     public const string SigninMissingPermissionParameterName = "missingPermission";
+
+    /// <summary>
+    /// Name of the post chat message thread id parameter name.
+    /// </summary>
+    public const string ChatThreadIdParameterName = "chatThreadId";
 
     /// <summary>
     /// Relative path to the used prompt group removal endpoint.

@@ -11,9 +11,9 @@ public class ChatViewModel
     public ServicePageViewModel ServicePageViewModel { get; set; } = new ServicePageViewModel();
 
     /// <summary>
-    /// Path base for the Chat page.
+    /// Aira Unified base url.
     /// </summary>
-    public string PathBase { get; set; } = string.Empty;
+    public string AiraUnifiedPathBase { get; set; } = string.Empty;
 
     /// <summary>
     /// Relative path to the AI icon displayed in the chat as the avatar of the AI.
@@ -21,17 +21,17 @@ public class ChatViewModel
     public string AIIconImagePath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Relative path of the endpoint responsible for removing used suggested prompt group.
+    /// Path of the endpoint responsible for removing used suggested prompt group.
     /// </summary>
     public string RemovePromptUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Relative path of the endpoint which retrieves the user's history.
+    /// Path of the endpoint which retrieves the user's history.
     /// </summary>
     public string HistoryUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Relative path of the endpoint which retrieves the navigation model <see cref="NavBar.NavBarViewModel"/>.
+    /// Path of the endpoint which retrieves the navigation model <see cref="NavBar.NavBarViewModel"/>.
     /// </summary>
     public string NavigationUrl { get; set; } = string.Empty;
 
@@ -41,7 +41,17 @@ public class ChatViewModel
     public string NavigationPageIdentifier { get; set; } = string.Empty;
 
     /// <summary>
-    /// Relative path of the <see cref="AiraUnifiedController.PostChatMessage(Microsoft.AspNetCore.Http.IFormCollection)"/> endpoint.
+    /// The name of the thread.
+    /// </summary>
+    public string ThreadName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The id of the thread.
+    /// </summary>
+    public int ThreadId { get; set; }
+
+    /// <summary>
+    /// Relative path of the <see cref="AiraUnifiedController.PostChatMessage(Microsoft.AspNetCore.Http.IFormCollection, int)"/> endpoint.
     /// </summary>
     public string ChatUrl { get; set; } = string.Empty;
 

@@ -84,6 +84,7 @@ dotnet add package Kentico.Xperience.AiraUnified
    - **Logo**: Select an asset from the Media Library.
    - **Chat Title**: Title for the chat page.
    - **Smart Upload Title**: Title for the smart upload page.
+   - **Workspace**: The workspace used by the smart uploader.
    
    ![Admin Configuration](/images/AiraUnifiedAdminConfiguration.png)
 
@@ -95,9 +96,7 @@ dotnet add package Kentico.Xperience.AiraUnified
 
    ![Role Configuration](/images/ConfigureAiraUnifiedPermissions.png)
 
-8. Aira Unified expects a workspace named "Kentico Default" (code name 'KenticoDefault'). When using this library in a project with Xperience versions > 30.2.0, add a workspace with the code name `KenticoDefault`.
-
-9. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
+8. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
 
 View the [Usage Guide](docs/Usage-Guide.md) for more instructions.
 
@@ -105,7 +104,7 @@ View the [Usage Guide](docs/Usage-Guide.md) for more instructions.
 
 To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
-Find project-specific contribution details in [Contributing Setup](./docs/Contributing-Setup.md).
+Find project-specific contribution details.
 
 ## License
 

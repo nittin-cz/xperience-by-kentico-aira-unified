@@ -11,7 +11,7 @@ public class AssetsViewModel
     public string PathBase { get; set; } = string.Empty;
 
     /// <summary>
-    /// Relative url to access the allowed file extensions.
+    /// Url to access the allowed file extensions.
     /// </summary>
     public string AllowedFileExtensionsUrl { get; set; } = string.Empty;
 
@@ -26,7 +26,7 @@ public class AssetsViewModel
     public string FilesUploadedMessage { get; set; } = string.Empty;
 
     /// <summary>
-    /// Relative path of the endpoint which retrieves the navigation model <see cref="NavBar.NavBarViewModel"/>.
+    /// Path of the endpoint which retrieves the navigation model <see cref="NavBar.NavBarViewModel"/>.
     /// </summary>
     public string NavigationUrl { get; set; } = string.Empty;
 

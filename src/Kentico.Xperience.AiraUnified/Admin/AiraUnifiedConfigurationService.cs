@@ -49,9 +49,9 @@ internal class AiraUnifiedConfigurationService : IAiraUnifiedConfigurationServic
 
     public async Task<AiraUnifiedConfigurationItemInfo> GetAiraUnifiedConfiguration()
     {
-        var airaUnifiedConfigurationItemList = await airaUnifiedConfigurationProvider.Get().GetEnumerableTypedResultAsync();
+        var airaUnifiedConfigurationItemList = airaUnifiedConfigurationProvider.Get().SingleOrDefault();
 
-        return airaUnifiedConfigurationItemList.SingleOrDefault()
+        return airaUnifiedConfigurationItemList
             ?? throw new InvalidOperationException("Aira Unified has not been configured yet.");
     }
 }
