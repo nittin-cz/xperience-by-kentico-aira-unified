@@ -562,14 +562,16 @@ export default {
             }
             const rawHistory = await historyResponse.json();
             for (const x of rawHistory) {
-                if (x.message !== "" && x.message !== null)
+                if (x.serviceUnavailable)
                 {
-                    const messageViewModel = this.getMessageViewModel(x);
-                
-                    this.history.push(messageViewModel);
-                    this.$refs.chatElementRef.history.push(messageViewModel);
-                    this.$refs.chatElementRef.addMessage(messageViewModel);
+                    this.serviceAvailable = false
                 }
+
+                const messageViewModel = this.getMessageViewModel(x);
+                
+                this.history.push(messageViewModel);
+                this.$refs.chatElementRef.history.push(messageViewModel);
+                this.$refs.chatElementRef.addMessage(messageViewModel);
 
                 if (x.quickPrompts.length > 0)
                 {
