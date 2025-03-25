@@ -17,8 +17,8 @@ public interface IAiraUnifiedInsightsService
     /// <summary>
     /// Gets email insights.
     /// </summary>
-    /// <returns><see cref="EmailInsightsModel"/></returns>
-    Task<List<EmailInsightsModel>> GetEmailInsights();
+    /// <returns><see cref="EmailCampaignModel"/></returns>
+    Task<List<EmailCampaignModel>> GetEmailInsights();
 
     /// <summary>
     /// Gets contact groups insights.

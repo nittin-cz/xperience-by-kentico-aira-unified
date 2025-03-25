@@ -345,23 +345,9 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             Summary = new EmailSummaryModel()
             {
-                SentCount = emailInsights.Sum(i => i.EmailsSent),
-                
+                SentCount = emailInsights.Select(i=> i.Metrics).Sum(i => i?.TotalSent ?? 0)
             },
-            Campaigns = emailInsights.Select(item => new EmailCampaignModel()
-            {
-                Name = item.EmailConfigurationName ,
-                Metrics = new EmailMetricsModel()
-                {
-                    Sent = item.EmailsSent,
-                    Opened = item.EmailsOpened,
-                    UnsubscribeRate = item.UnsubscribeRate,
-                    LinksClicked = item.LinksClicked,
-                    OpenRate = (decimal)item.EmailsOpened / item.EmailsSent * 100,
-                    SpamReports = item.SpamReports,
-                    Delivered = item.EmailsDelivered
-                }
-            }).ToList()
+            Campaigns = emailInsights
         };
     }
 

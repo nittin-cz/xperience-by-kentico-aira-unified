@@ -20,6 +20,7 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     private readonly IInfoProvider<EmailStatisticsInfo> emailStatisticsInfoProvider;
     private readonly IInfoProvider<EmailConfigurationInfo> emailConfigurationInfoProvider;
     private readonly IInfoProvider<ContactInfo> contactInfoProvider;
+    private readonly IInfoProvider<EmailChannelInfo> emailChannelInfoProvider;
 
     private string[]? reusableTypes;
     private string[]? emailTypes;
@@ -45,7 +46,8 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         IInfoProvider<ContentWorkflowStepInfo> contentWorkflowStepInfoProvider,
         IInfoProvider<EmailStatisticsInfo> emailStatisticsInfoProvider,
         IInfoProvider<EmailConfigurationInfo> emailConfigurationInfoProvider,
-        IInfoProvider<ContactInfo> contactInfoProvider)
+        IInfoProvider<ContactInfo> contactInfoProvider,
+        IInfoProvider<EmailChannelInfo> emailChannelInfoProvider)
     {
         this.contentItemManagerFactory = contentItemManagerFactory;
         this.contentQueryExecutor = contentQueryExecutor;
@@ -57,6 +59,7 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         this.emailStatisticsInfoProvider = emailStatisticsInfoProvider;
         this.emailConfigurationInfoProvider = emailConfigurationInfoProvider;
         this.contactInfoProvider = contactInfoProvider;
+        this.emailChannelInfoProvider = emailChannelInfoProvider;
     }
 
     public async Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null)
@@ -82,7 +85,7 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return content.ToList();
     }
 
-    public async Task<List<EmailInsightsModel>> GetEmailInsights()
+    public async Task<List<EmailCampaignModel>> GetEmailInsights()
     {
         var statistics = await emailStatisticsInfoProvider.Get().GetEnumerableTypedResultAsync();
 
@@ -91,25 +94,47 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             .WhereEquals(nameof(EmailConfigurationInfo.EmailConfigurationPurpose), "Regular")
             .GetEnumerableTypedResultAsync();
 
-        var emailsInsights = new List<EmailInsightsModel>();
-
+        var emailsInsights = new List<EmailCampaignModel>();
+        var emailChannels = (await emailChannelInfoProvider.Get().GetEnumerableTypedResultAsync()).ToList();
+        
         foreach (var email in regularEmails)
         {
             var stats = statistics.FirstOrDefault(s => s.EmailStatisticsEmailConfigurationID == email.EmailConfigurationID);
 
+            //TODO 3/25/2025 PavelHess: cache results here
+            var channelDefaultLanguage = emailChannels.FirstOrDefault(item =>
+                item.EmailChannelChannelID == email.EmailConfigurationEmailChannelID)?.EmailChannelPrimaryContentLanguageID ?? 1;
+            
+            var languageMetadata = contentItemLanguageMetadataInfoProvider
+                .Get()
+                .WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentItemID), email.EmailConfigurationContentItemID)
+                .WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentLanguageID), channelDefaultLanguage)
+                .FirstOrDefault();
+
+            var emailInsight = new EmailCampaignModel
+            {
+                Name = languageMetadata?.ContentItemLanguageMetadataDisplayName ?? email.EmailConfigurationName,
+                Id = email.EmailConfigurationID.ToString(),
+                LastModified = languageMetadata?.ContentItemLanguageMetadataModifiedWhen
+            };
+            
             if (stats != null)
             {
-                emailsInsights.Add(new EmailInsightsModel
+                emailInsight.Metrics = new EmailMetricsModel()
                 {
-                    EmailsSent = stats.EmailStatisticsTotalSent,
-                    EmailsDelivered = stats.EmailStatisticsEmailsDelivered,
-                    EmailsOpened = stats.EmailStatisticsEmailOpens,
-                    LinksClicked = stats.EmailStatisticsEmailUniqueClicks,
+                    TotalSent = stats.EmailStatisticsTotalSent,
+                    Delivered = stats.EmailStatisticsEmailsDelivered,
+                    Opened = stats.EmailStatisticsEmailOpens,
+                    Clicks = stats.EmailStatisticsEmailClicks,
+                    UniqueClicks = stats.EmailStatisticsEmailUniqueClicks,
                     UnsubscribeRate = stats.EmailStatisticsUniqueUnsubscribes,
                     SpamReports = stats.EmailStatisticsSpamReports ?? 0,
-                    EmailConfigurationName = email.EmailConfigurationName
-                });
+                    SoftBounces = stats.EmailStatisticsEmailSoftBounces,
+                    HardBounces = stats.EmailStatisticsEmailHardBounces
+                };
             }
+            
+            emailsInsights.Add(emailInsight);
         }
 
         return emailsInsights;
