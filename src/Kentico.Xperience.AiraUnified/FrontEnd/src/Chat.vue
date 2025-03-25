@@ -327,7 +327,7 @@ export default {
           this.started = true;
           document.addEventListener("visibilitychange", function () {
             if (
-              this.$refs.chatElementRef &&
+              this.$refs?.chatElementRef &&
               document.visibilityState === "visible"
             ) {
               this.$refs.chatElementRef.scrollToBottom();
@@ -469,6 +469,20 @@ export default {
           this.serviceAvailable = false;
         }
 
+        if (response.insights !== null) {
+          if (response.insights.category === "content") {
+            return this.contentInsightMessage(response.insights.insightsData);
+          }
+
+          if (response.insights.category === "emails") {
+            return this.emailsInsightMessage(response.insights.insightsData);
+          }
+
+          if (response.insights.category === "marketing") {
+            return this.marketingInsightMessage(response.insights.insightsData);
+          }
+        }
+
         if (response.quickPrompts && response.quickPrompts.length > 0) {
           this.$refs.chatElementRef.addMessage(messageViewModel);
           const promptMessage = this.getPromptsViewModel(response);
@@ -477,6 +491,7 @@ export default {
 
           return promptMessage;
         }
+
         return messageViewModel;
       };
     },
@@ -631,7 +646,79 @@ export default {
                 .lds-ring div:nth-child(3) {
                     animation-delay: -0.15s;
                 }
+                .k-title:after{
+                    content: '.';
+                    color: #F05A22;
+                }
 
+                .k-summary{
+                    width: 100%;
+    padding-top: 0.75rem;
+    padding-right: 1.25rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.25rem;
+    border-radius: 40px;
+    background-color: #f3f1f2;
+                }
+
+                .k-item{
+                display: flex;
+    align-items: center;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    }
+                .k-item-value{
+                color: #F05A22;
+    margin-bottom: 0;
+    min-width: 3.4375rem;
+    text-align: right;
+    margin-top:0;    
+    font-size: 1.375rem;
+        line-height: 1.625rem;
+                }
+                .k-item-title{
+                    margin-left: 1.25rem;
+                    margin-bottom: 0 !important;
+                    font-weight: bold;
+                            
+                }
+
+                .k-content-items{
+                width: 100%;
+                }
+                .k-content-item{
+                background: #f7f1ff;
+    border-radius: 1.5rem;
+                    display: block;
+    color: inherit;
+    text-decoration: inherit;
+    font-size: .875rem;
+    padding: 1rem;
+                }
+                .k-content-item-title{
+                font-weight: bold;
+                }
+                .k-content-item-tags{
+                margin-top: .5rem;
+                    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .2rem;
+                }
+                .k-content-item-tag{
+                        color: #7f09b7;
+                        font-weight: bold;
+    background: #fff;
+        display: inline-flex;
+    align-items: center;
+    border-radius: .75rem;
+    padding: .25rem .75rem;
+    font-size: .75rem;
+    white-space: nowrap;
+    letter-spacing: normal;
+        border: 1px solid;
+                }
+                
                 @@keyframes lds-ring {
                     0% {
                         transform: rotate(0deg);
@@ -640,7 +727,9 @@ export default {
                     100% {
                         transform: rotate(360deg);
                     }
-                }`;
+                }
+                    
+                `;
       shadowRoot.appendChild(style);
     },
     async setHistory() {
@@ -653,6 +742,7 @@ export default {
         return;
       }
       const rawHistory = await historyResponse.json();
+
       for (const x of rawHistory) {
         if (x.message !== "" && x.message !== null) {
           const messageViewModel = this.getMessageViewModel(x);
@@ -698,6 +788,116 @@ export default {
       } catch (e) {
         return false;
       }
+    },
+    contentInsightMessage(insightsData) {
+      return {
+        role: "ai",
+        html: `<div>
+      <div>
+        <h2 class="k-title">Content Insights</h2>
+        <h3>Summary</h3>
+        <div class="k-summary">
+            <div class="k-item">
+                <h3 class="k-item-value">${insightsData.summary.draftCount}</h3>
+                <div class="k-item-title">
+                    Drafts
+                </div>
+            </div>
+            <div class="k-item">
+                <h3 class="k-item-value">${
+                  insightsData.summary.scheduledCount
+                }</h3>
+                <div class="k-item-title">
+                    Scheduled
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Websites</h3>
+        <div class="k-summary">
+            <div class="k-item">
+                <h3 class="k-item-value">${
+                  insightsData.websiteContent.draftCount
+                }</h3>
+                <div class="k-item-title">
+                    Draft
+                </div>
+            </div>
+            <div class="k-item">
+                <h3 class="k-item-value">${
+                  insightsData.websiteContent.scheduledCount
+                }</h3>
+                <div class="k-item-title">
+                    Scheduled
+                </div>
+            </div>
+        </div>
+        <div>${this.getItems(insightsData.websiteContent.items)}</div>
+      </div>
+
+      <div>
+        <h3>Reusable content</h3>
+        <div class="k-summary">
+            <div class="k-item">
+                <h3 class="k-item-value">${
+                  insightsData.reusableContent.draftCount
+                }</h3>
+                <div class="k-item-title">
+                    Draft
+                </div>
+            </div>
+            <div class="k-item">
+                <h3 class="k-item-value">${
+                  insightsData.reusableContent.scheduledCount
+                }</h3>
+                <div class="k-item-title">
+                    Scheduled
+                </div>
+            </div>
+        </div>
+        <div class="k-content-items">${this.getItems(
+          insightsData.reusableContent.items
+        )}</div>
+      </div>
+    </div>`,
+      };
+    },
+    emailsInsightMessage(insightsData) {
+      return {
+        role: "ai",
+        html: `<span>${insightsData}</span>`,
+      };
+    },
+    marketingInsightMessage(insightsData) {
+      return {
+        role: "ai",
+        html: `<span>${insightsData}</span>`,
+      };
+    },
+    getItems(items) {
+      var status = [
+        { code: 0, value: "Initial Draft" },
+        { code: 1, value: "Draft" },
+        { code: 2, value: "Published" },
+        { code: 3, value: "Unpublished" },
+      ];
+      return items
+        .map(
+          (item) =>
+            `<div class="k-content-item"><span class="k-content-item-title">${
+              item.displayName
+            }</span>
+            <div class="k-content-item-tags">
+                <span class="k-content-item-tag">${
+                  status.find((s) => s.code === item.versionStatus)?.value
+                }</span>
+                <span class="k-content-item-tag">${item.contentTypeName}</span>
+            </div>
+            </div>`
+        )
+        .join("");
     },
   },
 };
