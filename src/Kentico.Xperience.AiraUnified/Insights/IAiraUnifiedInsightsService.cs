@@ -11,8 +11,8 @@ public interface IAiraUnifiedInsightsService
     /// <param name="contentType"><see cref="ContentType"/>Reusable or website content type.</param>
     /// <param name="userId">Admin application user.</param>
     /// <param name="status">Status of the content type.</param>
-    /// <returns><see cref="ContentInsightsModel"/></returns>
-    Task<ContentInsightsModel> GetContentInsights(ContentType contentType, int userId, string? status = null);
+    /// <returns><see cref="ContentItemModel"/></returns>
+    Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null);
 
     /// <summary>
     /// Gets email insights.

@@ -267,7 +267,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             ChatMessage = message,
             ConversationHistory = textMessageHistory,
-            AppInsights = await GenerateInsights(userId),
+            //AppInsights = await GenerateInsights(userId),
             ChatState = nameof(ChatStateType.ongoing)
         };
 
@@ -283,10 +283,10 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
                     aiResponse.Insights.InsightsData = await GetContentInsights(userId); 
                     break;
                 case "email":
-                    aiResponse.Insights.InsightsData = await GetEmailInsights(userId);
+                    aiResponse.Insights.InsightsData = await GetEmailInsights();
                     break;
                 case "marketing":
-                    aiResponse.Insights.InsightsData = await GetMarketingInsights(userId);
+                    aiResponse.Insights.InsightsData = await GetMarketingInsights();
                     break;
             }
         }
@@ -318,14 +318,51 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         return await ExecuteAIRequest(request);
     }
 
-    private async Task<object?> GetMarketingInsights(int userId)
+    private async Task<object?> GetMarketingInsights()
     {
-        throw new NotImplementedException();
+        var contactGroups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
+        var contactGroupNames = contactGroups.Select(x => x.ContactGroupDisplayName).ToArray();
+
+        var contactGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(contactGroupNames);
+
+        return new MarketingInsightsDataModel
+        {
+            Contacts = new ContactsSummaryModel() { TotalCount = contactGroupInsights.AllCount },
+            ContactGroups = contactGroupInsights.Groups.Select(item => new ContactGroupModel()
+            {
+                Name = item.Name,
+                ContactCount = item.Count,
+                RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
+            }).ToList()
+        };
     }
 
-    private async Task<object?> GetEmailInsights(int userId)
+    private async Task<object?> GetEmailInsights()
     {
-        throw new NotImplementedException();
+        var emailInsights = await airaUnifiedInsightsService.GetEmailInsights();
+
+        return new EmailInsightsDataModel()
+        {
+            Summary = new EmailSummaryModel()
+            {
+                SentCount = emailInsights.Sum(i => i.EmailsSent),
+                
+            },
+            Campaigns = emailInsights.Select(item => new EmailCampaignModel()
+            {
+                Name = item.EmailConfigurationName ,
+                Metrics = new EmailMetricsModel()
+                {
+                    Sent = item.EmailsSent,
+                    Opened = item.EmailsOpened,
+                    UnsubscribeRate = item.UnsubscribeRate,
+                    LinksClicked = item.LinksClicked,
+                    OpenRate = (decimal)item.EmailsOpened / item.EmailsSent * 100,
+                    SpamReports = item.SpamReports,
+                    Delivered = item.EmailsDelivered
+                }
+            }).ToList()
+        };
     }
 
     public async Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState)
@@ -373,98 +410,97 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             Summary = new ContentSummaryModel()
             {
-                //TODO 3/25/2025 PavelHess: implement model mapping
-                DraftCount = 10,
-                ScheduledCount = 8,
-                PublishedCount = 43,
-                TotalCount = 123
+                DraftCount = reusableDraftContentInsights.Count + websiteDraftContentInsights.Count,
+                ScheduledCount = reusableScheduledContentInsights.Count + websiteScheduledContentInsights.Count,
+                // PublishedCount = 43,
+                // TotalCount = 123
             },
             ReusableContent = new ContentCategoryModel()
             {
-                DraftCount = reusableDraftContentInsights.Items.Count,
-                ScheduledCount = reusableScheduledContentInsights.Items.Count,
-                //TODO 3/25/2025 PavelHess: implement model mapping 
-                Items = new List<ContentItemModel>()
+                DraftCount = reusableDraftContentInsights.Count,
+                ScheduledCount = reusableScheduledContentInsights.Count,
+                Items = reusableDraftContentInsights.Concat(reusableScheduledContentInsights).ToList()
             },
             WebsiteContent = new ContentCategoryModel()
             {
-                DraftCount = websiteDraftContentInsights.Items.Count,
-                ScheduledCount = websiteScheduledContentInsights.Items.Count
+                DraftCount = websiteDraftContentInsights.Count,
+                ScheduledCount = websiteScheduledContentInsights.Count,
+                Items = websiteScheduledContentInsights.Concat(websiteDraftContentInsights).ToList()
             }
         };
     }
 
-    private async Task<Dictionary<string, string>> GenerateInsights(int userId)
-    {
-        var emailInsights = await airaUnifiedInsightsService.GetEmailInsights();
-
-        var reusableDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
-        var reusableScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-        var websiteDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
-        var websiteScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-
-        var contactGroups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
-        var contactGroupNames = contactGroups.Select(x => x.ContactGroupDisplayName).ToArray();
-
-        var contactGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(contactGroupNames);
-
-        var separator = '_';
-
-        var resultInsights = new Dictionary<string, string>
-        {
-            { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), reusableDraftContentInsights.Items.Count.ToString()},
-            { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), reusableScheduledContentInsights.Items.Count.ToString()},
-            { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), websiteDraftContentInsights.Items.Count.ToString()},
-            { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), websiteScheduledContentInsights.Items.Count.ToString()},
-
-            { string.Join(separator, AiraUnifiedConstants.InsightsAllAccountsIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), contactGroupInsights.AllCount.ToString() }
-        };
-
-        foreach (var contactGroup in contactGroupInsights.Groups)
-        {
-            resultInsights.Add(
-                string.Join(separator, AiraUnifiedConstants.InsightsContactGroupIdentifier, contactGroup.Name, AiraUnifiedConstants.InsightsCountIdentifier), contactGroup.Count.ToString()
-            );
-
-            resultInsights.Add(
-                string.Join(separator, AiraUnifiedConstants.InsightsContactGroupIdentifier, contactGroup.Name, AiraUnifiedConstants.InsightsRatioToAllContactsIdentifier), ((decimal)contactGroup.Count / contactGroupInsights.AllCount).ToString()
-            );
-        }
-
-        foreach (var emailInsight in emailInsights)
-        {
-            AddEmailInsight(nameof(EmailInsightsModel.EmailsSent), emailInsight.EmailConfigurationName, emailInsight.EmailsSent.ToString());
-            AddEmailInsight(nameof(EmailInsightsModel.EmailsDelivered), emailInsight.EmailConfigurationName, emailInsight.EmailsDelivered.ToString());
-            AddEmailInsight(nameof(EmailInsightsModel.EmailsOpened), emailInsight.EmailConfigurationName, emailInsight.EmailsOpened.ToString());
-            AddEmailInsight(nameof(EmailInsightsModel.LinksClicked), emailInsight.EmailConfigurationName, emailInsight.LinksClicked.ToString());
-            AddEmailInsight(nameof(EmailInsightsModel.UnsubscribeRate), emailInsight.EmailConfigurationName, emailInsight.UnsubscribeRate.ToString());
-            AddEmailInsight(nameof(EmailInsightsModel.SpamReports), emailInsight.EmailConfigurationName, emailInsight.SpamReports.ToString());
-        }
-
-        AddContentItemsToInsights(reusableDraftContentInsights.Items, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier);
-        AddContentItemsToInsights(reusableScheduledContentInsights.Items, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier);
-        AddContentItemsToInsights(websiteDraftContentInsights.Items, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier);
-        AddContentItemsToInsights(websiteScheduledContentInsights.Items, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier);
-
-        void AddEmailInsight(string statisticsParameter, string emailConfigurationName, string value) =>
-            resultInsights.Add(
-                string.Join(separator, AiraUnifiedConstants.InsightsEmailIdentifier, statisticsParameter, emailConfigurationName),
-                value
-            );
-
-        void AddContentItemsToInsights(List<ContentItemInsightsModel> items, string contentTypePrefix, string releaseStatusPrefix)
-        {
-            foreach (var contentItem in items)
-            {
-                resultInsights.Add(
-                    string.Join(separator, AiraUnifiedConstants.InsightsEmailIdentifier, contentTypePrefix, releaseStatusPrefix, contentItem.DisplayName),
-                    ""
-                );
-            }
-        }
-
-        return resultInsights;
-    }
+    // private async Task<Dictionary<string, string>> GenerateInsights(int userId)
+    // {
+    //     var emailInsights = await airaUnifiedInsightsService.GetEmailInsights();
+    //
+    //     // var reusableDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
+    //     // var reusableScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
+    //     // var websiteDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
+    //     // var websiteScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
+    //
+    //     // var contactGroups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
+    //     // var contactGroupNames = contactGroups.Select(x => x.ContactGroupDisplayName).ToArray();
+    //     //
+    //     // var contactGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(contactGroupNames);
+    //
+    //     var separator = '_';
+    //
+    //     var resultInsights = new Dictionary<string, string>
+    //     {
+    //         // { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), reusableDraftContentInsights.Items.Count.ToString()},
+    //         // { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), reusableScheduledContentInsights.Items.Count.ToString()},
+    //         // { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), websiteDraftContentInsights.Items.Count.ToString()},
+    //         // { string.Join(separator, AiraUnifiedConstants.InsightsContentIdentifier, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), websiteScheduledContentInsights.Items.Count.ToString()},
+    //
+    //         //{ string.Join(separator, AiraUnifiedConstants.InsightsAllAccountsIdentifier, AiraUnifiedConstants.InsightsCountIdentifier), contactGroupInsights.AllCount.ToString() }
+    //     };
+    //
+    //     // foreach (var contactGroup in contactGroupInsights.Groups)
+    //     // {
+    //     //     resultInsights.Add(
+    //     //         string.Join(separator, AiraUnifiedConstants.InsightsContactGroupIdentifier, contactGroup.Name, AiraUnifiedConstants.InsightsCountIdentifier), contactGroup.Count.ToString()
+    //     //     );
+    //     //
+    //     //     resultInsights.Add(
+    //     //         string.Join(separator, AiraUnifiedConstants.InsightsContactGroupIdentifier, contactGroup.Name, AiraUnifiedConstants.InsightsRatioToAllContactsIdentifier), ((decimal)contactGroup.Count / contactGroupInsights.AllCount).ToString()
+    //     //     );
+    //     // }
+    //
+    //     foreach (var emailInsight in emailInsights)
+    //     {
+    //         AddEmailInsight(nameof(EmailInsightsModel.EmailsSent), emailInsight.EmailConfigurationName, emailInsight.EmailsSent.ToString());
+    //         AddEmailInsight(nameof(EmailInsightsModel.EmailsDelivered), emailInsight.EmailConfigurationName, emailInsight.EmailsDelivered.ToString());
+    //         AddEmailInsight(nameof(EmailInsightsModel.EmailsOpened), emailInsight.EmailConfigurationName, emailInsight.EmailsOpened.ToString());
+    //         AddEmailInsight(nameof(EmailInsightsModel.LinksClicked), emailInsight.EmailConfigurationName, emailInsight.LinksClicked.ToString());
+    //         AddEmailInsight(nameof(EmailInsightsModel.UnsubscribeRate), emailInsight.EmailConfigurationName, emailInsight.UnsubscribeRate.ToString());
+    //         AddEmailInsight(nameof(EmailInsightsModel.SpamReports), emailInsight.EmailConfigurationName, emailInsight.SpamReports.ToString());
+    //     }
+    //
+    //     // AddContentItemsToInsights(reusableDraftContentInsights.Items, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier);
+    //     // AddContentItemsToInsights(reusableScheduledContentInsights.Items, AiraUnifiedConstants.InsightsReusableIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier);
+    //     // AddContentItemsToInsights(websiteDraftContentInsights.Items, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInDraftIdentifier);
+    //     // AddContentItemsToInsights(websiteScheduledContentInsights.Items, AiraUnifiedConstants.InsightsWebsiteIdentifier, AiraUnifiedConstants.InsightsInScheduledIdentifier);
+    //
+    //     void AddEmailInsight(string statisticsParameter, string emailConfigurationName, string value) =>
+    //         resultInsights.Add(
+    //             string.Join(separator, AiraUnifiedConstants.InsightsEmailIdentifier, statisticsParameter, emailConfigurationName),
+    //             value
+    //         );
+    //
+    //     // void AddContentItemsToInsights(List<ContentItemInsightsModel> items, string contentTypePrefix, string releaseStatusPrefix)
+    //     // {
+    //     //     foreach (var contentItem in items)
+    //     //     {
+    //     //         resultInsights.Add(
+    //     //             string.Join(separator, AiraUnifiedConstants.InsightsEmailIdentifier, contentTypePrefix, releaseStatusPrefix, contentItem.DisplayName),
+    //     //             ""
+    //     //         );
+    //     //     }
+    //     // }
+    //
+    //     return resultInsights;
+    // }
 
     public async Task<AiraUnifiedPromptGroupModel> SaveAiraPrompts(int userId, List<string> suggestions, int threadId)
     {

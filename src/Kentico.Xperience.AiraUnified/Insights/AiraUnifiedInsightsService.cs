@@ -59,25 +59,27 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         this.contactInfoProvider = contactInfoProvider;
     }
 
-    public async Task<ContentInsightsModel> GetContentInsights(ContentType contentType, int userId, string? status = null)
+    public async Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null)
     {
         var content = await GetContent(userId, contentType.ToString(), status);
 
-        var items = new List<ContentItemInsightsModel>();
+        // var items = new List<ContentItemInsightsModel>();
+        //
+        // foreach (var contentItem in content)
+        // {
+        //     items.Add(new ContentItemInsightsModel
+        //     {
+        //         Id = contentItem.Id,
+        //         DisplayName = contentItem.Name
+        //     });
+        // }
+        //
+        // return new ContentInsightsModel
+        // {
+        //     Items = items
+        // };
 
-        foreach (var contentItem in content)
-        {
-            items.Add(new ContentItemInsightsModel
-            {
-                Id = contentItem.Id,
-                DisplayName = contentItem.Name
-            });
-        }
-
-        return new ContentInsightsModel
-        {
-            Items = items
-        };
+        return content.ToList();
     }
 
     public async Task<List<EmailInsightsModel>> GetEmailInsights()

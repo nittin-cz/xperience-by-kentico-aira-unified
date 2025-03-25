@@ -10,8 +10,8 @@ internal class AiraUnifiedAIRequest
     [JsonPropertyName("chat_message")]
     public string ChatMessage { get; set; } = string.Empty;
 
-    [JsonPropertyName("app_insights")]
-    public Dictionary<string, string> AppInsights { get; set; } = [];
+    // [JsonPropertyName("app_insights")]
+    // public Dictionary<string, string> AppInsights { get; set; } = [];
 
     [JsonPropertyName("chat_state")]
     public string ChatState { get; set; } = string.Empty;
