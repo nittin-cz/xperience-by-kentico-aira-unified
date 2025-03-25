@@ -1,4 +1,6 @@
-﻿namespace Kentico.Xperience.AiraUnified.Chat.Models;
+﻿using Kentico.Xperience.AiraUnified.Insights;
+
+namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
 /// Model for the Aira Unified chat message.
@@ -39,4 +41,9 @@ public class AiraUnifiedChatMessageViewModel
     /// True if the ai service is unavailable.
     /// </summary>
     public bool ServiceUnavailable { get; set; } = false;
+
+    /// <summary>
+    /// Application insights for current message.
+    /// </summary>
+    public InsightsResponseModel? Insights { get; set; }
 }
