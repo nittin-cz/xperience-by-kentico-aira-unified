@@ -106,6 +106,10 @@ To see the guidelines for Contributing to Kentico open source software, please s
 
 Find project-specific contribution details.
 
+## Upgrades and Uninstalling
+
+See [Upgrades](Upgrades.md)
+
 ## License
 
 Distributed under the MIT License. See [`LICENSE.md`](./LICENSE.md) for more information.
