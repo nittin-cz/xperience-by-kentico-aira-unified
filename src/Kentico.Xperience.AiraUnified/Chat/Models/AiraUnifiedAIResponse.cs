@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
+using Kentico.Xperience.AiraUnified.Insights;
+
 namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
@@ -24,6 +26,12 @@ public class AiraUnifiedAIResponse
     /// </summary>
     [JsonPropertyName("responses")]
     public List<ResponseMessageModel> Responses { get; set; } = [];
+
+    /// <summary>
+    /// The application insights
+    /// </summary>
+    [JsonPropertyName("insights")] 
+    public InsightsResponseModel Insights { get; set; } = new();
 }
 
 /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 
 using CMS.Base;
 using CMS.ContactManagement;
@@ -10,6 +11,7 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Insights;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Kentico.Xperience.AiraUnified.Chat;
@@ -25,6 +27,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     private readonly IAiraUnifiedInsightsService airaUnifiedInsightsService;
     private readonly AiraUnifiedOptions airaUnifiedOptions;
     private readonly HttpClient httpClient;
+    private readonly IHttpContextAccessor httpContextAccessor;
 
     public AiraUnifiedChatService(IInfoProvider<AiraUnifiedChatPromptGroupInfo> airaUnifiedChatPromptGroupProvider,
         IInfoProvider<AiraUnifiedChatPromptInfo> airaUnifiedChatPromptProvider,
@@ -34,7 +37,8 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         IInfoProvider<AiraUnifiedChatSummaryInfo> airaUnifiedChatSummaryProvider,
         IAiraUnifiedInsightsService airaUnifiedInsightsService,
         IOptions<AiraUnifiedOptions> airaUnifiedOptions,
-        HttpClient httpClient)
+        HttpClient httpClient,
+        IHttpContextAccessor httpContextAccessor)
     {
         this.airaUnifiedChatPromptGroupProvider = airaUnifiedChatPromptGroupProvider;
         this.airaUnifiedChatPromptProvider = airaUnifiedChatPromptProvider;
@@ -44,6 +48,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         this.airaUnifiedInsightsService = airaUnifiedInsightsService;
         this.airaUnifiedChatSummaryProvider = airaUnifiedChatSummaryProvider;
         this.httpClient = httpClient;
+        this.httpContextAccessor = httpContextAccessor;
         this.airaUnifiedOptions = airaUnifiedOptions.Value;
     }
 
@@ -266,7 +271,61 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             ChatState = nameof(ChatStateType.ongoing)
         };
 
+        var aiResponse = await GetAiResponse(request);
+
+        if (aiResponse?.Insights is { IsInsightsQuery: true })
+        {
+            var category = aiResponse.Insights.Category ?? string.Empty;
+
+            switch (category.ToLowerInvariant())
+            {
+                case "content": 
+                    aiResponse.Insights.InsightsData = await GetContentInsights(userId); 
+                    break;
+                case "email":
+                    aiResponse.Insights.InsightsData = await GetEmailInsights(userId);
+                    break;
+                case "marketing":
+                    aiResponse.Insights.InsightsData = await GetMarketingInsights(userId);
+                    break;
+            }
+        }
+
+        return aiResponse;
+    }
+
+    private async Task<AiraUnifiedAIResponse?> GetAiResponse(AiraUnifiedAIRequest request)
+    {
+        var httpRequest = httpContextAccessor.HttpContext?.Request;
+        
+        var isFake = !string.IsNullOrEmpty(httpRequest?.Query["is_fake"]);
+
+        if (isFake)
+        {
+            var isInsights = !string.IsNullOrEmpty(httpRequest?.Query["is_insights"]);
+            var insightsCategory = httpRequest?.Query["insights_category"];
+
+            return new AiraUnifiedAIResponse()
+            {
+                Insights = new InsightsResponseModel()
+                {
+                    IsInsightsQuery = isInsights,
+                    Category = insightsCategory
+                }
+            };
+        }
+
         return await ExecuteAIRequest(request);
+    }
+
+    private async Task<object?> GetMarketingInsights(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task<object?> GetEmailInsights(int userId)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState)
@@ -288,7 +347,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     private async Task<AiraUnifiedAIResponse?> ExecuteAIRequest(AiraUnifiedAIRequest request)
     {
         var jsonRequest = JsonSerializer.Serialize(request);
-        var content = new StringContent(jsonRequest, System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
         content.Headers.Add("Ocp-Apim-Subscription-Key", airaUnifiedOptions.AiraUnifiedApiSubscriptionKey);
 
         var response = await httpClient.PostAsync(AiraUnifiedConstants.AiraUnifiedAIEndpoint, content);
@@ -301,6 +360,38 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
         return JsonSerializer.Deserialize<AiraUnifiedAIResponse>(jsonResponse);
+    }
+
+    private async Task<ContentInsightsDataModel> GetContentInsights(int userId)
+    {
+        var reusableDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
+        var reusableScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
+        var websiteDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
+        var websiteScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
+        
+        return new ContentInsightsDataModel
+        {
+            Summary = new ContentSummaryModel()
+            {
+                //TODO 3/25/2025 PavelHess: implement model mapping
+                DraftCount = 10,
+                ScheduledCount = 8,
+                PublishedCount = 43,
+                TotalCount = 123
+            },
+            ReusableContent = new ContentCategoryModel()
+            {
+                DraftCount = reusableDraftContentInsights.Items.Count,
+                ScheduledCount = reusableScheduledContentInsights.Items.Count,
+                //TODO 3/25/2025 PavelHess: implement model mapping 
+                Items = new List<ContentItemModel>()
+            },
+            WebsiteContent = new ContentCategoryModel()
+            {
+                DraftCount = websiteDraftContentInsights.Items.Count,
+                ScheduledCount = websiteScheduledContentInsights.Items.Count
+            }
+        };
     }
 
     private async Task<Dictionary<string, string>> GenerateInsights(int userId)

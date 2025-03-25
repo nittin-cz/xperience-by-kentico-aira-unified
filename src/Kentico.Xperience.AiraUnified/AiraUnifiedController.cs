@@ -302,6 +302,9 @@ public sealed class AiraUnifiedController : Controller
                 return Ok(result);
             }
 
+            var insights = aiResponse.Insights;
+            
+            //TODO 3/25/2025 PavelHess: Check and implement insights persistance
             await airaUnifiedChatService.SaveMessage(aiResponse.Responses[0].Content, user.UserID, AiraUnifiedConstants.AiraUnifiedChatRoleName, thread);
 
             await airaUnifiedChatService.UpdateChatSummary(userId, message);
@@ -309,7 +312,8 @@ public sealed class AiraUnifiedController : Controller
             result = new AiraUnifiedChatMessageViewModel
             {
                 Role = AiraUnifiedConstants.AiraUnifiedChatRoleName,
-                Message = aiResponse.Responses[0].Content
+                Message = aiResponse.Responses[0].Content,
+                Insights = insights
             };
 
             if (aiResponse.SuggestedQuestions is not null)
