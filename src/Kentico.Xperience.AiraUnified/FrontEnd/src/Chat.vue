@@ -462,8 +462,12 @@ export default {
     setResponseInterceptor() {
 
         this.$refs.chatElementRef.responseInterceptor = (response) => {
-            var mock = this.content();
-            return this.contentInsightMessage(mock.insights.insightsData);
+            // var mock = this.content();
+            // return this.contentInsightMessage(mock.insights.insightsData);
+            var mock = this.email();
+            return this.emailsInsightMessage(mock.insights.insightsData);
+            // var mock = this.marketing();
+            // return this.emailsInsightMessage(mock.insights.insightsData);
         }
 
       /*this.$refs.chatElementRef.responseInterceptor = (response) => {
@@ -671,7 +675,8 @@ export default {
 
                 .k-summary{
                     width: 100%;
-                    display: flex;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
                     gap: .75rem;
                 }
                 .k-summary_item{
@@ -755,6 +760,27 @@ export default {
                     color: #a16208;
                     background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
                     border: 1px solid #a1620866;
+                }
+                .k-content-item_grid{
+                    display: flex;
+                    width: 100%;
+                    text-align: center;
+                    justify-content: space-between;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    gap: .75rem;
+                    margin-top: .5rem;
+                }
+                .k-content-item_label{
+                    font-size: .75rem;
+                }
+                .k-content-item_value{
+                    font-weight: bold;
+                    color: #7f09b7;
+                }
+                .message-bubble .k-content-item_grid,
+                .message-bubble .k-content-item_label,
+                .message-bubble .k-content-item_value{
+                    margin-bottom: 0;
                 }
                 
                 @@keyframes lds-ring {
@@ -909,7 +935,57 @@ export default {
     emailsInsightMessage(insightsData) {
       return {
         role: "ai",
-        html: `<span>${insightsData}</span>`,
+        html: `<div>
+            <div>
+                <h2 class="k-title">E-mails Insights</h2>
+                <h3 class="k-subtitle">Summary</h3>
+                <div class="k-summary">
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Drafts
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.draftCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Scheduled
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.scheduledCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Sent
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.sentCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Total
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.totalCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Avg. Open Rate
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.averageOpenRate}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Avg. Click Rate
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.averageClickRate}</div>
+                    </div>
+                </div>
+
+                <h3 class="k-subtitle">Campaigns</h3>
+                <div class="k-content-items">
+                    ${this.getEmailItems(
+                    insightsData.campaigns
+                )}
+                </div>
+            </div>
+        </div>`,
       };
     },
     marketingInsightMessage(insightsData) {
@@ -942,7 +1018,46 @@ export default {
         )
         .join("");
     },
+      getEmailItems(items) {
+          return items
+              .map(
+                  (item) =>
+                      `<div class="k-content-item">
+                            <div class="k-content-item_title">${
+                                      item.name
+                                  }</div>
+                            <div class="k-content-item_tags">
+                                <span class="k-content-item_tag draft">${
+                                      item.status
+                                  } Draft <!--"Draft" for demo purpose only--></span>
+                                <span class="k-content-item_tag">${
+                                      item.type
+                                  } Type <!--"Type" for demo purpose only--></span>
+                            </div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Last Modified</div>
+                                    <div class="k-content-item_value">${
+                                        item.lastModified ? item.lastModified.toString().split('T')[0] : "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Sent Date</div>
+                                    <div class="k-content-item_value">${
+                                        item.sendDate ? item.sendDate.toString().split('T')[0] : "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Metrics</div>
+                                    <div class="k-content-item_value">${item.metrics || "-"}</div>
+                                </div>
+                            </div>
+                        </div>`
+              )
+              .join("");
+      },
 
+      // >> demo purpose only: mock data
       content() {
           return {
               "message": "",
@@ -1001,7 +1116,85 @@ export default {
                   "metadata": null
               }
           }
+      },
+      email() {
+        return {
+            "message": "",
+            "url": null,
+            "role": "ai",
+            "quickPrompts": [
+                "What are the best practices for email marketing in Xperience by Kentico?",
+                "How can I track email engagement metrics in Xperience by Kentico?",
+                "What insights can I gain from email metrics in Xperience by Kentico?"
+            ],
+            "quickPromptsGroupId": "341",
+            "createdWhen": "0001-01-01T00:00:00",
+            "serviceUnavailable": false,
+            "insights": {
+                "is_insights_query": true,
+                "category": "email",
+                "query_description": "User is seeking insights related to email metrics.",
+                "insightsData": {
+                    "summary": {
+                        "draftCount": 0,
+                        "scheduledCount": 0,
+                        "sentCount": 0,
+                        "totalCount": 0,
+                        "averageOpenRate": 0,
+                        "averageClickRate": 0
+                    },
+                    "campaigns": [
+                        {
+                            "id": "2",
+                            "name": "Dancing Goat Regular",
+                            "type": "",
+                            "status": "",
+                            "lastModified": "2025-03-24T12:30:45.0143982",
+                            "sentDate": null,
+                            "metrics": null
+                        }
+                    ]
+                },
+                "metadata": null
+            }
+        }
+      },
+      marketing() {
+        return {
+            "message": "",
+            "url": null,
+            "role": "ai",
+            "quickPrompts": [
+                "What are the best practices for marketing automation in Xperience by Kentico?",
+                "How does Xperience by Kentico analyze traffic and visitor activities?",
+                "What are the key features for managing marketing campaigns in Xperience by Kentico?"
+            ],
+            "quickPromptsGroupId": "338",
+            "createdWhen": "0001-01-01T00:00:00",
+            "serviceUnavailable": false,
+            "insights": {
+                "is_insights_query": true,
+                "category": "marketing",
+                "query_description": "User is seeking an overview of available marketing insights in Xperience by Kentico.",
+                "insightsData": {
+                    "contacts": {
+                        "totalCount": 2,
+                        "activeCount": null,
+                        "inactiveCount": null
+                    },
+                    "contactGroups": [
+                        {
+                            "name": "Dancing goat recipient list",
+                            "contactCount": 0,
+                            "ratioPercentage": 0
+                        }
+                    ]
+                },
+                "metadata": null
+            }
+        }
       }
+      // << demo purpose only: mock data
   },
 };
 </script>
