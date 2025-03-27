@@ -464,10 +464,10 @@ export default {
         this.$refs.chatElementRef.responseInterceptor = (response) => {
             // var mock = this.content();
             // return this.contentInsightMessage(mock.insights.insightsData);
-            var mock = this.email();
-            return this.emailsInsightMessage(mock.insights.insightsData);
-            // var mock = this.marketing();
+            // var mock = this.email();
             // return this.emailsInsightMessage(mock.insights.insightsData);
+            var mock = this.marketing();
+            return this.marketingInsightMessage(mock.insights.insightsData);
         }
 
       /*this.$refs.chatElementRef.responseInterceptor = (response) => {
@@ -581,6 +581,10 @@ export default {
                     background-color: ${this.themeColor} !important;
                 }
 
+                .message-bubble.html-message{
+                    width: 100%;
+                }
+
                 .btn-outline-primary:hover {
                     color: #fff;
                     background-color: ${this.themeColorInRgb};
@@ -685,6 +689,9 @@ export default {
                     background: #f7f1ff;
                     flex: 1 1 0px;
                 }
+                .k-summary_item.span-2{
+                    grid-column: span 2 / span 2;
+                }
                 .message-bubble .k-summary_item{
                     margin-bottom: 0;
                 }
@@ -703,16 +710,16 @@ export default {
                 .message-bubble .k-summary_value{
                    margin-block: .125rem 0;
                 }
-                .k-summary_item.draft{
+                .k-summary_item.yellow{
                     background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
                 }
-                .k-summary_item.draft .k-summary_value{
+                .k-summary_item.yellow .k-summary_value{
                     color: #a16208;
                 }
-                .k-summary_item.scheduled{
+                .k-summary_item.green{
                     background-image: linear-gradient(60deg, #f0fdf4 50%, #e0fde9);
                 }
-                .k-summary_item.scheduled .k-summary_value{
+                .k-summary_item.green .k-summary_value{
                     color: #25803d;
                 }
 
@@ -756,7 +763,7 @@ export default {
                     border: 1px solid #7f09b766;
                     line-height: 1.5;
                 }
-                .k-content-item_tag.draft{
+                .k-content-item_tag.yellow{
                     color: #a16208;
                     background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
                     border: 1px solid #a1620866;
@@ -765,7 +772,7 @@ export default {
                     display: flex;
                     width: 100%;
                     text-align: center;
-                    justify-content: space-between;
+                    justify-content: space-evenly;
                     grid-template-columns: 1fr 1fr 1fr;
                     gap: .75rem;
                     margin-top: .5rem;
@@ -861,13 +868,13 @@ export default {
         <h2 class="k-title">Content Insights</h2>
         <h3 class="k-subtitle">Summary</h3>
         <div class="k-summary">
-            <div class="k-summary_item draft">
+            <div class="k-summary_item yellow">
                 <h4 class="k-summary_title">
                     Drafts
                 </h4>
                 <div class="k-summary_value">${insightsData.summary.draftCount}</div>
             </div>
-            <div class="k-summary_item scheduled">
+            <div class="k-summary_item green">
                 <h4 class="k-summary_title">
                     Scheduled
                 </h4>
@@ -991,7 +998,40 @@ export default {
     marketingInsightMessage(insightsData) {
       return {
         role: "ai",
-        html: `<span>${insightsData}</span>`,
+        html: `<div>
+            <div>
+                <h2 class="k-title">Marketing Insights</h2>
+                <h3 class="k-subtitle">Contacts</h3>
+                <div class="k-summary">
+                    <div class="k-summary_item span-2">
+                        <h4 class="k-summary_title">
+                            Total Count
+                        </h4>
+                        <div class="k-summary_value">${insightsData.contacts.totalCount || "-"}</div>
+                    </div>
+                    <div class="k-summary_item green">
+                        <h4 class="k-summary_title">
+                            Active
+                        </h4>
+                        <div class="k-summary_value">${insightsData.contacts.activeCount || "-"}</div>
+                    </div>
+                    <div class="k-summary_item yellow">
+                        <h4 class="k-summary_title">
+                            Inactive
+                        </h4>
+                        <div class="k-summary_value">${insightsData.contacts.inactiveCount || "-"}</div>
+                    </div>
+                </div>
+
+                <h3 class="k-subtitle">Contact Groups</h3>
+                <div class="k-content-items">
+                    ${this.getMarketingContactItems(
+                        insightsData.contactGroups
+                    )}
+                </div>
+            </div>
+
+        </div>`,
       };
     },
     getItems(items) {
@@ -1009,7 +1049,7 @@ export default {
                     item.displayName
                 }</div>
             <div class="k-content-item_tags">
-                <span class="k-content-item_tag draft">${
+                <span class="k-content-item_tag yellow">${
                   status.find((s) => s.code === item.versionStatus)?.value
                 }</span>
                 <span class="k-content-item_tag">${item.contentTypeName}</span>
@@ -1024,32 +1064,54 @@ export default {
                   (item) =>
                       `<div class="k-content-item">
                             <div class="k-content-item_title">${
-                                      item.name
-                                  }</div>
+                          item.name
+                      }</div>
                             <div class="k-content-item_tags">
-                                <span class="k-content-item_tag draft">${
-                                      item.status
-                                  } Draft <!--"Draft" for demo purpose only--></span>
+                                <span class="k-content-item_tag yellow">${
+                          item.status
+                      } Draft <!--"Draft" for demo purpose only--></span>
                                 <span class="k-content-item_tag">${
-                                      item.type
-                                  } Type <!--"Type" for demo purpose only--></span>
+                          item.type
+                      } Type <!--"Type" for demo purpose only--></span>
                             </div>
                             <div class="k-content-item_grid">
                                 <div>
                                     <div class="k-content-item_label">Last Modified</div>
                                     <div class="k-content-item_value">${
-                                        item.lastModified ? item.lastModified.toString().split('T')[0] : "-"
-                                    }</div>
+                          item.lastModified ? item.lastModified.toString().split('T')[0] : "-"
+                      }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Sent Date</div>
                                     <div class="k-content-item_value">${
-                                        item.sendDate ? item.sendDate.toString().split('T')[0] : "-"
-                                    }</div>
+                          item.sendDate ? item.sendDate.toString().split('T')[0] : "-"
+                      }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Metrics</div>
                                     <div class="k-content-item_value">${item.metrics || "-"}</div>
+                                </div>
+                            </div>
+                        </div>`
+              )
+              .join("");
+      },
+      getMarketingContactItems(items) {
+          return items
+              .map(
+                  (item) =>
+                      `<div class="k-content-item">
+                            <div class="k-content-item_title">${
+                                item.name
+                            }</div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Contacts</div>
+                                    <div class="k-content-item_value">${item.contactCount}</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Sent Date</div>
+                                    <div class="k-content-item_value">${item.ratioPercentage}</div>
                                 </div>
                             </div>
                         </div>`
