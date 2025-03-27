@@ -462,12 +462,12 @@ export default {
     setResponseInterceptor() {
 
         this.$refs.chatElementRef.responseInterceptor = (response) => {
-            // var mock = this.content();
-            // return this.contentInsightMessage(mock.insights.insightsData);
+            var mock = this.content();
+            return this.contentInsightMessage(mock.insights.insightsData);
             // var mock = this.email();
             // return this.emailsInsightMessage(mock.insights.insightsData);
-            var mock = this.marketing();
-            return this.marketingInsightMessage(mock.insights.insightsData);
+            // var mock = this.marketing();
+            // return this.marketingInsightMessage(mock.insights.insightsData);
         }
 
       /*this.$refs.chatElementRef.responseInterceptor = (response) => {
@@ -868,13 +868,13 @@ export default {
         <h2 class="k-title">Content Insights</h2>
         <h3 class="k-subtitle">Summary</h3>
         <div class="k-summary">
-            <div class="k-summary_item yellow">
+            <div class="k-summary_item">
                 <h4 class="k-summary_title">
                     Drafts
                 </h4>
                 <div class="k-summary_value">${insightsData.summary.draftCount}</div>
             </div>
-            <div class="k-summary_item green">
+            <div class="k-summary_item">
                 <h4 class="k-summary_title">
                     Scheduled
                 </h4>
@@ -1009,13 +1009,13 @@ export default {
                         </h4>
                         <div class="k-summary_value">${insightsData.contacts.totalCount || "-"}</div>
                     </div>
-                    <div class="k-summary_item green">
+                    <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Active
                         </h4>
                         <div class="k-summary_value">${insightsData.contacts.activeCount || "-"}</div>
                     </div>
-                    <div class="k-summary_item yellow">
+                    <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Inactive
                         </h4>
@@ -1049,7 +1049,7 @@ export default {
                     item.displayName
                 }</div>
             <div class="k-content-item_tags">
-                <span class="k-content-item_tag yellow">${
+                <span class="k-content-item_tag">${
                   status.find((s) => s.code === item.versionStatus)?.value
                 }</span>
                 <span class="k-content-item_tag">${item.contentTypeName}</span>
@@ -1067,7 +1067,7 @@ export default {
                           item.name
                       }</div>
                             <div class="k-content-item_tags">
-                                <span class="k-content-item_tag yellow">${
+                                <span class="k-content-item_tag">${
                           item.status
                       } Draft <!--"Draft" for demo purpose only--></span>
                                 <span class="k-content-item_tag">${
