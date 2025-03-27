@@ -137,7 +137,7 @@
           default: {
             shared: {
               bubble: {
-                fontSize: '0.75rem',
+                fontSize: '0.875rem',
                 lineHeight: '1.375rem',
                 padding: '0.5rem 0.75rem',
                 marginTop: '.375rem',
@@ -651,19 +651,62 @@ export default {
                 .lds-ring div:nth-child(3) {
                     animation-delay: -0.15s;
                 }
+                .k-title{
+                    font-size: 1.125rem;
+                }
                 .k-title:after{
                     content: '.';
                     color: #F05A22;
                 }
+                .k-subtitle{
+                    text-transform: uppercase;
+                    font-size: .75rem;
+                    font-weight: 700;
+                    margin-block: 1.125rem .25rem;
+                }
 
                 .k-summary{
                     width: 100%;
-    padding-top: 0.75rem;
-    padding-right: 1.25rem;
-    padding-bottom: 0.75rem;
-    padding-left: 1.25rem;
-    border-radius: 40px;
-    background-color: #f3f1f2;
+                    display: flex;
+                    gap: .75rem;
+                }
+                .k-summary_item{
+                    border-radius: 1.25rem;
+                    padding: .5rem 1.25rem;
+                    background: #f7f1ff;
+                    flex: 1 1 0px;
+                }
+                .message-bubble .k-summary_item{
+                    margin-bottom: 0;
+                }
+                .k-summary_title{
+                   margin: 0;
+                   font-weight: inherit;
+                   color: #231F20;
+                }
+                .k-summary_value{
+                   margin-block: .125rem 0;
+                   font-size: 2rem;
+                   font-weight: 700;
+                   color: #F05A22;
+                   line-height: 1;
+                }
+                .message-bubble .k-summary_value{
+                   margin-block: .125rem 0;
+                }
+                .k-summary_item.draft{
+                    background: #fefce8;
+                    border: 1px solid #a1620866;
+                }
+                .k-summary_item.draft .k-summary_value{
+                    color: #a16208;
+                }
+                .k-summary_item.scheduled{
+                    background: #f0fdf4;
+                    border: 1px solid #25803d66;
+                }
+                .k-summary_item.scheduled .k-summary_value{
+                    color: #25803d;
                 }
 
                 .k-item{
@@ -800,66 +843,56 @@ export default {
         html: `<div>
       <div>
         <h2 class="k-title">Content Insights</h2>
-        <h3>Summary</h3>
+        <h3 class="k-subtitle">Summary</h3>
         <div class="k-summary">
-            <div class="k-item">
-                <h3 class="k-item-value">${insightsData.summary.draftCount}</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Drafts
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.summary.draftCount}</div>
             </div>
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.summary.scheduledCount
-                }</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Scheduled
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.summary.scheduledCount}</div>
             </div>
         </div>
       </div>
 
       <div>
-        <h3>Websites</h3>
+        <h3 class="k-subtitle">Websites</h3>
         <div class="k-summary">
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.websiteContent.draftCount
-                }</h3>
-                <div class="k-item-title">
-                    Draft
-                </div>
+            <div class="k-summary_item draft">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${insightsData.websiteContent.draftCount}</div>
             </div>
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.websiteContent.scheduledCount
-                }</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item scheduled">
+                <h4 class="k-summary_title">
                     Scheduled
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.websiteContent.scheduledCount}</div>
             </div>
         </div>
         <div>${this.getItems(insightsData.websiteContent.items)}</div>
       </div>
 
       <div>
-        <h3>Reusable content</h3>
+        <h3 class="k-subtitle">Reusable content</h3>
         <div class="k-summary">
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.reusableContent.draftCount
-                }</h3>
-                <div class="k-item-title">
-                    Draft
-                </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${insightsData.reusableContent.draftCount}</div>
             </div>
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.reusableContent.scheduledCount
-                }</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Scheduled
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.reusableContent.scheduledCount}</div>
             </div>
         </div>
         <div class="k-content-items">${this.getItems(
