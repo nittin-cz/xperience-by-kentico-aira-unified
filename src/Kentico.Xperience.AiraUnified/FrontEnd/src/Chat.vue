@@ -335,8 +335,8 @@ export default {
           });
 
           this.setRequestInterceptor();
-          this.setOnMessage();
-          this.setOnError();
+          // this.setOnMessage();
+          // this.setOnError();
           this.setResponseInterceptor();
           this.setHistory();
         }
@@ -460,7 +460,13 @@ export default {
       };
     },
     setResponseInterceptor() {
-      this.$refs.chatElementRef.responseInterceptor = (response) => {
+
+        this.$refs.chatElementRef.responseInterceptor = (response) => {
+            var mock = this.content();
+            return this.contentInsightMessage(mock.insights.insightsData);
+        }
+
+      /*this.$refs.chatElementRef.responseInterceptor = (response) => {
         const messageViewModel = this.getMessageViewModel(response);
 
         this.history.push(messageViewModel);
@@ -493,7 +499,7 @@ export default {
         }
 
         return messageViewModel;
-      };
+      };*/
     },
     setOnMessage() {
       this.$refs.chatElementRef.onMessage = (message) => {
@@ -529,23 +535,22 @@ export default {
                 }
                 .c-prompt-btn{
                   appearance: none;
-                  background: #F05A22;
+                  background: #fff;
                   cursor: pointer;
-                  font-size: 12px;
+                  font-size: .875rem;
                   line-height: 1rem;
-                  padding:  .75rem;
+                  padding: .75rem;
                   text-align: center;
-                  color: #fff;
-                  border: 1px solid;
-                  border-radius: 24px;
+                  color: #000D48;
+                  border: 2px solid #000D48;
+                  border-radius: .375rem;
                   transition: background-color 0.2s ease;
-                  text-transform: uppercase;
                 }
                 .c-prompt-btn:hover{
-                  background: #C64300;
+                  background: #ebe7e5;
                 }
                 .c-prompt-btn:active{
-                  background: #6A2000;
+                  background: #ddd9d7;
                 }
 
                 .c-prompt-btn-wrapper{
@@ -899,6 +904,66 @@ export default {
         )
         .join("");
     },
+
+      content() {
+          return {
+              "message": "",
+              "url": null,
+              "role": "ai",
+              "quickPrompts": [
+                  "What are the best practices for content management in Xperience by Kentico?",
+                  "How does Xperience by Kentico handle content workflow?",
+                  "What tools does Xperience by Kentico provide for analyzing content performance?"
+              ],
+              "quickPromptsGroupId": "336",
+              "createdWhen": "0001-01-01T00:00:00",
+              "serviceUnavailable": false,
+              "insights": {
+                  "is_insights_query": true,
+                  "category": "content",
+                  "query_description": "The user is seeking information about available content insights.",
+                  "insightsData": {
+                      "summary": {
+                          "draftCount": 2,
+                          "scheduledCount": 0,
+                          "publishedCount": null,
+                          "totalCount": null
+                      },
+                      "websiteContent": {
+                          "draftCount": 1,
+                          "scheduledCount": 0,
+                          "items": [
+                              {
+                                  "id": 60,
+                                  "name": "CoffeeProcessingTechniques-vnl8fs1k",
+                                  "displayName": "CoffeeProcessingTechniques-vnl8fs1k",
+                                  "contentTypeId": 5618,
+                                  "contentTypeName": "DancingGoat.ArticlePage",
+                                  "versionStatus": 1,
+                                  "languageId": 1
+                              }
+                          ]
+                      },
+                      "reusableContent": {
+                          "draftCount": 1,
+                          "scheduledCount": 0,
+                          "items": [
+                              {
+                                  "id": 41,
+                                  "name": "OurFirstCuppingIsHere-t8ll79h8",
+                                  "displayName": "OurFirstCuppingIsHere-t8ll79h8",
+                                  "contentTypeId": 5628,
+                                  "contentTypeName": "DancingGoat.Event",
+                                  "versionStatus": 1,
+                                  "languageId": 1
+                              }
+                          ]
+                      }
+                  },
+                  "metadata": null
+              }
+          }
+      }
   },
 };
 </script>
