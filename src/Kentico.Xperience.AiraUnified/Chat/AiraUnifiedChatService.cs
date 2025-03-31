@@ -260,23 +260,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
 
         var aiResponse = await aiHttpClient.SendRequestAsync(request);
 
-        if (aiResponse?.Insights is { IsInsightsQuery: true })
-        {
-            var category = aiResponse.Insights.Category ?? string.Empty;
-
-            switch (category.ToLowerInvariant())
-            {
-                case "content":
-                    aiResponse.Insights.InsightsData = await GetContentInsights(userId);
-                    break;
-                case "email":
-                    aiResponse.Insights.InsightsData = await GetEmailInsights();
-                    break;
-                case "marketing":
-                    aiResponse.Insights.InsightsData = await GetMarketingInsights();
-                    break;
-            }
-        }
+        await AddInsightsData(userId, aiResponse);
 
         return aiResponse;
     }
@@ -376,6 +360,35 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             airaUnifiedChatPromptGroupProvider.BulkDelete(new WhereCondition($"{nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId)} = {id}"));
             airaUnifiedChatPromptProvider.BulkDelete(new WhereCondition($"{nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptChatPromptGroupId)} = {id}"));
+        }
+    }
+    
+    private async Task AddInsightsData(int userId, AiraUnifiedAIResponse? aiResponse)
+    {
+        if (aiResponse?.Insights is { IsInsightsQuery: true })
+        {
+            var category = aiResponse.Insights.Category ?? string.Empty;
+
+            switch (category.ToLowerInvariant())
+            {
+                case "content":
+                    aiResponse.Insights.InsightsData = await GetContentInsights(userId);
+                    break;
+                case "email":
+                    aiResponse.Insights.InsightsData = await GetEmailInsights();
+                    break;
+                case "marketing":
+                    aiResponse.Insights.InsightsData = await GetMarketingInsights();
+                    break;
+            }
+
+            if (aiResponse.Insights.InsightsData != null)
+            {
+                aiResponse.Insights.Metadata = new InsightsMetadataModel()
+                {
+                    Timestamp = DateTime.UtcNow
+                };
+            }
         }
     }
     

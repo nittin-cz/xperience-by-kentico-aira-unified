@@ -20,5 +20,10 @@ public sealed class AiraUnifiedOptions
     /// <summary>
     /// When true, uses mock AI client instead of real HTTP client. Useful for local development.
     /// </summary>
-    public bool UseMockClient { get; set; }
+    public bool AiraUnifiedUseMockClient { get; set; }
+
+    /// <summary>
+    /// Whether to use mock insights service for local development.
+    /// </summary>
+    public bool AiraUnifiedUseMockInsights { get; set; }
 }

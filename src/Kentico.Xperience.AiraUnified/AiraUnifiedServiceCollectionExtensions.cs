@@ -39,11 +39,14 @@ public static class AiraUnifiedServiceCollectionExtensions
             .AddScoped<ContentItemAssetUploaderComponent>()
             .AddScoped<AiraUnifiedConfigurationService>()
             .AddScoped<IAiraUnifiedConfigurationService, AiraUnifiedConfigurationService>()
-            .AddScoped<IAiraUnifiedInsightsService, AiraUnifiedInsightsService>()
+            .AddScoped<IAiraUnifiedInsightsService>(sp => options?.AiraUnifiedUseMockInsights == true
+                ? new MockAiraUnifiedInsightsService()
+                : sp.GetRequiredService<AiraUnifiedInsightsService>())
+            .AddScoped<AiraUnifiedInsightsService>()
             .AddScoped<IAiraUnifiedAssetService, AiraUnifiedAssetService>()
             .AddScoped<IAiraUnifiedChatService, AiraUnifiedChatService>()
             .AddScoped<INavigationService, NavigationService>()
-            .AddScoped<IAiHttpClient>(sp => options?.UseMockClient == true ? new MockAiHttpClient() : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
+            .AddScoped<IAiHttpClient>(sp => options?.AiraUnifiedUseMockClient == true ? new MockAiHttpClient() : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
             .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
 
         return services;
