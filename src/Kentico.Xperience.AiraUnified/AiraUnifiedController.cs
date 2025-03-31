@@ -236,9 +236,9 @@ public sealed class AiraUnifiedController : Controller
 
         var lastMessage = history[^1];
 
-        if (initialMessages.SuggestedQuestions is not null)
+        if (initialMessages.QuickOptions is not null)
         {
-            var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.SuggestedQuestions, chatThreadId);
+            var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.QuickOptions, chatThreadId);
             lastMessage.QuickPrompts = promptGroup.QuickPrompts;
             lastMessage.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
         }
@@ -314,9 +314,9 @@ public sealed class AiraUnifiedController : Controller
                 Insights = aiResponse.Insights
             };
 
-            if (aiResponse.SuggestedQuestions is not null)
+            if (aiResponse.QuickOptions is not null)
             {
-                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.SuggestedQuestions, chatThreadId);
+                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.QuickOptions, chatThreadId);
                 result.QuickPrompts = promptGroup.QuickPrompts;
                 result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
             }

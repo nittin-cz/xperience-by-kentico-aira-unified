@@ -31,7 +31,7 @@ internal class MockAiHttpClient : IAiHttpClient
         [
             new ResponseMessageModel { Content = "MOCK: Hello! I'm your AI assistant. How can I help you today?", ContentType = "text" }
         ],
-        SuggestedQuestions =
+        QuickOptions =
         [
             "What can you help me with?",
             "How do I create content?",
@@ -45,7 +45,7 @@ internal class MockAiHttpClient : IAiHttpClient
         [
             new ResponseMessageModel { Content = "MOCK: Welcome back! I'm here to help you. What would you like to know?", ContentType = "text" }
         ],
-        SuggestedQuestions =
+        QuickOptions =
         [
             "Continue previous conversation",
             "Start new topic",

@@ -18,8 +18,8 @@ public class AiraUnifiedAIResponse
     /// <summary>
     /// The suggested prompts.
     /// </summary>
-    [JsonPropertyName("suggested_questions")]
-    public List<string> SuggestedQuestions { get; set; } = [];
+    [JsonPropertyName("quick_options")]
+    public List<string> QuickOptions { get; set; } = [];
 
     /// <summary>
     /// The text response of the ai endpoint.
