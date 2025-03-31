@@ -137,7 +137,7 @@
           default: {
             shared: {
               bubble: {
-                fontSize: '0.75rem',
+                fontSize: '0.875rem',
                 lineHeight: '1.375rem',
                 padding: '0.5rem 0.75rem',
                 marginTop: '.375rem',
@@ -335,8 +335,8 @@ export default {
           });
 
           this.setRequestInterceptor();
-          this.setOnMessage();
-          this.setOnError();
+          // this.setOnMessage();
+          // this.setOnError();
           this.setResponseInterceptor();
           this.setHistory();
         }
@@ -460,7 +460,17 @@ export default {
       };
     },
     setResponseInterceptor() {
-      this.$refs.chatElementRef.responseInterceptor = (response) => {
+
+        this.$refs.chatElementRef.responseInterceptor = (response) => {
+            var mock = this.content();
+            return this.contentInsightMessage(mock.insights.insightsData);
+            // var mock = this.email();
+            // return this.emailsInsightMessage(mock.insights.insightsData);
+            // var mock = this.marketing();
+            // return this.marketingInsightMessage(mock.insights.insightsData);
+        }
+
+      /*this.$refs.chatElementRef.responseInterceptor = (response) => {
         const messageViewModel = this.getMessageViewModel(response);
 
         this.history.push(messageViewModel);
@@ -493,7 +503,7 @@ export default {
         }
 
         return messageViewModel;
-      };
+      };*/
     },
     setOnMessage() {
       this.$refs.chatElementRef.onMessage = (message) => {
@@ -529,23 +539,22 @@ export default {
                 }
                 .c-prompt-btn{
                   appearance: none;
-                  background: #F05A22;
+                  background: #fff;
                   cursor: pointer;
-                  font-size: 12px;
+                  font-size: .875rem;
                   line-height: 1rem;
-                  padding:  .75rem;
+                  padding: .75rem;
                   text-align: center;
-                  color: #fff;
-                  border: 1px solid;
-                  border-radius: 24px;
+                  color: #000D48;
+                  border: 2px solid #000D48;
+                  border-radius: .375rem;
                   transition: background-color 0.2s ease;
-                  text-transform: uppercase;
                 }
                 .c-prompt-btn:hover{
-                  background: #C64300;
+                  background: #ebe7e5;
                 }
                 .c-prompt-btn:active{
-                  background: #6A2000;
+                  background: #ddd9d7;
                 }
 
                 .c-prompt-btn-wrapper{
@@ -570,6 +579,10 @@ export default {
 
                 .user-message-text {
                     background-color: ${this.themeColor} !important;
+                }
+
+                .message-bubble.html-message{
+                    width: 100%;
                 }
 
                 .btn-outline-primary:hover {
@@ -646,77 +659,135 @@ export default {
                 .lds-ring div:nth-child(3) {
                     animation-delay: -0.15s;
                 }
+                .k-title{
+                    font-size: 1.125rem;
+                }
                 .k-title:after{
                     content: '.';
                     color: #F05A22;
                 }
+                .k-subtitle{
+                    text-transform: uppercase;
+                    font-size: .75rem;
+                    font-weight: 700;
+                    margin-block: 1.125rem .25rem;
+                }
+                .k-subtitle.small{
+                    font-size: .625rem;
+                    margin-block: .625rem .25rem;
+                }
 
                 .k-summary{
                     width: 100%;
-    padding-top: 0.75rem;
-    padding-right: 1.25rem;
-    padding-bottom: 0.75rem;
-    padding-left: 1.25rem;
-    border-radius: 40px;
-    background-color: #f3f1f2;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: .75rem;
                 }
-
-                .k-item{
-                display: flex;
-    align-items: center;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
-    }
-                .k-item-value{
-                color: #F05A22;
-    margin-bottom: 0;
-    min-width: 3.4375rem;
-    text-align: right;
-    margin-top:0;    
-    font-size: 1.375rem;
-        line-height: 1.625rem;
+                .k-summary_item{
+                    border-radius: 1.25rem;
+                    padding: .625rem 1.25rem;
+                    background: #f7f1ff;
+                    flex: 1 1 0px;
                 }
-                .k-item-title{
-                    margin-left: 1.25rem;
-                    margin-bottom: 0 !important;
-                    font-weight: bold;
-                            
+                .k-summary_item.span-2{
+                    grid-column: span 2 / span 2;
+                }
+                .message-bubble .k-summary_item{
+                    margin-bottom: 0;
+                }
+                .k-summary_title{
+                   margin: 0;
+                   font-weight: inherit;
+                   color: #231F20;
+                }
+                .k-summary_value{
+                   margin-block: .125rem 0;
+                   font-size: 2rem;
+                   font-weight: 700;
+                   color: #7f09b7;
+                   line-height: 1;
+                }
+                .message-bubble .k-summary_value{
+                   margin-block: .125rem 0;
+                }
+                .k-summary_item.yellow{
+                    background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
+                }
+                .k-summary_item.yellow .k-summary_value{
+                    color: #a16208;
+                }
+                .k-summary_item.green{
+                    background-image: linear-gradient(60deg, #f0fdf4 50%, #e0fde9);
+                }
+                .k-summary_item.green .k-summary_value{
+                    color: #25803d;
                 }
 
                 .k-content-items{
-                width: 100%;
+                    width: 100%;
                 }
                 .k-content-item{
-                background: #f7f1ff;
-    border-radius: 1.5rem;
+                    border-radius: 1.25rem;
+                    border: 1px solid #cfc9ca;
                     display: block;
-    color: inherit;
-    text-decoration: inherit;
-    font-size: .875rem;
-    padding: 1rem;
+                    color: inherit;
+                    text-decoration: inherit;
+                    font-size: .875rem;
+                    padding: .6255rem 1rem;
                 }
-                .k-content-item-title{
-                font-weight: bold;
+                .k-content-item_title{
+
                 }
-                .k-content-item-tags{
-                margin-top: .5rem;
+                .k-content-item_tags{
+                    margin-top: .5rem;
                     display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: .2rem;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: .375rem;
                 }
-                .k-content-item-tag{
-                        color: #7f09b7;
-                        font-weight: bold;
-    background: #fff;
-        display: inline-flex;
-    align-items: center;
-    border-radius: .75rem;
-    padding: .25rem .75rem;
-    font-size: .75rem;
-    white-space: nowrap;
-    letter-spacing: normal;
-        border: 1px solid;
+                .message-bubble .k-content-item_tags{
+                    margin-bottom: 0;
+                }
+                .k-content-item_tag{
+                    color: #7f09b7;
+                    font-weight: bold;
+                    background: #fff;
+                    display: inline-flex;
+                    align-items: center;
+                    border-radius: 2rem;
+                    padding: .25rem .5rem;
+                    font-size: .625rem;
+                    white-space: nowrap;
+                    letter-spacing: normal;
+                    background-image: linear-gradient(60deg, #f7f1ff 50%, #f1e6fe);
+                    border: 1px solid #7f09b766;
+                    line-height: 1.5;
+                }
+                .k-content-item_tag.yellow{
+                    color: #a16208;
+                    background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
+                    border: 1px solid #a1620866;
+                }
+                .k-content-item_grid{
+                    display: flex;
+                    width: 100%;
+                    text-align: center;
+                    justify-content: space-evenly;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    gap: .75rem;
+                    margin-top: .5rem;
+                }
+                .k-content-item_label{
+                    font-size: .75rem;
+                }
+                .k-content-item_value{
+                    font-weight: bold;
+                    color: #7f09b7;
+                }
+                .message-bubble .k-content-item_grid,
+                .message-bubble .k-content-item_label,
+                .message-bubble .k-content-item_value{
+                    margin-bottom: 0;
                 }
                 
                 @@keyframes lds-ring {
@@ -795,71 +866,75 @@ export default {
         html: `<div>
       <div>
         <h2 class="k-title">Content Insights</h2>
-        <h3>Summary</h3>
+        <h3 class="k-subtitle">Summary</h3>
         <div class="k-summary">
-            <div class="k-item">
-                <h3 class="k-item-value">${insightsData.summary.draftCount}</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Drafts
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.summary.draftCount}</div>
             </div>
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.summary.scheduledCount
-                }</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Scheduled
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.summary.scheduledCount}</div>
             </div>
         </div>
       </div>
 
       <div>
-        <h3>Websites</h3>
+        <h3 class="k-subtitle">Websites</h3>
         <div class="k-summary">
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.websiteContent.draftCount
-                }</h3>
-                <div class="k-item-title">
-                    Draft
-                </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${insightsData.websiteContent.draftCount}</div>
             </div>
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.websiteContent.scheduledCount
-                }</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Scheduled
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.websiteContent.scheduledCount}</div>
             </div>
         </div>
-        <div>${this.getItems(insightsData.websiteContent.items)}</div>
+        <h3 class="k-subtitle small">Draft Websites</h3>
+        <div class="k-content-items">
+            ${this.getItems(insightsData.websiteContent.items)}
+        </div>
       </div>
 
       <div>
-        <h3>Reusable content</h3>
+        <h3 class="k-subtitle">Reusable content</h3>
         <div class="k-summary">
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.reusableContent.draftCount
-                }</h3>
-                <div class="k-item-title">
-                    Draft
-                </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${insightsData.reusableContent.draftCount}</div>
             </div>
-            <div class="k-item">
-                <h3 class="k-item-value">${
-                  insightsData.reusableContent.scheduledCount
-                }</h3>
-                <div class="k-item-title">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
                     Scheduled
-                </div>
+                </h4>
+                <div class="k-summary_value">${insightsData.reusableContent.scheduledCount}</div>
             </div>
         </div>
-        <div class="k-content-items">${this.getItems(
-          insightsData.reusableContent.items
-        )}</div>
+        <h3 class="k-subtitle small">Draft Reusable contents</h3>
+        <div class="k-content-items">
+            ${this.getItems(
+              insightsData.reusableContent.items
+            )}
+            <!-- demo purposese only -->
+            ${this.getItems(
+                insightsData.reusableContent.items
+            )}
+            ${this.getItems(
+                insightsData.reusableContent.items
+            )}
+            <!-- // demo purposese only -->
+        </div>
       </div>
     </div>`,
       };
@@ -867,13 +942,96 @@ export default {
     emailsInsightMessage(insightsData) {
       return {
         role: "ai",
-        html: `<span>${insightsData}</span>`,
+        html: `<div>
+            <div>
+                <h2 class="k-title">E-mails Insights</h2>
+                <h3 class="k-subtitle">Summary</h3>
+                <div class="k-summary">
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Drafts
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.draftCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Scheduled
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.scheduledCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Sent
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.sentCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Total
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.totalCount}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Avg. Open Rate
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.averageOpenRate}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Avg. Click Rate
+                        </h4>
+                        <div class="k-summary_value">${insightsData.summary.averageClickRate}</div>
+                    </div>
+                </div>
+
+                <h3 class="k-subtitle">Campaigns</h3>
+                <div class="k-content-items">
+                    ${this.getEmailItems(
+                    insightsData.campaigns
+                )}
+                </div>
+            </div>
+        </div>`,
       };
     },
     marketingInsightMessage(insightsData) {
       return {
         role: "ai",
-        html: `<span>${insightsData}</span>`,
+        html: `<div>
+            <div>
+                <h2 class="k-title">Marketing Insights</h2>
+                <h3 class="k-subtitle">Contacts</h3>
+                <div class="k-summary">
+                    <div class="k-summary_item span-2">
+                        <h4 class="k-summary_title">
+                            Total Count
+                        </h4>
+                        <div class="k-summary_value">${insightsData.contacts.totalCount || "-"}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Active
+                        </h4>
+                        <div class="k-summary_value">${insightsData.contacts.activeCount || "-"}</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Inactive
+                        </h4>
+                        <div class="k-summary_value">${insightsData.contacts.inactiveCount || "-"}</div>
+                    </div>
+                </div>
+
+                <h3 class="k-subtitle">Contact Groups</h3>
+                <div class="k-content-items">
+                    ${this.getMarketingContactItems(
+                        insightsData.contactGroups
+                    )}
+                </div>
+            </div>
+
+        </div>`,
       };
     },
     getItems(items) {
@@ -886,19 +1044,219 @@ export default {
       return items
         .map(
           (item) =>
-            `<div class="k-content-item"><span class="k-content-item-title">${
-              item.displayName
-            }</span>
-            <div class="k-content-item-tags">
-                <span class="k-content-item-tag">${
+            `<div class="k-content-item">
+                <div class="k-content-item_title">${
+                    item.displayName
+                }</div>
+            <div class="k-content-item_tags">
+                <span class="k-content-item_tag">${
                   status.find((s) => s.code === item.versionStatus)?.value
                 }</span>
-                <span class="k-content-item-tag">${item.contentTypeName}</span>
+                <span class="k-content-item_tag">${item.contentTypeName}</span>
             </div>
             </div>`
         )
         .join("");
     },
+      getEmailItems(items) {
+          return items
+              .map(
+                  (item) =>
+                      `<div class="k-content-item">
+                            <div class="k-content-item_title">${
+                          item.name
+                      }</div>
+                            <div class="k-content-item_tags">
+                                <span class="k-content-item_tag">${
+                          item.status
+                      } Draft <!--"Draft" for demo purpose only--></span>
+                                <span class="k-content-item_tag">${
+                          item.type
+                      } Type <!--"Type" for demo purpose only--></span>
+                            </div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Last Modified</div>
+                                    <div class="k-content-item_value">${
+                          item.lastModified ? item.lastModified.toString().split('T')[0] : "-"
+                      }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Sent Date</div>
+                                    <div class="k-content-item_value">${
+                          item.sendDate ? item.sendDate.toString().split('T')[0] : "-"
+                      }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Metrics</div>
+                                    <div class="k-content-item_value">${item.metrics || "-"}</div>
+                                </div>
+                            </div>
+                        </div>`
+              )
+              .join("");
+      },
+      getMarketingContactItems(items) {
+          return items
+              .map(
+                  (item) =>
+                      `<div class="k-content-item">
+                            <div class="k-content-item_title">${
+                                item.name
+                            }</div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Contacts</div>
+                                    <div class="k-content-item_value">${item.contactCount}</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Sent Date</div>
+                                    <div class="k-content-item_value">${item.ratioPercentage}</div>
+                                </div>
+                            </div>
+                        </div>`
+              )
+              .join("");
+      },
+
+      // >> demo purpose only: mock data
+      content() {
+          return {
+              "message": "",
+              "url": null,
+              "role": "ai",
+              "quickPrompts": [
+                  "What are the best practices for content management in Xperience by Kentico?",
+                  "How does Xperience by Kentico handle content workflow?",
+                  "What tools does Xperience by Kentico provide for analyzing content performance?"
+              ],
+              "quickPromptsGroupId": "336",
+              "createdWhen": "0001-01-01T00:00:00",
+              "serviceUnavailable": false,
+              "insights": {
+                  "is_insights_query": true,
+                  "category": "content",
+                  "query_description": "The user is seeking information about available content insights.",
+                  "insightsData": {
+                      "summary": {
+                          "draftCount": 2,
+                          "scheduledCount": 0,
+                          "publishedCount": null,
+                          "totalCount": null
+                      },
+                      "websiteContent": {
+                          "draftCount": 1,
+                          "scheduledCount": 0,
+                          "items": [
+                              {
+                                  "id": 60,
+                                  "name": "CoffeeProcessingTechniques-vnl8fs1k",
+                                  "displayName": "CoffeeProcessingTechniques-vnl8fs1k",
+                                  "contentTypeId": 5618,
+                                  "contentTypeName": "DancingGoat.ArticlePage",
+                                  "versionStatus": 1,
+                                  "languageId": 1
+                              }
+                          ]
+                      },
+                      "reusableContent": {
+                          "draftCount": 1,
+                          "scheduledCount": 0,
+                          "items": [
+                              {
+                                  "id": 41,
+                                  "name": "OurFirstCuppingIsHere-t8ll79h8",
+                                  "displayName": "OurFirstCuppingIsHere-t8ll79h8",
+                                  "contentTypeId": 5628,
+                                  "contentTypeName": "DancingGoat.Event",
+                                  "versionStatus": 1,
+                                  "languageId": 1
+                              }
+                          ]
+                      }
+                  },
+                  "metadata": null
+              }
+          }
+      },
+      email() {
+        return {
+            "message": "",
+            "url": null,
+            "role": "ai",
+            "quickPrompts": [
+                "What are the best practices for email marketing in Xperience by Kentico?",
+                "How can I track email engagement metrics in Xperience by Kentico?",
+                "What insights can I gain from email metrics in Xperience by Kentico?"
+            ],
+            "quickPromptsGroupId": "341",
+            "createdWhen": "0001-01-01T00:00:00",
+            "serviceUnavailable": false,
+            "insights": {
+                "is_insights_query": true,
+                "category": "email",
+                "query_description": "User is seeking insights related to email metrics.",
+                "insightsData": {
+                    "summary": {
+                        "draftCount": 0,
+                        "scheduledCount": 0,
+                        "sentCount": 0,
+                        "totalCount": 0,
+                        "averageOpenRate": 0,
+                        "averageClickRate": 0
+                    },
+                    "campaigns": [
+                        {
+                            "id": "2",
+                            "name": "Dancing Goat Regular",
+                            "type": "",
+                            "status": "",
+                            "lastModified": "2025-03-24T12:30:45.0143982",
+                            "sentDate": null,
+                            "metrics": null
+                        }
+                    ]
+                },
+                "metadata": null
+            }
+        }
+      },
+      marketing() {
+        return {
+            "message": "",
+            "url": null,
+            "role": "ai",
+            "quickPrompts": [
+                "What are the best practices for marketing automation in Xperience by Kentico?",
+                "How does Xperience by Kentico analyze traffic and visitor activities?",
+                "What are the key features for managing marketing campaigns in Xperience by Kentico?"
+            ],
+            "quickPromptsGroupId": "338",
+            "createdWhen": "0001-01-01T00:00:00",
+            "serviceUnavailable": false,
+            "insights": {
+                "is_insights_query": true,
+                "category": "marketing",
+                "query_description": "User is seeking an overview of available marketing insights in Xperience by Kentico.",
+                "insightsData": {
+                    "contacts": {
+                        "totalCount": 2,
+                        "activeCount": null,
+                        "inactiveCount": null
+                    },
+                    "contactGroups": [
+                        {
+                            "name": "Dancing goat recipient list",
+                            "contactCount": 0,
+                            "ratioPercentage": 0
+                        }
+                    ]
+                },
+                "metadata": null
+            }
+        }
+      }
+      // << demo purpose only: mock data
   },
 };
 </script>
