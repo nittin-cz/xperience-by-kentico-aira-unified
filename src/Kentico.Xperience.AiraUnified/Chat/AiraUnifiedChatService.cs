@@ -68,9 +68,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             .GetEnumerableTypedResultAsync())
             .Select(x => new AiraUnifiedChatMessageViewModel
             {
-                Role = x.AiraUnifiedChatMessageRole == AiraUnifiedConstants.AiraUnifiedChatRoleIdentifier ?
-                    AiraUnifiedConstants.AiraUnifiedChatRoleName :
-                    AiraUnifiedConstants.UserChatRoleName,
+                Role = GetChatRole(x).ToLowerInvariant(),
                 CreatedWhen = x.AiraUnifiedChatMessageCreatedWhen,
                 Message = x.AiraUnifiedChatMessageText
             });
@@ -191,23 +189,23 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     }))
     .ToList();
 
-    public async Task SaveMessage(string text, int userId, string role, AiraUnifiedChatThreadInfo thread)
+    public async Task<AiraUnifiedChatMessageInfo> SaveMessage(string text, int userId, ChatRoleType role, AiraUnifiedChatThreadInfo thread)
     {
         var message = new AiraUnifiedChatMessageInfo
         {
-            AiraUnifiedChatMessageCreatedWhen = DateTime.UtcNow,
-            AiraUnifiedChatMessageThreadId = thread.AiraUnifiedChatThreadId,
             AiraUnifiedChatMessageText = text,
+            AiraUnifiedChatMessageCreatedWhen = DateTime.Now,
+            AiraUnifiedChatMessageThreadId = thread.AiraUnifiedChatThreadId,
             AiraUnifiedChatMessageUserId = userId,
-            AiraUnifiedChatMessageRole = role == AiraUnifiedConstants.AiraUnifiedChatRoleName ?
-                AiraUnifiedConstants.AiraUnifiedChatRoleIdentifier :
-                AiraUnifiedConstants.UserChatRoleIdentifier
+            AiraUnifiedChatMessageRole = (int)role
         };
 
         await airaUnifiedChatMessageProvider.SetAsync(message);
 
         thread.AiraUnifiedChatThreadLastMessageId = message.AiraUnifiedChatMessageId;
         await airaUnifiedChatThreadProvider.SetAsync(thread);
+
+        return message;
     }
 
     public async Task<bool> ValidateUserThread(int userId, int threadId)
@@ -229,12 +227,10 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             .OrderByDescending(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageCreatedWhen))
             .TopN(numberOfIncludedHistoryMessages)
             .GetEnumerableTypedResultAsync())
-            .Select(x => new AiraUnifiedChatMessageModel
+            .Select(item => new AiraUnifiedChatMessageModel
             {
-                Role = x.AiraUnifiedChatMessageRole == AiraUnifiedConstants.AiraUnifiedChatRoleIdentifier ?
-                    AiraUnifiedConstants.AIRequestAssistantRoleName :
-                    AiraUnifiedConstants.AIRequestUserRoleName,
-                Content = x.AiraUnifiedChatMessageText
+                Role = GetChatRole(item),
+                Content = item.AiraUnifiedChatMessageText
             })
             .ToList();
 
@@ -362,7 +358,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             airaUnifiedChatPromptProvider.BulkDelete(new WhereCondition($"{nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptChatPromptGroupId)} = {id}"));
         }
     }
-    
+
     private async Task AddInsightsData(int userId, AiraUnifiedAIResponse? aiResponse)
     {
         if (aiResponse?.Insights is { IsInsightsQuery: true })
@@ -391,7 +387,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             }
         }
     }
-    
+
     private async Task<object?> GetMarketingInsights()
     {
         var contactGroups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
@@ -424,7 +420,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             Campaigns = emailInsights
         };
     }
-    
+
     private async Task<ContentInsightsDataModel> GetContentInsights(int userId)
     {
         var reusableDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
@@ -455,4 +451,13 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             }
         };
     }
+    
+    private static string GetChatRole(AiraUnifiedChatMessageInfo x) =>
+        (ChatRoleType)x.AiraUnifiedChatMessageRole switch
+        {
+            ChatRoleType.AI => AiraUnifiedConstants.AIRequestAssistantRoleName,
+            ChatRoleType.User => AiraUnifiedConstants.AIRequestUserRoleName,
+            ChatRoleType.System => AiraUnifiedConstants.AiraUnifiedSystemRoleName,
+            _ => AiraUnifiedConstants.AIRequestUserRoleName
+        };
 }

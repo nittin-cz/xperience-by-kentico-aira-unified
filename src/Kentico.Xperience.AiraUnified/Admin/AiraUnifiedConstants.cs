@@ -1,4 +1,6 @@
-﻿namespace Kentico.Xperience.AiraUnified.Admin;
+﻿using Kentico.Xperience.AiraUnified.Chat.Models;
+
+namespace Kentico.Xperience.AiraUnified.Admin;
 
 /// <summary>
 /// Provides application constant strings.
@@ -76,9 +78,14 @@ public static class AiraUnifiedConstants
     public const string RemoveUsedPromptGroupRelativeUrl = "prompt/use";
 
     /// <summary>
-    /// The name of the ai role used within chat page.
+    /// Aira unified chat role name.
     /// </summary>
     public const string AiraUnifiedChatRoleName = "ai";
+
+    /// <summary>
+    /// Aira unified system role name.
+    /// </summary>
+    public const string AiraUnifiedSystemRoleName = "system";
 
     /// <summary>
     /// The name of the ai role used for ai endpoint identifier.
@@ -96,19 +103,9 @@ public static class AiraUnifiedConstants
     public const string AiraUnifiedAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
 
     /// <summary>
-    /// The identifier of the ai role used to identify the role in the database.
-    /// </summary>
-    public const int AiraUnifiedChatRoleIdentifier = 0;
-
-    /// <summary>
-    /// The name of the user role used within chat page.
+    /// User chat role name.
     /// </summary>
     public const string UserChatRoleName = "user";
-
-    /// <summary>
-    /// The identifier of the user role used to identify the role in the database.
-    /// </summary>
-    public const int UserChatRoleIdentifier = 1;
 
     /// <summary>
     /// Url prefix where static assets of this package are accessible.

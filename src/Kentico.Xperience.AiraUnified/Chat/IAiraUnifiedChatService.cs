@@ -63,7 +63,7 @@ public interface IAiraUnifiedChatService
     /// <param name="userId">Admin application user id.</param>
     /// <param name="threadId">The chat thread id.</param>
     /// <param name="role">Role of the chat member.</param>
-    Task SaveMessage(string text, int userId, string role, AiraUnifiedChatThreadInfo thread);
+    Task<AiraUnifiedChatMessageInfo> SaveMessage(string text, int userId, ChatRoleType role, AiraUnifiedChatThreadInfo thread);
 
     /// <summary>
     /// Calls the ai endpoint with a message from the user.

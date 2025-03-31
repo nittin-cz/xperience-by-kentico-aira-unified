@@ -3,6 +3,7 @@
 using Kentico.Membership;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.AssetUploader.Models;
 using Kentico.Xperience.AiraUnified.Authentication;
@@ -286,7 +287,7 @@ public sealed class AiraUnifiedController : Controller
             return BadRequest($"The specified chat does not belong to user {user.UserName}.");
         }
 
-        await airaUnifiedChatService.SaveMessage(message, userId, AiraUnifiedConstants.UserChatRoleName, thread);
+        await airaUnifiedChatService.SaveMessage(message, userId, ChatRoleType.User, thread);
 
         try
         {
@@ -302,10 +303,7 @@ public sealed class AiraUnifiedController : Controller
                 return Ok(result);
             }
 
-            var insights = aiResponse.Insights;
-            
-            //TODO 3/25/2025 PavelHess: Check and implement insights persistance
-            await airaUnifiedChatService.SaveMessage(aiResponse.Responses[0].Content, user.UserID, AiraUnifiedConstants.AiraUnifiedChatRoleName, thread);
+            await SaveMessages(aiResponse, user, thread);
 
             await airaUnifiedChatService.UpdateChatSummary(userId, message);
 
@@ -313,7 +311,7 @@ public sealed class AiraUnifiedController : Controller
             {
                 Role = AiraUnifiedConstants.AiraUnifiedChatRoleName,
                 Message = aiResponse.Responses[0].Content,
-                Insights = insights
+                Insights = aiResponse.Insights
             };
 
             if (aiResponse.SuggestedQuestions is not null)
@@ -505,5 +503,25 @@ public sealed class AiraUnifiedController : Controller
         var baseUrl = HttpContext.Request.GetBaseUrl();
 
         return new ConfigurationModel(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase);
+    }
+
+    private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, AdminApplicationUser user,
+        AiraUnifiedChatThreadInfo thread)
+    {
+        if (!aiResponse.Insights.IsInsightsQuery)
+        {
+            foreach (var response in aiResponse.Responses)
+            {
+                await airaUnifiedChatService.SaveMessage(response.Content, user.UserID,
+                    ChatRoleType.AI, thread);
+            }
+        }
+        else
+        {
+            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights);
+
+            await airaUnifiedChatService.SaveMessage(insightsJson, user.UserID,
+                ChatRoleType.System, thread);
+        }
     }
 }
