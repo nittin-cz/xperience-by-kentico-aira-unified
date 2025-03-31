@@ -453,7 +453,7 @@ export default {
     },
     setResponseInterceptor() {
       this.$refs.chatElementRef.responseInterceptor = (response) => {
-        const messageViewModel = this.getMessageViewModel(response);
+        var messageViewModel = this.getMessageViewModel(response);
 
         this.history.push(messageViewModel);
 
@@ -461,8 +461,12 @@ export default {
           this.serviceAvailable = false;
         }
 
-        if (response.insights !== null) {
-          const message = null;
+        if (
+          response.insights !== null &&
+          response.insights.insightsData !== null &&
+          response.insights.is_insights_query
+        ) {
+          var message = null;
           if (response.insights.category === "content") {
             message = this.contentInsightMessage(
               response.insights.insightsData
@@ -479,8 +483,14 @@ export default {
             );
           }
 
-          this.history.push(message);
+          if (response.quickPrompts && response.quickPrompts.length > 0) {
+            const promptMessage = this.getPromptsViewModel(response);
+            message.html += promptMessage.html;
+            message.promptQuickSuggestionGroupId =
+              promptMessage.promptQuickSuggestionGroupId;
+          }
 
+          this.history.push(message);
           return message;
         }
 
@@ -780,7 +790,7 @@ export default {
                 .message-bubble .k-content-item_value{
                     margin-bottom: 0;
                 }
-                
+
                 @@keyframes lds-ring {
                     0% {
                         transform: rotate(0deg);
@@ -790,7 +800,7 @@ export default {
                         transform: rotate(360deg);
                     }
                 }
-                    
+
                 `;
       shadowRoot.appendChild(style);
     },
@@ -812,6 +822,14 @@ export default {
           this.history.push(messageViewModel);
           this.$refs.chatElementRef.history.push(messageViewModel);
           this.$refs.chatElementRef.addMessage(messageViewModel);
+        }
+
+        if (
+          x.insights !== null &&
+          x.insights.insightsData !== null &&
+          x.insights.is_insights_query
+        ) {
+          console.log(x.insights);
         }
 
         if (x.quickPrompts.length > 0) {
