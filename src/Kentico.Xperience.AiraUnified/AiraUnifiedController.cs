@@ -518,7 +518,12 @@ public sealed class AiraUnifiedController : Controller
         }
         else
         {
-            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights);
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights, options);
 
             await airaUnifiedChatService.SaveMessage(insightsJson, user.UserID,
                 ChatRoleType.System, thread);
