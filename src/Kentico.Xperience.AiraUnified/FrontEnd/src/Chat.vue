@@ -820,8 +820,8 @@ export default {
 
         if (x.role === "system") {
           const insights = JSON.parse(x.message);
-          console.log(insights);
           var message = null;
+
           if (insights.category === "content") {
             message = this.contentInsightMessage(insights);
           }
@@ -1135,7 +1135,7 @@ export default {
                                 <div>
                                     <div class="k-content-item_label">Clicks</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.clicks
+                                      item.metrics?.clicks ?? "-"
                                     }</div>
                                 </div>
                             </div>
@@ -1144,19 +1144,19 @@ export default {
                                 <div>
                                     <div class="k-content-item_label">Delivered</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.delivered
+                                      item.metrics?.delivered ?? "-"
                                     }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Hard bounces</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.hardBounces
+                                      item.metrics?.hardBounces ?? "-"
                                     }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Open rate</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.openRate
+                                      item.metrics?.openRate ?? "-"
                                     }</div>
                                 </div>
                             </div>
@@ -1164,19 +1164,19 @@ export default {
                                 <div>
                                     <div class="k-content-item_label">Opened</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.opened
+                                      item.metrics?.opened ?? "-"
                                     }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Soft bounces</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.softBounces
+                                      item.metrics?.softBounces ?? "-"
                                     }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Spam reports</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.spamReports
+                                      item.metrics?.spamReports ?? "-"
                                     }</div>
                                 </div>
                             </div>
@@ -1185,19 +1185,19 @@ export default {
                                 <div>
                                     <div class="k-content-item_label">Total sent</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.totalSent
+                                      item.metrics?.totalSent ?? "-"
                                     }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Unique clicks</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.uniqueClicks
+                                      item.metrics?.uniqueClicks ?? "-"
                                     }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Unsubscribe rate</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics?.unsubscribeRate
+                                      item.metrics?.unsubscribeRate ?? "-"
                                     }</div>
                                 </div>
                             </div>

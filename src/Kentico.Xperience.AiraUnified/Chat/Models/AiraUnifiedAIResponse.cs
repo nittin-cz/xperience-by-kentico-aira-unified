@@ -30,8 +30,8 @@ public class AiraUnifiedAIResponse
     /// <summary>
     /// The application insights
     /// </summary>
-    [JsonPropertyName("insights")] 
-    public InsightsResponseModel Insights { get; set; } = new();
+    [JsonPropertyName("insights")]
+    public InsightsResponseModel? Insights { get; set; }
 }
 
 /// <summary>

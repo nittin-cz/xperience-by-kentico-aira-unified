@@ -508,7 +508,7 @@ public sealed class AiraUnifiedController : Controller
     private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, AdminApplicationUser user,
         AiraUnifiedChatThreadInfo thread)
     {
-        if (!aiResponse.Insights.IsInsightsQuery)
+        if (!aiResponse.Insights?.IsInsightsQuery ?? true)
         {
             foreach (var response in aiResponse.Responses)
             {
