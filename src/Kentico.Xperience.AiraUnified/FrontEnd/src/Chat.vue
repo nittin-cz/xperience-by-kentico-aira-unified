@@ -764,7 +764,7 @@ export default {
                     border: 1px solid #a1620866;
                 }
                 .k-content-item_grid{
-                    display: flex;
+                    display: grid;
                     width: 100%;
                     text-align: center;
                     justify-content: space-evenly;
@@ -810,7 +810,7 @@ export default {
       const rawHistory = await historyResponse.json();
 
       for (const x of rawHistory) {
-        if (x.message !== "" && x.message !== null) {
+        if (x.message !== "" && x.message !== null && x.role !== "system") {
           const messageViewModel = this.getMessageViewModel(x);
 
           this.history.push(messageViewModel);
@@ -818,12 +818,25 @@ export default {
           this.$refs.chatElementRef.addMessage(messageViewModel);
         }
 
-        if (
-          x.insights !== null &&
-          x.insights.insightsData !== null &&
-          x.insights.is_insights_query
-        ) {
-          console.log(x.insights);
+        if (x.role === "system") {
+          const insights = JSON.parse(x.message);
+          console.log(insights);
+          var message = null;
+          if (insights.category === "content") {
+            message = this.contentInsightMessage(insights);
+          }
+
+          if (insights.category === "email") {
+            message = this.emailsInsightMessage(insights);
+          }
+
+          if (insights.category === "marketing") {
+            message = this.marketingInsightMessage(insights);
+          }
+
+          this.history.push(message);
+          this.$refs.chatElementRef.history.push(message);
+          this.$refs.chatElementRef.addMessage(message);
         }
 
         if (x.quickPrompts.length > 0) {
@@ -1120,9 +1133,71 @@ export default {
                                     }</div>
                                 </div>
                                 <div>
-                                    <div class="k-content-item_label">Metrics</div>
+                                    <div class="k-content-item_label">Clicks</div>
                                     <div class="k-content-item_value">${
-                                      item.metrics || "-"
+                                      item.metrics?.clicks
+                                    }</div>
+                                </div>
+                            </div>
+                            <div class="k-content-item_grid">
+                                
+                                <div>
+                                    <div class="k-content-item_label">Delivered</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.delivered
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Hard bounces</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.hardBounces
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Open rate</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.openRate
+                                    }</div>
+                                </div>
+                            </div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Opened</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.opened
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Soft bounces</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.softBounces
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Spam reports</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.spamReports
+                                    }</div>
+                                </div>
+                            </div>
+                            <div class="k-content-item_grid">
+                                
+                                <div>
+                                    <div class="k-content-item_label">Total sent</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.totalSent
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Unique clicks</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.uniqueClicks
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Unsubscribe rate</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.unsubscribeRate
                                     }</div>
                                 </div>
                             </div>
