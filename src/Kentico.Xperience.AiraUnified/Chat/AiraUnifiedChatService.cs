@@ -26,7 +26,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     private readonly IInfoProvider<ContactGroupInfo> contactGroupProvider;
     private readonly IAiraUnifiedInsightsService airaUnifiedInsightsService;
     private readonly AiraUnifiedOptions airaUnifiedOptions;
-    private readonly HttpClient httpClient;
+    private readonly IAiHttpClient aiHttpClient;
     private readonly IHttpContextAccessor httpContextAccessor;
 
     public AiraUnifiedChatService(IInfoProvider<AiraUnifiedChatPromptGroupInfo> airaUnifiedChatPromptGroupProvider,
@@ -37,7 +37,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         IInfoProvider<AiraUnifiedChatSummaryInfo> airaUnifiedChatSummaryProvider,
         IAiraUnifiedInsightsService airaUnifiedInsightsService,
         IOptions<AiraUnifiedOptions> airaUnifiedOptions,
-        HttpClient httpClient,
+        IAiHttpClient aiHttpClient,
         IHttpContextAccessor httpContextAccessor)
     {
         this.airaUnifiedChatPromptGroupProvider = airaUnifiedChatPromptGroupProvider;
@@ -47,7 +47,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         this.airaUnifiedChatThreadProvider = airaUnifiedChatThreadProvider;
         this.airaUnifiedInsightsService = airaUnifiedInsightsService;
         this.airaUnifiedChatSummaryProvider = airaUnifiedChatSummaryProvider;
-        this.httpClient = httpClient;
+        this.aiHttpClient = aiHttpClient;
         this.httpContextAccessor = httpContextAccessor;
         this.airaUnifiedOptions = airaUnifiedOptions.Value;
     }
@@ -279,8 +279,8 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
 
             switch (category.ToLowerInvariant())
             {
-                case "content": 
-                    aiResponse.Insights.InsightsData = await GetContentInsights(userId); 
+                case "content":
+                    aiResponse.Insights.InsightsData = await GetContentInsights(userId);
                     break;
                 case "email":
                     aiResponse.Insights.InsightsData = await GetEmailInsights();
@@ -297,7 +297,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
     private async Task<AiraUnifiedAIResponse?> GetAiResponse(AiraUnifiedAIRequest request)
     {
         var httpRequest = httpContextAccessor.HttpContext?.Request;
-        
+
         var isFake = !string.IsNullOrEmpty(httpRequest?.Query["is_fake"]);
 
         if (isFake)
@@ -315,7 +315,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             };
         }
 
-        return await ExecuteAIRequest(request);
+        return await aiHttpClient.SendRequestAsync(request);
     }
 
     private async Task<object?> GetMarketingInsights()
@@ -345,7 +345,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             Summary = new EmailSummaryModel()
             {
-                SentCount = emailInsights.Select(i=> i.Metrics).Sum(i => i?.TotalSent ?? 0)
+                SentCount = emailInsights.Select(i => i.Metrics).Sum(i => i?.TotalSent ?? 0)
             },
             Campaigns = emailInsights
         };
@@ -364,25 +364,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
             }
         };
 
-        return await ExecuteAIRequest(request);
-    }
-
-    private async Task<AiraUnifiedAIResponse?> ExecuteAIRequest(AiraUnifiedAIRequest request)
-    {
-        var jsonRequest = JsonSerializer.Serialize(request);
-        var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-        content.Headers.Add("Ocp-Apim-Subscription-Key", airaUnifiedOptions.AiraUnifiedApiSubscriptionKey);
-
-        var response = await httpClient.PostAsync(AiraUnifiedConstants.AiraUnifiedAIEndpoint, content);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-
-        return JsonSerializer.Deserialize<AiraUnifiedAIResponse>(jsonResponse);
+        return await aiHttpClient.SendRequestAsync(request);
     }
 
     private async Task<ContentInsightsDataModel> GetContentInsights(int userId)
@@ -391,7 +373,7 @@ internal class AiraUnifiedChatService : IAiraUnifiedChatService
         var reusableScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
         var websiteDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
         var websiteScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-        
+
         return new ContentInsightsDataModel
         {
             Summary = new ContentSummaryModel()
