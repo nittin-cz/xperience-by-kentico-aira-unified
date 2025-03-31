@@ -1,5 +1,6 @@
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Insights;
+using CMS.ContentEngine;
 
 using static Kentico.Xperience.AiraUnified.Chat.Models.ChatStateType;
 
@@ -69,7 +70,110 @@ internal class MockAiHttpClient : IAiHttpClient
             Insights = isInsightsQuery ? new InsightsResponseModel
             {
                 IsInsightsQuery = true,
-                Category = category
+                Category = category,
+                InsightsData = category?.ToLowerInvariant() switch
+                {
+                    "content" => new ContentInsightsDataModel
+                    {
+                        Summary = new ContentSummaryModel
+                        {
+                            DraftCount = 5,
+                            ScheduledCount = 3,
+                            PublishedCount = 12,
+                            TotalCount = 20
+                        },
+                        ReusableContent = new ContentCategoryModel
+                        {
+                            DraftCount = 2,
+                            ScheduledCount = 1,
+                            Items = [
+                                new() { Id = 1, Name = "Newsletter Template", DisplayName = "Newsletter Template", ContentTypeId = 1, ContentTypeName = "Email", VersionStatus = VersionStatus.InitialDraft, LanguageId = 1 },
+                                new() { Id = 2, Name = "Product Catalog", DisplayName = "Product Catalog", ContentTypeId = 2, ContentTypeName = "Catalog", VersionStatus = VersionStatus.Published, LanguageId = 1 }
+                            ]
+                        },
+                        WebsiteContent = new ContentCategoryModel
+                        {
+                            DraftCount = 3,
+                            ScheduledCount = 2,
+                            Items = [
+                                new() { Id = 3, Name = "Home Page", DisplayName = "Home Page", ContentTypeId = 3, ContentTypeName = "Page", VersionStatus = VersionStatus.InitialDraft, LanguageId = 1 },
+                                new() { Id = 4, Name = "About Us", DisplayName = "About Us", ContentTypeId = 3, ContentTypeName = "Page", VersionStatus = VersionStatus.Published, LanguageId = 1 }
+                            ]
+                        }
+                    },
+                    "marketing" => new MarketingInsightsDataModel
+                    {
+                        Contacts = new ContactsSummaryModel
+                        {
+                            TotalCount = 1000,
+                            ActiveCount = 850,
+                            InactiveCount = 150
+                        },
+                        ContactGroups = [
+                            new() { Name = "Newsletter Subscribers", ContactCount = 500, RatioPercentage = 50 },
+                            new() { Name = "Active Customers", ContactCount = 300, RatioPercentage = 30 },
+                            new() { Name = "Prospects", ContactCount = 200, RatioPercentage = 20 }
+                        ]
+                    },
+                    "email" => new EmailInsightsDataModel
+                    {
+                        Summary = new EmailSummaryModel
+                        {
+                            DraftCount = 2,
+                            ScheduledCount = 1,
+                            SentCount = 15000,
+                            TotalCount = 15003,
+                            AverageOpenRate = (double)45.5M,
+                            AverageClickRate = (double)12.3M
+                        },
+                        Campaigns = [
+                            new()
+                            {
+                                Id = "1",
+                                Name = "Monthly Newsletter",
+                                Type = "reusable",
+                                Status = "sent",
+                                LastModified = DateTime.UtcNow.AddDays(-5),
+                                SentDate = DateTime.UtcNow.AddDays(-4),
+                                Metrics = new EmailMetricsModel
+                                {
+                                    TotalSent = 10000,
+                                    Delivered = 9850,
+                                    Opened = 4500,
+                                    OpenRate = 45.7M,
+                                    Clicks = 1200M,
+                                    UniqueClicks = 1000M,
+                                    UnsubscribeRate = 0.5M,
+                                    SpamReports = 2,
+                                    SoftBounces = 50,
+                                    HardBounces = 100
+                                }
+                            },
+                            new()
+                            {
+                                Id = "2",
+                                Name = "Product Launch",
+                                Type = "website",
+                                Status = "scheduled",
+                                LastModified = DateTime.UtcNow.AddDays(-1),
+                                Metrics = new EmailMetricsModel
+                                {
+                                    TotalSent = 0,
+                                    Delivered = 0,
+                                    Opened = 0,
+                                    OpenRate = 0M,
+                                    Clicks = 0M,
+                                    UniqueClicks = 0M,
+                                    UnsubscribeRate = 0M,
+                                    SpamReports = 0,
+                                    SoftBounces = 0,
+                                    HardBounces = 0
+                                }
+                            }
+                        ]
+                    },
+                    _ => null
+                }
             } : new InsightsResponseModel { IsInsightsQuery = false }
         });
     }
