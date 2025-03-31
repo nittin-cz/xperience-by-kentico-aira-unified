@@ -85,7 +85,7 @@
               width: '90%',
             },
             text: {
-              padding: '.625rem .875rem',
+              padding: '0.625rem 2rem 0.625rem 0.875rem',
               fontSize: '.875rem',
               color: '#231F20',
               lineHeight: '1.333',
@@ -106,14 +106,6 @@
                 height: '1.375rem',
                 marginBottom: '0',
                 padding: '.5rem',
-              },
-            },
-            svg: {
-              styles: {
-                default: {
-                  width: '1.375rem',
-                  height: '1.375rem',
-                },
               },
             },
             loading: {
@@ -335,8 +327,8 @@ export default {
           });
 
           this.setRequestInterceptor();
-          // this.setOnMessage();
-          // this.setOnError();
+          this.setOnMessage();
+          this.setOnError();
           this.setResponseInterceptor();
           this.setHistory();
         }
@@ -369,11 +361,11 @@ export default {
               "prompt-quick-suggestion-button-group-id"
             );
 
-            this.history = this.history.filter(
-              (x) =>
-                x.promptQuickSuggestionGroupId === undefined ||
-                x.promptQuickSuggestionGroupId.toString() !== buttonGroupId
-            );
+            //this.history = this.history.filter(
+            //  (x) =>
+            //    x.promptQuickSuggestionGroupId === undefined ||
+            //    x.promptQuickSuggestionGroupId.toString() !== buttonGroupId
+            //);
             this.$refs.chatElementRef.clearMessages(true);
 
             this.history.forEach((x) => {
@@ -392,7 +384,7 @@ export default {
               this.typeIntoInput(textInput, text);
             }, 50);
 
-            await this.removeUsedPromptGroup(buttonGroupId);
+            //await this.removeUsedPromptGroup(buttonGroupId);
           });
         });
     },
@@ -460,17 +452,7 @@ export default {
       };
     },
     setResponseInterceptor() {
-
-        this.$refs.chatElementRef.responseInterceptor = (response) => {
-            var mock = this.content();
-            return this.contentInsightMessage(mock.insights.insightsData);
-            // var mock = this.email();
-            // return this.emailsInsightMessage(mock.insights.insightsData);
-            // var mock = this.marketing();
-            // return this.marketingInsightMessage(mock.insights.insightsData);
-        }
-
-      /*this.$refs.chatElementRef.responseInterceptor = (response) => {
+      this.$refs.chatElementRef.responseInterceptor = (response) => {
         const messageViewModel = this.getMessageViewModel(response);
 
         this.history.push(messageViewModel);
@@ -480,17 +462,26 @@ export default {
         }
 
         if (response.insights !== null) {
+          const message = null;
           if (response.insights.category === "content") {
-            return this.contentInsightMessage(response.insights.insightsData);
+            message = this.contentInsightMessage(
+              response.insights.insightsData
+            );
           }
 
-          if (response.insights.category === "emails") {
-            return this.emailsInsightMessage(response.insights.insightsData);
+          if (response.insights.category === "email") {
+            message = this.emailsInsightMessage(response.insights.insightsData);
           }
 
           if (response.insights.category === "marketing") {
-            return this.marketingInsightMessage(response.insights.insightsData);
+            message = this.marketingInsightMessage(
+              response.insights.insightsData
+            );
           }
+
+          this.history.push(message);
+
+          return message;
         }
 
         if (response.quickPrompts && response.quickPrompts.length > 0) {
@@ -503,7 +494,7 @@ export default {
         }
 
         return messageViewModel;
-      };*/
+      };
     },
     setOnMessage() {
       this.$refs.chatElementRef.onMessage = (message) => {
@@ -872,13 +863,17 @@ export default {
                 <h4 class="k-summary_title">
                     Drafts
                 </h4>
-                <div class="k-summary_value">${insightsData.summary.draftCount}</div>
+                <div class="k-summary_value">${
+                  insightsData.summary.draftCount
+                }</div>
             </div>
             <div class="k-summary_item">
                 <h4 class="k-summary_title">
                     Scheduled
                 </h4>
-                <div class="k-summary_value">${insightsData.summary.scheduledCount}</div>
+                <div class="k-summary_value">${
+                  insightsData.summary.scheduledCount
+                }</div>
             </div>
         </div>
       </div>
@@ -890,13 +885,17 @@ export default {
                 <h4 class="k-summary_title">
                     Drafts
                 </h4>
-                <div class="k-summary_value">${insightsData.websiteContent.draftCount}</div>
+                <div class="k-summary_value">${
+                  insightsData.websiteContent.draftCount
+                }</div>
             </div>
             <div class="k-summary_item">
                 <h4 class="k-summary_title">
                     Scheduled
                 </h4>
-                <div class="k-summary_value">${insightsData.websiteContent.scheduledCount}</div>
+                <div class="k-summary_value">${
+                  insightsData.websiteContent.scheduledCount
+                }</div>
             </div>
         </div>
         <h3 class="k-subtitle small">Draft Websites</h3>
@@ -912,27 +911,25 @@ export default {
                 <h4 class="k-summary_title">
                     Drafts
                 </h4>
-                <div class="k-summary_value">${insightsData.reusableContent.draftCount}</div>
+                <div class="k-summary_value">${
+                  insightsData.reusableContent.draftCount
+                }</div>
             </div>
             <div class="k-summary_item">
                 <h4 class="k-summary_title">
                     Scheduled
                 </h4>
-                <div class="k-summary_value">${insightsData.reusableContent.scheduledCount}</div>
+                <div class="k-summary_value">${
+                  insightsData.reusableContent.scheduledCount
+                }</div>
             </div>
         </div>
         <h3 class="k-subtitle small">Draft Reusable contents</h3>
         <div class="k-content-items">
-            ${this.getItems(
-              insightsData.reusableContent.items
-            )}
+            ${this.getItems(insightsData.reusableContent.items)}
             <!-- demo purposese only -->
-            ${this.getItems(
-                insightsData.reusableContent.items
-            )}
-            ${this.getItems(
-                insightsData.reusableContent.items
-            )}
+            ${this.getItems(insightsData.reusableContent.items)}
+            ${this.getItems(insightsData.reusableContent.items)}
             <!-- // demo purposese only -->
         </div>
       </div>
@@ -951,45 +948,55 @@ export default {
                         <h4 class="k-summary_title">
                             Drafts
                         </h4>
-                        <div class="k-summary_value">${insightsData.summary.draftCount}</div>
+                        <div class="k-summary_value">${
+                          insightsData.summary.draftCount
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Scheduled
                         </h4>
-                        <div class="k-summary_value">${insightsData.summary.scheduledCount}</div>
+                        <div class="k-summary_value">${
+                          insightsData.summary.scheduledCount
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Sent
                         </h4>
-                        <div class="k-summary_value">${insightsData.summary.sentCount}</div>
+                        <div class="k-summary_value">${
+                          insightsData.summary.sentCount
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Total
                         </h4>
-                        <div class="k-summary_value">${insightsData.summary.totalCount}</div>
+                        <div class="k-summary_value">${
+                          insightsData.summary.totalCount
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Avg. Open Rate
                         </h4>
-                        <div class="k-summary_value">${insightsData.summary.averageOpenRate}</div>
+                        <div class="k-summary_value">${
+                          insightsData.summary.averageOpenRate
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Avg. Click Rate
                         </h4>
-                        <div class="k-summary_value">${insightsData.summary.averageClickRate}</div>
+                        <div class="k-summary_value">${
+                          insightsData.summary.averageClickRate
+                        }</div>
                     </div>
                 </div>
 
                 <h3 class="k-subtitle">Campaigns</h3>
                 <div class="k-content-items">
-                    ${this.getEmailItems(
-                    insightsData.campaigns
-                )}
+                    ${this.getEmailItems(insightsData.campaigns)}
                 </div>
             </div>
         </div>`,
@@ -1007,27 +1014,31 @@ export default {
                         <h4 class="k-summary_title">
                             Total Count
                         </h4>
-                        <div class="k-summary_value">${insightsData.contacts.totalCount || "-"}</div>
+                        <div class="k-summary_value">${
+                          insightsData.contacts.totalCount || "-"
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Active
                         </h4>
-                        <div class="k-summary_value">${insightsData.contacts.activeCount || "-"}</div>
+                        <div class="k-summary_value">${
+                          insightsData.contacts.activeCount || "-"
+                        }</div>
                     </div>
                     <div class="k-summary_item">
                         <h4 class="k-summary_title">
                             Inactive
                         </h4>
-                        <div class="k-summary_value">${insightsData.contacts.inactiveCount || "-"}</div>
+                        <div class="k-summary_value">${
+                          insightsData.contacts.inactiveCount || "-"
+                        }</div>
                     </div>
                 </div>
 
                 <h3 class="k-subtitle">Contact Groups</h3>
                 <div class="k-content-items">
-                    ${this.getMarketingContactItems(
-                        insightsData.contactGroups
-                    )}
+                    ${this.getMarketingContactItems(insightsData.contactGroups)}
                 </div>
             </div>
 
@@ -1045,9 +1056,7 @@ export default {
         .map(
           (item) =>
             `<div class="k-content-item">
-                <div class="k-content-item_title">${
-                    item.displayName
-                }</div>
+                <div class="k-content-item_title">${item.displayName}</div>
             <div class="k-content-item_tags">
                 <span class="k-content-item_tag">${
                   status.find((s) => s.code === item.versionStatus)?.value
@@ -1058,52 +1067,56 @@ export default {
         )
         .join("");
     },
-      getEmailItems(items) {
-          return items
-              .map(
-                  (item) =>
-                      `<div class="k-content-item">
-                            <div class="k-content-item_title">${
-                          item.name
-                      }</div>
+    getEmailItems(items) {
+      return items
+        .map(
+          (item) =>
+            `<div class="k-content-item">
+                            <div class="k-content-item_title">${item.name}</div>
                             <div class="k-content-item_tags">
                                 <span class="k-content-item_tag">${
-                          item.status
-                      } Draft <!--"Draft" for demo purpose only--></span>
+                                  item.status
+                                } Draft <!--"Draft" for demo purpose only--></span>
                                 <span class="k-content-item_tag">${
-                          item.type
-                      } Type <!--"Type" for demo purpose only--></span>
+                                  item.type
+                                } Type <!--"Type" for demo purpose only--></span>
                             </div>
                             <div class="k-content-item_grid">
                                 <div>
                                     <div class="k-content-item_label">Last Modified</div>
                                     <div class="k-content-item_value">${
-                          item.lastModified ? item.lastModified.toString().split('T')[0] : "-"
-                      }</div>
+                                      item.lastModified
+                                        ? item.lastModified
+                                            .toString()
+                                            .split("T")[0]
+                                        : "-"
+                                    }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Sent Date</div>
                                     <div class="k-content-item_value">${
-                          item.sendDate ? item.sendDate.toString().split('T')[0] : "-"
-                      }</div>
+                                      item.sendDate
+                                        ? item.sendDate.toString().split("T")[0]
+                                        : "-"
+                                    }</div>
                                 </div>
                                 <div>
                                     <div class="k-content-item_label">Metrics</div>
-                                    <div class="k-content-item_value">${item.metrics || "-"}</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics || "-"
+                                    }</div>
                                 </div>
                             </div>
                         </div>`
-              )
-              .join("");
-      },
-      getMarketingContactItems(items) {
-          return items
-              .map(
-                  (item) =>
-                      `<div class="k-content-item">
-                            <div class="k-content-item_title">${
-                                item.name
-                            }</div>
+        )
+        .join("");
+    },
+    getMarketingContactItems(items) {
+      return items
+        .map(
+          (item) =>
+            `<div class="k-content-item">
+                            <div class="k-content-item_title">${item.name}</div>
                             <div class="k-content-item_grid">
                                 <div>
                                     <div class="k-content-item_label">Contacts</div>
@@ -1115,148 +1128,9 @@ export default {
                                 </div>
                             </div>
                         </div>`
-              )
-              .join("");
-      },
-
-      // >> demo purpose only: mock data
-      content() {
-          return {
-              "message": "",
-              "url": null,
-              "role": "ai",
-              "quickPrompts": [
-                  "What are the best practices for content management in Xperience by Kentico?",
-                  "How does Xperience by Kentico handle content workflow?",
-                  "What tools does Xperience by Kentico provide for analyzing content performance?"
-              ],
-              "quickPromptsGroupId": "336",
-              "createdWhen": "0001-01-01T00:00:00",
-              "serviceUnavailable": false,
-              "insights": {
-                  "is_insights_query": true,
-                  "category": "content",
-                  "query_description": "The user is seeking information about available content insights.",
-                  "insightsData": {
-                      "summary": {
-                          "draftCount": 2,
-                          "scheduledCount": 0,
-                          "publishedCount": null,
-                          "totalCount": null
-                      },
-                      "websiteContent": {
-                          "draftCount": 1,
-                          "scheduledCount": 0,
-                          "items": [
-                              {
-                                  "id": 60,
-                                  "name": "CoffeeProcessingTechniques-vnl8fs1k",
-                                  "displayName": "CoffeeProcessingTechniques-vnl8fs1k",
-                                  "contentTypeId": 5618,
-                                  "contentTypeName": "DancingGoat.ArticlePage",
-                                  "versionStatus": 1,
-                                  "languageId": 1
-                              }
-                          ]
-                      },
-                      "reusableContent": {
-                          "draftCount": 1,
-                          "scheduledCount": 0,
-                          "items": [
-                              {
-                                  "id": 41,
-                                  "name": "OurFirstCuppingIsHere-t8ll79h8",
-                                  "displayName": "OurFirstCuppingIsHere-t8ll79h8",
-                                  "contentTypeId": 5628,
-                                  "contentTypeName": "DancingGoat.Event",
-                                  "versionStatus": 1,
-                                  "languageId": 1
-                              }
-                          ]
-                      }
-                  },
-                  "metadata": null
-              }
-          }
-      },
-      email() {
-        return {
-            "message": "",
-            "url": null,
-            "role": "ai",
-            "quickPrompts": [
-                "What are the best practices for email marketing in Xperience by Kentico?",
-                "How can I track email engagement metrics in Xperience by Kentico?",
-                "What insights can I gain from email metrics in Xperience by Kentico?"
-            ],
-            "quickPromptsGroupId": "341",
-            "createdWhen": "0001-01-01T00:00:00",
-            "serviceUnavailable": false,
-            "insights": {
-                "is_insights_query": true,
-                "category": "email",
-                "query_description": "User is seeking insights related to email metrics.",
-                "insightsData": {
-                    "summary": {
-                        "draftCount": 0,
-                        "scheduledCount": 0,
-                        "sentCount": 0,
-                        "totalCount": 0,
-                        "averageOpenRate": 0,
-                        "averageClickRate": 0
-                    },
-                    "campaigns": [
-                        {
-                            "id": "2",
-                            "name": "Dancing Goat Regular",
-                            "type": "",
-                            "status": "",
-                            "lastModified": "2025-03-24T12:30:45.0143982",
-                            "sentDate": null,
-                            "metrics": null
-                        }
-                    ]
-                },
-                "metadata": null
-            }
-        }
-      },
-      marketing() {
-        return {
-            "message": "",
-            "url": null,
-            "role": "ai",
-            "quickPrompts": [
-                "What are the best practices for marketing automation in Xperience by Kentico?",
-                "How does Xperience by Kentico analyze traffic and visitor activities?",
-                "What are the key features for managing marketing campaigns in Xperience by Kentico?"
-            ],
-            "quickPromptsGroupId": "338",
-            "createdWhen": "0001-01-01T00:00:00",
-            "serviceUnavailable": false,
-            "insights": {
-                "is_insights_query": true,
-                "category": "marketing",
-                "query_description": "User is seeking an overview of available marketing insights in Xperience by Kentico.",
-                "insightsData": {
-                    "contacts": {
-                        "totalCount": 2,
-                        "activeCount": null,
-                        "inactiveCount": null
-                    },
-                    "contactGroups": [
-                        {
-                            "name": "Dancing goat recipient list",
-                            "contactCount": 0,
-                            "ratioPercentage": 0
-                        }
-                    ]
-                },
-                "metadata": null
-            }
-        }
-      }
-      // << demo purpose only: mock data
+        )
+        .join("");
+    },
   },
 };
 </script>
