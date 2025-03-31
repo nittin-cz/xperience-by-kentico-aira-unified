@@ -8,6 +8,7 @@ using Kentico.Xperience.AiraUnified.NavBar;
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +29,9 @@ public static class AiraUnifiedServiceCollectionExtensions
     private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllersWithViews();
+        services.AddHttpClient();
+
+        var options = configuration.GetSection(nameof(AiraUnifiedOptions)).Get<AiraUnifiedOptions>();
 
         services
             .AddSingleton<IAiraUnifiedModuleInstaller, AiraUnifiedModuleInstaller>()
@@ -39,6 +43,7 @@ public static class AiraUnifiedServiceCollectionExtensions
             .AddScoped<IAiraUnifiedAssetService, AiraUnifiedAssetService>()
             .AddScoped<IAiraUnifiedChatService, AiraUnifiedChatService>()
             .AddScoped<INavigationService, NavigationService>()
+            .AddScoped<IAiHttpClient>(sp => options?.UseMockClient == true ? new MockAiHttpClient() : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
             .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
 
         return services;

@@ -1,4 +1,6 @@
-﻿namespace Kentico.Xperience.AiraUnified.Chat.Models;
+﻿using Kentico.Xperience.AiraUnified.Admin;
+
+namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
 /// The options used to setup this integration stored in the appsettings.json file.
@@ -9,4 +11,14 @@ public sealed class AiraUnifiedOptions
     /// The aira unified service subscription key.
     /// </summary>
     public string AiraUnifiedApiSubscriptionKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The AI service endpoint URL. If not specified, falls back to the default value from AiraUnifiedConstants.
+    /// </summary>
+    public string? AiraUnifiedAIEndpoint { get; set; } = AiraUnifiedConstants.AiraUnifiedAIEndpoint;
+
+    /// <summary>
+    /// When true, uses mock AI client instead of real HTTP client. Useful for local development.
+    /// </summary>
+    public bool UseMockClient { get; set; }
 }
