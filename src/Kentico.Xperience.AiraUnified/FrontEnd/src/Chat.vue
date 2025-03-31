@@ -357,9 +357,9 @@ export default {
           button.addEventListener("click", async () => {
             const text = button.value.valueOf();
 
-            const buttonGroupId = button.parentNode.getAttribute(
-              "prompt-quick-suggestion-button-group-id"
-            );
+            //const buttonGroupId = button.parentNode.getAttribute(
+            //  "prompt-quick-suggestion-button-group-id"
+            //);
 
             //this.history = this.history.filter(
             //  (x) =>
@@ -374,15 +374,13 @@ export default {
 
             this.bindPromptButtons();
 
-            setTimeout(() => {
-              const textInput =
-                this.$refs.chatElementRef.shadowRoot.getElementById(
-                  "text-input"
-                );
-              textInput.classList.remove("text-input-placeholder");
+            //setTimeout(() => {
+            const textInput =
+              this.$refs.chatElementRef.shadowRoot.getElementById("text-input");
+            textInput.classList.remove("text-input-placeholder");
 
-              this.typeIntoInput(textInput, text);
-            }, 50);
+            this.typeIntoInput(textInput, text);
+            //}, 50);
 
             //await this.removeUsedPromptGroup(buttonGroupId);
           });
@@ -468,19 +466,15 @@ export default {
         ) {
           var message = null;
           if (response.insights.category === "content") {
-            message = this.contentInsightMessage(
-              response.insights.insightsData
-            );
+            message = this.contentInsightMessage(response.insights);
           }
 
           if (response.insights.category === "email") {
-            message = this.emailsInsightMessage(response.insights.insightsData);
+            message = this.emailsInsightMessage(response.insights);
           }
 
           if (response.insights.category === "marketing") {
-            message = this.marketingInsightMessage(
-              response.insights.insightsData
-            );
+            message = this.marketingInsightMessage(response.insights);
           }
 
           if (response.quickPrompts && response.quickPrompts.length > 0) {
@@ -869,7 +863,10 @@ export default {
         return false;
       }
     },
-    contentInsightMessage(insightsData) {
+    contentInsightMessage(insights) {
+      var insightsData = insights.insightsData;
+      var metadata = insights.metadata;
+
       return {
         role: "ai",
         html: `<div>
@@ -945,16 +942,16 @@ export default {
         <h3 class="k-subtitle small">Draft Reusable contents</h3>
         <div class="k-content-items">
             ${this.getItems(insightsData.reusableContent.items)}
-            <!-- demo purposese only -->
-            ${this.getItems(insightsData.reusableContent.items)}
-            ${this.getItems(insightsData.reusableContent.items)}
-            <!-- // demo purposese only -->
         </div>
       </div>
+      <div>${this.getMetadata(metadata)}</div>
     </div>`,
       };
     },
-    emailsInsightMessage(insightsData) {
+    emailsInsightMessage(insights) {
+      var insightsData = insights.insightsData;
+      var metadata = insights.metadata;
+
       return {
         role: "ai",
         html: `<div>
@@ -1017,10 +1014,14 @@ export default {
                     ${this.getEmailItems(insightsData.campaigns)}
                 </div>
             </div>
+            <div>${this.getMetadata(metadata)}</div>
         </div>`,
       };
     },
-    marketingInsightMessage(insightsData) {
+    marketingInsightMessage(insights) {
+      var insightsData = insights.insightsData;
+      var metadata = insights.metadata;
+
       return {
         role: "ai",
         html: `<div>
@@ -1059,7 +1060,7 @@ export default {
                     ${this.getMarketingContactItems(insightsData.contactGroups)}
                 </div>
             </div>
-
+<div>${this.getMetadata(metadata)}</div>
         </div>`,
       };
     },
@@ -1148,6 +1149,17 @@ export default {
                         </div>`
         )
         .join("");
+    },
+    getMetadata(metadata) {
+      var metadataString = "";
+      metadata.version = "1.0.0";
+
+      if (metadata && metadata.timestamp) {
+        metadataString += `<div>Request was generated at ${new Date(
+          metadata.timestamp
+        ).toLocaleString()}.</div>`;
+      }
+      return metadataString;
     },
   },
 };
