@@ -47,7 +47,7 @@ internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfi
 
     protected override async Task<ICommandResponse> ProcessFormData(AiraUnifiedConfigurationModel model, ICollection<IFormItem> formItems)
     {
-        if (!model.RelativePathBase.IsValidSubpath())
+        if (!model.RelativePathBase.IsValidSubPath())
         {
             return ResponseFrom(new FormSubmissionResult(
                 FormSubmissionStatus.ValidationFailure
