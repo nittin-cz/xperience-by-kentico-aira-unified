@@ -21,7 +21,7 @@ using Path = CMS.IO.Path;
 
 namespace Kentico.Xperience.AiraUnified.Assets;
 
-internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
+internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
 {
     private readonly IInfoProvider<ContentLanguageInfo> contentLanguageProvider;
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;

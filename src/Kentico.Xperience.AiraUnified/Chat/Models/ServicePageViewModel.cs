@@ -3,7 +3,7 @@
 /// <summary>
 /// View model for the service page displayed when the ai service is unavailable.
 /// </summary>
-public class ServicePageViewModel
+internal sealed class ServicePageViewModel
 {
     /// <summary>
     /// The chat unavailable icon url.

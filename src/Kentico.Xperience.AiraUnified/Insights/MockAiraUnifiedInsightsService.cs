@@ -1,11 +1,13 @@
 using CMS.ContentEngine;
 
+using Kentico.Xperience.AiraUnified.Insights.Models;
+
 namespace Kentico.Xperience.AiraUnified.Insights;
 
 /// <summary>
 /// Mock implementation of insights service for local development.
 /// </summary>
-internal class MockAiraUnifiedInsightsService : IAiraUnifiedInsightsService
+internal sealed class MockAiraUnifiedInsightsService : IAiraUnifiedInsightsService
 {
     /// <inheritdoc />
     public Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null) =>

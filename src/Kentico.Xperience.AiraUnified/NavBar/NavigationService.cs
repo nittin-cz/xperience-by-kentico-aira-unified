@@ -1,9 +1,10 @@
 ﻿using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Assets;
+using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 namespace Kentico.Xperience.AiraUnified.NavBar;
 
-internal class NavigationService(
+internal sealed class NavigationService(
     IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
     IAiraUnifiedAssetService airaUnifiedAssetService)
     : INavigationService

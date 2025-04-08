@@ -4,14 +4,15 @@ using CMS.ContentEngine.Internal;
 using CMS.ContentWorkflowEngine;
 using CMS.DataEngine;
 using CMS.EmailLibrary;
-using CMS.Websites;
+
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Insights;
 
 /// <summary>
 /// Implementation of the Aira Unified insights service that provides content, email, and contact group insights.
 /// </summary>
-internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
+internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 {
     private readonly IContentItemManagerFactory contentItemManagerFactory;
     private readonly IContentQueryExecutor contentQueryExecutor;

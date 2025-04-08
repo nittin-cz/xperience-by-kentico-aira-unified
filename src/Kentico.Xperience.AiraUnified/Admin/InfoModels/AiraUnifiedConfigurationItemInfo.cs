@@ -14,7 +14,7 @@ namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 /// <summary>
 /// Data container class for <see cref="AiraUnifiedConfigurationItemInfo"/>.
 /// </summary>
-public partial class AiraUnifiedConfigurationItemInfo : AbstractInfo<AiraUnifiedConfigurationItemInfo, IInfoProvider<AiraUnifiedConfigurationItemInfo>>
+internal class AiraUnifiedConfigurationItemInfo : AbstractInfo<AiraUnifiedConfigurationItemInfo, IInfoProvider<AiraUnifiedConfigurationItemInfo>>
 {
     /// <summary>
     /// Object type.

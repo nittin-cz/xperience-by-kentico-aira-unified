@@ -1,9 +1,9 @@
-﻿namespace Kentico.Xperience.AiraUnified.NavBar;
+﻿namespace Kentico.Xperience.AiraUnified.NavBar.Models;
 
 /// <summary>
 /// View model for the Navigation.
 /// </summary>
-public class NavBarViewModel
+internal sealed class NavBarViewModel
 {
     /// <summary>
     /// Path of the logo displayed in the PWA.

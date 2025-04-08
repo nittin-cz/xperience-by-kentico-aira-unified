@@ -13,7 +13,7 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
-public partial class AiraUnifiedChatSummaryInfo : AbstractInfo<AiraUnifiedChatSummaryInfo, IInfoProvider<AiraUnifiedChatSummaryInfo>>
+internal class AiraUnifiedChatSummaryInfo : AbstractInfo<AiraUnifiedChatSummaryInfo, IInfoProvider<AiraUnifiedChatSummaryInfo>>
 {
     /// <summary>
     /// Object type.

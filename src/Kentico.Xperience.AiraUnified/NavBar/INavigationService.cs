@@ -1,9 +1,11 @@
-﻿namespace Kentico.Xperience.AiraUnified.NavBar;
+﻿using Kentico.Xperience.AiraUnified.NavBar.Models;
+
+namespace Kentico.Xperience.AiraUnified.NavBar;
 
 /// <summary>
 /// Service managing the Navigation.
 /// </summary>
-public interface INavigationService
+internal interface INavigationService
 {
     /// <summary>
     /// Generates the Navigation View Model.

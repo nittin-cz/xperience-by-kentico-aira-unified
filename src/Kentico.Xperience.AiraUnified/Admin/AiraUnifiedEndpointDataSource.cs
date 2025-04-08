@@ -9,6 +9,7 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.NavBar;
+using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Represents a data source for Aira Unified endpoints.
 /// </summary>
-internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
+internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 {
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
 

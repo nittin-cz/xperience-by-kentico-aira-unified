@@ -1,11 +1,12 @@
 ﻿using Kentico.Xperience.AiraUnified.Insights;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
 /// Model for the Aira Unified chat message.
 /// </summary>
-public class AiraUnifiedChatMessageViewModel
+internal sealed class AiraUnifiedChatMessageViewModel
 {
     /// <summary>
     /// The text message.

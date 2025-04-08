@@ -21,7 +21,7 @@ namespace Kentico.Xperience.AiraUnified.Admin.UIPages;
 [UIPermission(SystemPermissions.CREATE)]
 [UIPermission(SystemPermissions.UPDATE)]
 [UIPermission(SystemPermissions.DELETE)]
-internal class AiraUnifiedApplicationPage : ApplicationPage
+internal sealed class AiraUnifiedApplicationPage : ApplicationPage
 {
     public const string IDENTIFIER = "Kentico.Xperience.Integrations.AiraUnified";
 }

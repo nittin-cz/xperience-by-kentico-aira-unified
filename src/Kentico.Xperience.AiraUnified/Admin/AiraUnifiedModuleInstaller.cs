@@ -13,7 +13,7 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Represents a module installer for Aira Unified.
 /// </summary>
-internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
+internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
 {
     private readonly IInfoProvider<ResourceInfo> resourceInfoProvider;
 

@@ -1,9 +1,11 @@
-﻿namespace Kentico.Xperience.AiraUnified.Chat.Models;
+﻿using Kentico.Xperience.AiraUnified.NavBar.Models;
+
+namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
 /// View model for the Chat page.
 /// </summary>
-public class ChatViewModel
+internal sealed class ChatViewModel
 {
     /// <summary>
     /// View model for the service page displayed when the ai service is unavailable.
@@ -31,12 +33,12 @@ public class ChatViewModel
     public string HistoryUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Path of the endpoint which retrieves the navigation model <see cref="NavBar.NavBarViewModel"/>.
+    /// Path of the endpoint which retrieves the navigation model <see cref="NavBarViewModel"/>.
     /// </summary>
     public string NavigationUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Identifier of the chat page recognised by the navigation <see cref="AiraUnifiedController.Navigation(NavBar.NavBarRequestModel)"/> endpoint.
+    /// Identifier of the chat page recognised by the navigation <see cref="AiraUnifiedController.Navigation(NavBarRequestModel)"/> endpoint.
     /// </summary>
     public string NavigationPageIdentifier { get; set; } = string.Empty;
 
