@@ -1,9 +1,9 @@
-﻿namespace Kentico.Xperience.AiraUnified.Insights;
+﻿namespace Kentico.Xperience.AiraUnified.Insights.Models;
 
 /// <summary>
 /// Contact group insights model.
 /// </summary>
-public class ContactGroupInsightsModel
+internal sealed class ContactGroupInsightsModel
 {
     /// <summary>
     /// Contact group id.

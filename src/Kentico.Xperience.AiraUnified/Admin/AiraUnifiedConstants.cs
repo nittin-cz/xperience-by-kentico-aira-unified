@@ -1,11 +1,11 @@
-﻿using Kentico.Xperience.AiraUnified.Chat.Models;
+﻿using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
 /// <summary>
 /// Provides application constant strings.
 /// </summary>
-public static class AiraUnifiedConstants
+internal static class AiraUnifiedConstants
 {
     /// <summary>
     /// Relative path to the chat page in the PWA.
@@ -38,7 +38,7 @@ public static class AiraUnifiedConstants
     public const string ChatHistoryUrl = "history";
 
     /// <summary>
-    /// Relative path for retrieval of the navigation model <see cref="NavBar.NavBarViewModel"/> data.
+    /// Relative path for retrieval of the navigation model <see cref="NavBarViewModel"/> data.
     /// </summary>
     public const string NavigationUrl = "nav";
 

@@ -8,7 +8,7 @@ namespace Kentico.Xperience.AiraUnified.Admin.Providers;
 /// <summary>
 /// Provides a dropdown options provider for workspaces.
 /// </summary>
-internal class WorkspaceProvider : IDropDownOptionsProvider
+internal sealed class WorkspaceProvider : IDropDownOptionsProvider
 {
     private readonly IInfoProvider<WorkspaceInfo> workspaceProvider;
 

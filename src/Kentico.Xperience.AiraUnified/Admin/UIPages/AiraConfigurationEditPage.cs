@@ -17,7 +17,7 @@ using Kentico.Xperience.AiraUnified.Admin.UIPages;
 namespace Kentico.Xperience.AiraUnified.Admin.UIPages;
 
 [UIEvaluatePermission(SystemPermissions.UPDATE)]
-internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfigurationModel>
+internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfigurationModel>
 {
     private AiraUnifiedConfigurationModel? model = null;
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;

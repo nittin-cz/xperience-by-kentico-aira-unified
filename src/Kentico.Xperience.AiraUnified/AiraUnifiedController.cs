@@ -1,15 +1,15 @@
 ﻿using CMS.Core;
 
 using Kentico.Membership;
-using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
-using Kentico.Xperience.AiraUnified.AssetUploader.Models;
+using Kentico.Xperience.AiraUnified.AssetUploader;
 using Kentico.Xperience.AiraUnified.Authentication;
 using Kentico.Xperience.AiraUnified.Chat;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.NavBar;
+using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,31 +22,15 @@ namespace Kentico.Xperience.AiraUnified;
 /// </summary>
 [ApiController]
 [Route("[controller]/[action]")]
-public sealed class AiraUnifiedController : Controller
+internal sealed class AiraUnifiedController(
+    AdminUserManager adminUserManager,
+    IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
+    IAiraUnifiedAssetService airaUnifiedAssetService,
+    INavigationService navigationService,
+    IAiraUnifiedChatService airaUnifiedChatService,
+    IEventLogService eventLogService)
+    : Controller
 {
-    private readonly AdminUserManager adminUserManager;
-    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
-    private readonly IAiraUnifiedChatService airaUnifiedChatService;
-    private readonly IAiraUnifiedAssetService airaUnifiedAssetService;
-    private readonly INavigationService navigationService;
-    private readonly IEventLogService eventLogService;
-
-    public AiraUnifiedController(
-        AdminUserManager adminUserManager,
-        IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
-        IAiraUnifiedAssetService airaUnifiedAssetService,
-        INavigationService navigationService,
-        IAiraUnifiedChatService airaUnifiedChatService,
-        IEventLogService eventLogService)
-    {
-        this.adminUserManager = adminUserManager;
-        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
-        this.airaUnifiedAssetService = airaUnifiedAssetService;
-        this.airaUnifiedChatService = airaUnifiedChatService;
-        this.navigationService = navigationService;
-        this.eventLogService = eventLogService;
-    }
-
     private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
 
     /// <summary>

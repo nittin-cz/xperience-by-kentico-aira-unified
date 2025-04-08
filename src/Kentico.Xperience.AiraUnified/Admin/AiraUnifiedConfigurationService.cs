@@ -8,7 +8,7 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Service for managing Aira Unified configuration settings.
 /// </summary>
-internal class AiraUnifiedConfigurationService : IAiraUnifiedConfigurationService
+internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfigurationService
 {
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
     private readonly AiraUnifiedEndpointDataSource airaUnifiedEndpointDataSource;

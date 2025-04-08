@@ -11,7 +11,7 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Manages administration features and integration.
 /// </summary>
-internal class AiraUnifiedAdminModule : AdminModule
+internal sealed class AiraUnifiedAdminModule : AdminModule
 {
     public AiraUnifiedAdminModule() : base(nameof(AiraUnifiedAdminModule)) { }
 

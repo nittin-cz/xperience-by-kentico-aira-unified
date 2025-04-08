@@ -7,13 +7,14 @@ using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Insights;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Chat;
 
 /// <summary>
 /// Service responsible for managing chat history of a user.
 /// </summary>
-internal class AiraUnifiedChatService : IAiraUnifiedChatService
+internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 {
     private readonly IInfoProvider<AiraUnifiedChatPromptGroupInfo> airaUnifiedChatPromptGroupProvider;
     private readonly IInfoProvider<AiraUnifiedChatPromptInfo> airaUnifiedChatPromptProvider;

@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a chat message in the Aira Unified system.
 /// </summary>
-internal class AiraUnifiedChatMessageModel
+internal sealed class AiraUnifiedChatMessageModel
 {
     /// <summary>
     /// Gets or sets the role of the message sender (e.g., "user", "assistant", "system").

@@ -1,9 +1,11 @@
-﻿namespace Kentico.Xperience.AiraUnified.Insights;
+﻿using Kentico.Xperience.AiraUnified.Insights.Models;
+
+namespace Kentico.Xperience.AiraUnified.Insights;
 
 /// <summary>
 /// Service providing aira unified insights.
 /// </summary>
-public interface IAiraUnifiedInsightsService
+internal interface IAiraUnifiedInsightsService
 {
     /// <summary>
     /// Gets content items insights.

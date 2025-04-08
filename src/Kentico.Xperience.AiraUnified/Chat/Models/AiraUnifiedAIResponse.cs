@@ -1,13 +1,14 @@
 ﻿using System.Text.Json.Serialization;
 
 using Kentico.Xperience.AiraUnified.Insights;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
 /// The ai response model.
 /// </summary>
-public class AiraUnifiedAIResponse
+internal sealed class AiraUnifiedAIResponse
 {
     /// <summary>
     /// The chat summary retrieved from the ai response according to the user's conversation history.

@@ -15,7 +15,7 @@ namespace Kentico.Xperience.AiraUnified;
 /// <summary>
 /// Represents the Aira Unified module.
 /// </summary>
-internal class AiraUnifiedModule : Module
+internal sealed class AiraUnifiedModule : Module
 {
     private IAiraUnifiedModuleInstaller installer = null!;
     private AiraUnifiedEndpointDataSource endpointDataSource = null!;

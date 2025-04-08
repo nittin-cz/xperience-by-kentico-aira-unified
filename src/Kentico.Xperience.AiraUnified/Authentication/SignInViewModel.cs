@@ -1,6 +1,9 @@
 ﻿namespace Kentico.Xperience.AiraUnified.Authentication;
 
-public class SignInViewModel
+/// <summary>
+/// View model for the Sign in operation.
+/// </summary>
+public sealed class SignInViewModel
 {
     /// <summary>
     /// Url of the chat page relative to the Aira unified base url.

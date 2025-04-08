@@ -1,9 +1,11 @@
-﻿namespace Kentico.Xperience.AiraUnified.AssetUploader.Models;
+﻿using Kentico.Xperience.AiraUnified.NavBar.Models;
+
+namespace Kentico.Xperience.AiraUnified.AssetUploader;
 
 /// <summary>
 /// View model for the Smart upload page.
 /// </summary>
-public class AssetsViewModel
+public sealed class AssetsViewModel
 {
     /// <summary>
     /// Path base for the Smart upload page.
@@ -26,12 +28,12 @@ public class AssetsViewModel
     public string FilesUploadedMessage { get; set; } = string.Empty;
 
     /// <summary>
-    /// Path of the endpoint which retrieves the navigation model <see cref="NavBar.NavBarViewModel"/>.
+    /// Path of the endpoint which retrieves the navigation model <see cref="NavBarViewModel"/>.
     /// </summary>
     public string NavigationUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Identifier of the smart upload page recognised by the navigation <see cref="AiraUnifiedController.Navigation(NavBar.NavBarRequestModel)"/> endpoint.
+    /// Identifier of the smart upload page recognised by the navigation <see cref="AiraUnifiedController.Navigation(NavBarRequestModel)"/> endpoint.
     /// </summary>
     public string NavigationPageIdentifier { get; set; } = string.Empty;
 

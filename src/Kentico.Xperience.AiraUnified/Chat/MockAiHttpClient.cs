@@ -1,5 +1,6 @@
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Insights;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 using static Kentico.Xperience.AiraUnified.Chat.Models.ChatStateType;
 
@@ -8,7 +9,7 @@ namespace Kentico.Xperience.AiraUnified.Chat;
 /// <summary>
 /// Mock implementation of HTTP client communication with AI service for local development.
 /// </summary>
-internal class MockAiHttpClient : IAiHttpClient
+internal sealed class MockAiHttpClient : IAiHttpClient
 {
     /// <inheritdoc />
     public Task<AiraUnifiedAIResponse?> SendRequestAsync(AiraUnifiedAIRequest request)

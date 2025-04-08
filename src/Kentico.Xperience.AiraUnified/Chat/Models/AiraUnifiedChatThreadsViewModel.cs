@@ -3,7 +3,7 @@
 /// <summary>
 /// View model for displaying a collection of chat threads.
 /// </summary>
-public class AiraUnifiedChatThreadsViewModel
+internal sealed class AiraUnifiedChatThreadsViewModel
 {
     /// <summary>
     /// Gets or sets the list of chat threads.

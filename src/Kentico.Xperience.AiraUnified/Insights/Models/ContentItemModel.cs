@@ -1,11 +1,11 @@
 ﻿using CMS.ContentEngine;
 
-namespace Kentico.Xperience.AiraUnified.Insights;
+namespace Kentico.Xperience.AiraUnified.Insights.Models;
 
 /// <summary>
 /// Content item model.
 /// </summary>
-public class ContentItemModel
+internal sealed class ContentItemModel
 {
     /// <summary>
     /// Content item id.

@@ -10,7 +10,7 @@ namespace Kentico.Xperience.AiraUnified.Chat;
 /// <summary>
 /// Implementation of HTTP client communication with AI service.
 /// </summary>
-internal class AiHttpClient(IHttpClientFactory httpClientFactory, IOptions<AiraUnifiedOptions> airaUnifiedOptions)
+internal sealed class AiHttpClient(IHttpClientFactory httpClientFactory, IOptions<AiraUnifiedOptions> airaUnifiedOptions)
     : IAiHttpClient
 {
     private readonly AiraUnifiedOptions airaUnifiedOptions = airaUnifiedOptions.Value;

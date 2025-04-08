@@ -5,7 +5,7 @@ namespace Kentico.Xperience.AiraUnified.Chat.Models;
 /// <summary>
 /// Represents a request model for the Aira Unified AI chat service.
 /// </summary>
-internal class AiraUnifiedAIRequest
+internal sealed class AiraUnifiedAIRequest
 {
     /// <summary>
     /// Gets or sets the conversation history containing previous chat messages.
