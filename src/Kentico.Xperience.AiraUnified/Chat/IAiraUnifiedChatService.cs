@@ -31,13 +31,19 @@ public interface IAiraUnifiedChatService
     /// <param name="promptGroupId">Prompt group id.</param>
     void RemoveUsedPrompts(string promptGroupId);
 
+    /// <summary>
+    /// Gets the chat thread information for a specific user and thread.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
+    /// <returns>The chat thread information or null if not found.</returns>
     Task<AiraUnifiedChatThreadInfo?> GetAiraUnifiedThreadInfoOrNull(int userId, int threadId);
 
     /// <summary>
     /// Gets a chat thread model of the specified id. If the id is null the latest used thread will be returned. If no thread for the user exists, a new thread for the user will be created.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
-    /// 
+    /// <param name="setAsLastUsed">Whether to update the last used timestamp.</param>
     /// <param name="threadId">The desired thread id or null.</param>
     /// <returns>The task containing the desired <see cref="AiraUnifiedChatThreadModel"/>.</returns>
     Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, bool setAsLastUsed, int? threadId = null);
@@ -46,7 +52,7 @@ public interface IAiraUnifiedChatService
     /// Creates new chat thread for the specified user.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
-    /// <returns></returns>
+    /// <returns>A task containing the newly created <see cref="AiraUnifiedChatThreadModel"/>.</returns>
     Task<AiraUnifiedChatThreadModel> CreateNewChatThread(int userId);
 
     /// <summary>
@@ -61,8 +67,9 @@ public interface IAiraUnifiedChatService
     /// </summary>
     /// <param name="text">Text of the message.</param>
     /// <param name="userId">Admin application user id.</param>
-    /// <param name="threadId">The chat thread id.</param>
     /// <param name="role">Role of the chat member.</param>
+    /// <param name="thread">The chat thread information.</param>
+    /// <returns>A task containing the saved <see cref="AiraUnifiedChatMessageInfo"/>.</returns>
     Task<AiraUnifiedChatMessageInfo> SaveMessage(string text, int userId, ChatRoleType role, AiraUnifiedChatThreadInfo thread);
 
     /// <summary>
@@ -78,7 +85,7 @@ public interface IAiraUnifiedChatService
     /// Gets an initial ai message displayed in a new thread or when returning to a thread.
     /// </summary>
     /// <param name="chatState">The <see cref="ChatStateType"/> of the chat context.</param>
-    /// <returns></returns>
+    /// <returns>A task containing the initial AI response.</returns>
     Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState);
 
     /// <summary>
@@ -86,5 +93,6 @@ public interface IAiraUnifiedChatService
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="summary">New summary.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     Task UpdateChatSummary(int userId, string summary);
 }

@@ -20,8 +20,23 @@ public class ChatThreadSelectorViewModel
     /// </summary>
     public string NavigationPageIdentifier { get; set; } = string.Empty;
 
+    /// <summary>
+    /// URL for retrieving the user's collection of chat threads.
+    /// </summary>
     public string UserThreadCollectionUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// URL for the main chat interface.
+    /// </summary>
     public string ChatUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the query parameter used to identify the chat thread in the URL.
+    /// </summary>
     public string ChatQueryParameterName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// URL for creating a new chat thread.
+    /// </summary>
     public string NewChatThreadUrl { get; set; } = string.Empty;
 }

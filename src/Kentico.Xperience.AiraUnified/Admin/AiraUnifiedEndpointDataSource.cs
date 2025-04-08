@@ -21,17 +21,31 @@ using Microsoft.Extensions.Primitives;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
+/// <summary>
+/// Represents a data source for Aira Unified endpoints.
+/// </summary>
 internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 {
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the AiraUnifiedEndpointDataSource class.
+    /// </summary>
+    /// <param name="airaUnifiedConfigurationProvider">The provider for Aira Unified configuration items.</param>
     public AiraUnifiedEndpointDataSource(IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider)
         : base(new CancellationTokenSource(), new CancellationChangeToken(new CancellationToken()))
         => this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
 
+    /// <summary>
+    /// Updates the endpoints.
+    /// </summary>
     public void UpdateEndpoints()
         => SetEndpoints(MakeEndpoints());
 
+    /// <summary>
+    /// Creates the endpoints.
+    /// </summary>
+    /// <returns>The endpoints.</returns>
     private IReadOnlyList<Endpoint> MakeEndpoints()
     {
         var configuration = airaUnifiedConfigurationProvider.Get().GetEnumerableTypedResult().SingleOrDefault();
@@ -133,6 +147,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             )
         ];
     }
+    
     private static Endpoint CreateAiraEndpointWithQueryParams(AiraUnifiedConfigurationItemInfo configurationInfo, string subPath, string actionName, string actionParameterName, Func<AiraUnifiedController, int?, Task<IActionResult>> action, string? requiredPermission = null)
     => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {

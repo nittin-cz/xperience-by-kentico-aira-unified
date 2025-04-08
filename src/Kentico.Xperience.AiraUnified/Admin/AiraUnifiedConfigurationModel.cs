@@ -6,6 +6,9 @@ using Kentico.Xperience.AiraUnified.Admin.Providers;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
+/// <summary>
+/// Represents the configuration model for Aira Unified.
+/// </summary>
 public class AiraUnifiedConfigurationModel
 {
     [RequiredValidationRule]

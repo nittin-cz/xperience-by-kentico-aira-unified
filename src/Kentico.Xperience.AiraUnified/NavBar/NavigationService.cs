@@ -3,18 +3,11 @@ using Kentico.Xperience.AiraUnified.Assets;
 
 namespace Kentico.Xperience.AiraUnified.NavBar;
 
-internal class NavigationService : INavigationService
+internal class NavigationService(
+    IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
+    IAiraUnifiedAssetService airaUnifiedAssetService)
+    : INavigationService
 {
-    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
-    private readonly IAiraUnifiedAssetService airaUnifiedAssetService;
-
-    public NavigationService(IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
-        IAiraUnifiedAssetService airaUnifiedAssetService)
-    {
-        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
-        this.airaUnifiedAssetService = airaUnifiedAssetService;
-    }
-
     public async Task<NavBarViewModel> GetNavBarViewModel(string activePage, string baseUrl)
     {
         var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
