@@ -221,4 +221,10 @@ public static class AiraUnifiedConstants
     /// Insights ratio of contacts to other contacts identifier.
     /// </summary>
     public const string InsightsRatioToAllContactsIdentifier = "ratioOfContactsInGroupToOtherContacts";
+    
+    /// <summary>
+    /// Version string used for cache busting of static assets.
+    /// This should match the version in package.json.
+    /// </summary>
+    public const string AssetVersion = "1.1.0";
 }
