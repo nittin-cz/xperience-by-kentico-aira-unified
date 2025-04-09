@@ -63,3 +63,32 @@ documentation on [creating a new database](https://docs.kentico.com/developers-a
    - The PR should have a helpful description of the scope of changes being contributed.
    - Include screenshots or video to reflect UX or UI updates
    - Indicate if new settings need to be applied when the changes are merged - locally or in other environments
+
+## Asset Management
+
+### JavaScript Versioning
+
+When updating JavaScript files, it's important to update the version in the following locations:
+
+1. In the `FrontEnd/package.json` file - update the `version` field
+2. In the `Admin/AiraUnifiedConstants.cs` file - update the `AssetVersion` constant
+
+These two values should always be synchronized to ensure proper loading of new file versions in browsers.
+
+Example:
+```json
+// FrontEnd/package.json
+{
+  "version": "1.2.0",
+  ...
+}
+```
+
+```csharp
+// Admin/AiraUnifiedConstants.cs
+public const string AssetVersion = "1.2.0";
+```
+
+### External Dependencies
+
+This project uses Bootstrap from CDN. If you need to use a local version of Bootstrap or a different version, you can modify the links in the `Views/Shared/_AiraLayout.cshtml` file.

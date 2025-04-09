@@ -2,9 +2,17 @@
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
+/// <summary>
+/// Provides extension methods for validating path strings.
+/// </summary>
 internal static class PathValidationExtensions
 {
-    public static bool IsValidSubpath(this string path) =>
+    /// <summary>
+    /// Validates if a given path is a valid subpath.
+    /// </summary>
+    /// <param name="path">The path to validate.</param>
+    /// <returns>True if the path is valid, false otherwise.</returns>
+    public static bool IsValidSubPath(this string path) =>
         !string.IsNullOrEmpty(path)
         && path[0] == '/'
         && !path.Contains("//")

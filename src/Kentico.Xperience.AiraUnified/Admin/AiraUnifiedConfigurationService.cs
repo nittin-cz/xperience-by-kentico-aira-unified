@@ -4,17 +4,27 @@ using CMS.DataEngine.Query;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
+
+/// <summary>
+/// Service for managing Aira Unified configuration settings.
+/// </summary>
 internal class AiraUnifiedConfigurationService : IAiraUnifiedConfigurationService
 {
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
     private readonly AiraUnifiedEndpointDataSource airaUnifiedEndpointDataSource;
 
+    /// <summary>
+    /// Initializes a new instance of the AiraUnifiedConfigurationService class.
+    /// </summary>
+    /// <param name="airaUnifiedConfigurationProvider">The provider for Aira Unified configuration items.</param>
+    /// <param name="airaUnifiedEndpointDataSource">The data source for Aira Unified endpoints.</param>
     public AiraUnifiedConfigurationService(IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider, AiraUnifiedEndpointDataSource airaUnifiedEndpointDataSource)
     {
         this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
         this.airaUnifiedEndpointDataSource = airaUnifiedEndpointDataSource;
     }
 
+    /// <inheritdoc/>
     public async Task<bool> TrySaveOrUpdateConfiguration(AiraUnifiedConfigurationModel configurationModel)
     {
         var existingConfiguration = (await airaUnifiedConfigurationProvider.Get().GetEnumerableTypedResultAsync()).SingleOrDefault();
@@ -47,11 +57,12 @@ internal class AiraUnifiedConfigurationService : IAiraUnifiedConfigurationServic
         return true;
     }
 
-    public async Task<AiraUnifiedConfigurationItemInfo> GetAiraUnifiedConfiguration()
+    /// <inheritdoc />
+    public Task<AiraUnifiedConfigurationItemInfo> GetAiraUnifiedConfiguration()
     {
         var airaUnifiedConfigurationItemList = airaUnifiedConfigurationProvider.Get().SingleOrDefault();
 
-        return airaUnifiedConfigurationItemList
-            ?? throw new InvalidOperationException("Aira Unified has not been configured yet.");
+        return Task.FromResult(airaUnifiedConfigurationItemList
+                               ?? throw new InvalidOperationException("Aira Unified has not been configured yet."));
     }
 }

@@ -12,15 +12,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Kentico.Xperience.AiraUnified;
 
+/// <summary>
+/// Represents the Aira Unified module.
+/// </summary>
 internal class AiraUnifiedModule : Module
 {
     private IAiraUnifiedModuleInstaller installer = null!;
     private AiraUnifiedEndpointDataSource endpointDataSource = null!;
 
+    /// <summary>
+    /// Initializes a new instance of the AiraUnifiedModule class.
+    /// </summary>
     public AiraUnifiedModule() : base(nameof(AiraUnifiedModule))
     {
     }
 
+    /// <inheritdoc />
     protected override void OnInit(ModuleInitParameters parameters)
     {
         base.OnInit(parameters);

@@ -10,13 +10,21 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
+/// <summary>
+/// Represents a module installer for Aira Unified.
+/// </summary>
 internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
 {
     private readonly IInfoProvider<ResourceInfo> resourceInfoProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the AiraUnifiedModuleInstaller class.
+    /// </summary>
+    /// <param name="resourceInfoProvider">The provider for ResourceInfo objects.</param>
     public AiraUnifiedModuleInstaller(IInfoProvider<ResourceInfo> resourceInfoProvider)
         => this.resourceInfoProvider = resourceInfoProvider;
 
+    /// <inheritdoc />
     public void Install()
     {
         var resourceInfo = InstallModule();
