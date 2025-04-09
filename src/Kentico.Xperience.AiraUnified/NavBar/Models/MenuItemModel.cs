@@ -3,7 +3,7 @@
 /// <summary>
 /// Model for Navigation menu item.
 /// </summary>
-internal sealed class MenuItemModel
+public sealed class MenuItemModel
 {
     /// <summary>
     /// The title displayed on top of the PWA page when selected in the Menu.

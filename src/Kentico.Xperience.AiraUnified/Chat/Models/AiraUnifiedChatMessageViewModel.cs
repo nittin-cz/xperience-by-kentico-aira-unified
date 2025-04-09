@@ -6,7 +6,7 @@ namespace Kentico.Xperience.AiraUnified.Chat.Models;
 /// <summary>
 /// Model for the Aira Unified chat message.
 /// </summary>
-internal sealed class AiraUnifiedChatMessageViewModel
+public sealed class AiraUnifiedChatMessageViewModel
 {
     /// <summary>
     /// The text message.

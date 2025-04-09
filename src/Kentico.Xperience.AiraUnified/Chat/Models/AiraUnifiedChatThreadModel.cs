@@ -3,7 +3,7 @@
 /// <summary>
 /// The chat thread model.
 /// </summary>
-internal sealed class AiraUnifiedChatThreadModel
+public sealed class AiraUnifiedChatThreadModel
 {
     /// <summary>
     /// The name of the thread.

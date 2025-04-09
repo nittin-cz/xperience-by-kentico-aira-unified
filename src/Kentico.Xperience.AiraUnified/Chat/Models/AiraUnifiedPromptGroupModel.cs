@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a group of suggested prompts in the chat interface.
 /// </summary>
-internal sealed class AiraUnifiedPromptGroupModel
+public sealed class AiraUnifiedPromptGroupModel
 {
     /// <summary>
     /// Gets or sets the unique identifier for the prompt group.

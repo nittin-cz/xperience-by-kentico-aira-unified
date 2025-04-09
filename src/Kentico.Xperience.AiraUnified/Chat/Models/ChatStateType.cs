@@ -3,7 +3,7 @@
 /// <summary>
 /// State of the chat.
 /// </summary>
-internal enum ChatStateType
+public enum ChatStateType
 {
     /// <summary>
     /// First time opening a new chat thread.

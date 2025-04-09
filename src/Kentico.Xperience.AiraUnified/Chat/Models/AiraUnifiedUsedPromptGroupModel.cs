@@ -3,7 +3,7 @@
 /// <summary>
 /// Model for the suggested prompt group.
 /// </summary>
-internal sealed class AiraUnifiedUsedPromptGroupModel
+public sealed class AiraUnifiedUsedPromptGroupModel
 {
     /// <summary>
     /// Id of the prompt group.

@@ -8,7 +8,7 @@ namespace Kentico.Xperience.AiraUnified.Chat.Models;
 /// <summary>
 /// The ai response model.
 /// </summary>
-internal sealed class AiraUnifiedAIResponse
+public sealed class AiraUnifiedAIResponse
 {
     /// <summary>
     /// The chat summary retrieved from the ai response according to the user's conversation history.
