@@ -413,6 +413,7 @@ export default {
           jsonData = requestDetails.body.messages[0].text;
         } else {
           const entries = requestDetails.body.entries();
+         
           if (entries !== null) {
             let hasMessages = false;
             for (const [key, value] of requestDetails.body.entries()) {
@@ -524,6 +525,7 @@ export default {
       style.textContent = `
                 #container{
                 font-family: "GT Walsheim", Helvetica, Arial, sans-serif;
+                max-height: 100vh;
                 }
 
                 #messages {
