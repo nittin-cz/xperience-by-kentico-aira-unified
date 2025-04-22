@@ -1,5 +1,4 @@
-﻿using Kentico.Xperience.AiraUnified.Insights;
-using Kentico.Xperience.AiraUnified.Insights.Models;
+﻿using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Chat.Models;
 

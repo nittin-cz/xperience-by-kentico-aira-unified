@@ -357,15 +357,15 @@ export default {
           button.addEventListener("click", async () => {
             const text = button.value.valueOf();
 
-            //const buttonGroupId = button.parentNode.getAttribute(
-            //  "prompt-quick-suggestion-button-group-id"
-            //);
+            const buttonGroupId = button.parentNode.getAttribute(
+             "prompt-quick-suggestion-button-group-id"
+            );
 
-            //this.history = this.history.filter(
-            //  (x) =>
-            //    x.promptQuickSuggestionGroupId === undefined ||
-            //    x.promptQuickSuggestionGroupId.toString() !== buttonGroupId
-            //);
+            this.history = this.history.filter(
+             (x) =>
+               x.promptQuickSuggestionGroupId === undefined ||
+               x.promptQuickSuggestionGroupId.toString() !== buttonGroupId
+            );
             this.$refs.chatElementRef.clearMessages(true);
 
             this.history.forEach((x) => {
@@ -374,15 +374,18 @@ export default {
 
             this.bindPromptButtons();
 
-            //setTimeout(() => {
+            setTimeout(() => {
             const textInput =
               this.$refs.chatElementRef.shadowRoot.getElementById("text-input");
             textInput.classList.remove("text-input-placeholder");
 
             this.typeIntoInput(textInput, text);
-            //}, 50);
+            }, 50);
 
-            //await this.removeUsedPromptGroup(buttonGroupId);
+            // If empty, then the button group is not saved in the history.
+            if (buttonGroupId !== '') {
+              await this.removeUsedPromptGroup(buttonGroupId);
+            }
           });
         });
     },

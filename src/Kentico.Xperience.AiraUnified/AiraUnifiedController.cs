@@ -222,9 +222,7 @@ internal sealed class AiraUnifiedController(
 
         if (initialMessages.QuickOptions is not null)
         {
-            var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.QuickOptions, chatThreadId);
-            lastMessage.QuickPrompts = promptGroup.QuickPrompts;
-            lastMessage.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
+            lastMessage.QuickPrompts = initialMessages.QuickOptions;
         }
 
         return Ok(history);
