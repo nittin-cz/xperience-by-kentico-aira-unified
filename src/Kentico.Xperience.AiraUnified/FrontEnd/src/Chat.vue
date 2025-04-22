@@ -908,7 +908,7 @@ export default {
       </div>
 
       <div>
-        <h3 class="k-subtitle">Websites</h3>
+        <h3 class="k-subtitle">Website content</h3>
         <div class="k-summary">
             <div class="k-summary_item">
                 <h4 class="k-summary_title">
