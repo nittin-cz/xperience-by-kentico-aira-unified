@@ -1023,7 +1023,7 @@ export default {
                     </div>
                 </div>
 
-                <h3 class="k-subtitle">Campaigns</h3>
+                <h3 class="k-subtitle">Regular Emails</h3>
                 <div class="k-content-items">
                     ${this.getEmailItems(insightsData.campaigns)}
                 </div>
