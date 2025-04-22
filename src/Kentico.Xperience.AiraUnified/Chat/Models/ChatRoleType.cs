@@ -3,7 +3,7 @@ namespace Kentico.Xperience.AiraUnified.Chat.Models;
 /// <summary>
 /// Type of chat role.
 /// </summary>
-public enum ChatRoleType
+internal enum ChatRoleType
 {
     /// <summary>
     /// AI assistant role.

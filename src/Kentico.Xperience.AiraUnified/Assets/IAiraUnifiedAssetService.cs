@@ -8,7 +8,7 @@ namespace Kentico.Xperience.AiraUnified.Assets;
 /// <summary>
 /// Service responsible for handling files and accessing content item asset management.
 /// </summary>
-public interface IAiraUnifiedAssetService
+internal interface IAiraUnifiedAssetService
 {
     /// <summary>
     /// Creates content item assets for a content type configured for mass asset upload.

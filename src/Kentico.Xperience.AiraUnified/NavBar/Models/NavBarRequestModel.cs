@@ -3,7 +3,7 @@
 /// <summary>
 /// Holds navbar identifier for a specified page.
 /// </summary>
-public sealed class NavBarRequestModel
+internal sealed class NavBarRequestModel
 {
     /// <summary>
     /// The navbar page identifier.

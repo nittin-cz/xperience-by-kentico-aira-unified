@@ -16,7 +16,7 @@ namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 /// <summary>
 /// Data container class for <see cref="AiraUnifiedChatThreadInfo"/>.
 /// </summary>
-public class AiraUnifiedChatThreadInfo : AbstractInfo<AiraUnifiedChatThreadInfo, IInfoProvider<AiraUnifiedChatThreadInfo>>
+internal class AiraUnifiedChatThreadInfo : AbstractInfo<AiraUnifiedChatThreadInfo, IInfoProvider<AiraUnifiedChatThreadInfo>>
 {
     /// <summary>
     /// Object type.
