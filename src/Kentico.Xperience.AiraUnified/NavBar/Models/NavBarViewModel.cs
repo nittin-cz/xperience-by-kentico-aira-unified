@@ -3,7 +3,7 @@
 /// <summary>
 /// View model for the Navigation.
 /// </summary>
-public sealed class NavBarViewModel
+internal sealed class NavBarViewModel
 {
     /// <summary>
     /// Path of the logo displayed in the PWA.

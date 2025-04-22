@@ -22,7 +22,7 @@ namespace Kentico.Xperience.AiraUnified;
 /// </summary>
 [ApiController]
 [Route("[controller]/[action]")]
-public sealed class AiraUnifiedController(
+internal sealed class AiraUnifiedController(
     AdminUserManager adminUserManager,
     IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
     IAiraUnifiedAssetService airaUnifiedAssetService,

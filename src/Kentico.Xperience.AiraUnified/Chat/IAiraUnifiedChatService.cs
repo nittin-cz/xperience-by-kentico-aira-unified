@@ -6,7 +6,7 @@ namespace Kentico.Xperience.AiraUnified.Chat;
 /// <summary>
 /// Service responsible for managing chat history of a user.
 /// </summary>
-public interface IAiraUnifiedChatService
+internal interface IAiraUnifiedChatService
 {
     /// <summary>
     /// Returns the chat history of a user.

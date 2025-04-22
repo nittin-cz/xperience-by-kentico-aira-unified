@@ -9,7 +9,7 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Represents the configuration model for Aira Unified.
 /// </summary>
-public sealed class AiraUnifiedConfigurationModel
+internal sealed class AiraUnifiedConfigurationModel
 {
     [RequiredValidationRule]
     [TextInputComponent(Label = "Relative Path Base", Order = 0,

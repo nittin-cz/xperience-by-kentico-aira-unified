@@ -5,7 +5,7 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Service for managing Aira Unified configuration settings.
 /// </summary>
-public interface IAiraUnifiedConfigurationService
+internal interface IAiraUnifiedConfigurationService
 {
     /// <summary>
     /// Retrieves the Aira Unified configuration.

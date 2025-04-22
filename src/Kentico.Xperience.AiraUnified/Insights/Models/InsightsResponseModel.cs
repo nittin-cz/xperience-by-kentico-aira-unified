@@ -5,7 +5,7 @@ namespace Kentico.Xperience.AiraUnified.Insights.Models;
 /// <summary>
 /// The AI insights response model
 /// </summary>
-public sealed class InsightsResponseModel
+internal sealed class InsightsResponseModel
 {
     /// <summary>
     /// Indicates whether this is an insights query.
