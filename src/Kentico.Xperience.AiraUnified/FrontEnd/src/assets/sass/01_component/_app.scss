@@ -1,6 +1,7 @@
 .c-app{
   position: relative;
   width: 100%;
+  height: 100svh;
   &_inner{
     display: flex;
     flex-direction: column;
@@ -163,6 +164,7 @@
     width: auto;
     min-height: 88vh;
     min-width: 20rem;
+    height: auto;
     &:after{
       content: '';
       position: absolute;

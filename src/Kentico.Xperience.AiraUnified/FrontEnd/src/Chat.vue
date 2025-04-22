@@ -525,7 +525,6 @@ export default {
       style.textContent = `
                 #container{
                   font-family: "GT Walsheim", Helvetica, Arial, sans-serif;
-                  max-height: calc(100vh - ${this.getNavigationHeight()});
                 }
 
                 #messages {
@@ -1233,15 +1232,6 @@ export default {
         ).toLocaleString()}.</div>`;
       }
       return metadataString;
-    },
-    getNavigationHeight() {
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isAndroid = /android/.test(userAgent);
-      const isMobile = /mobile/.test(userAgent) || window.innerWidth < 768;
-      if (isAndroid && isMobile) {
-        return `150px`;
-      }
-      return "0px";
     },
   },
 };
