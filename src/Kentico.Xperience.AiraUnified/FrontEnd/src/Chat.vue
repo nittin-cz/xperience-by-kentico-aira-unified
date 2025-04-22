@@ -524,8 +524,8 @@ export default {
 
       style.textContent = `
                 #container{
-                font-family: "GT Walsheim", Helvetica, Arial, sans-serif;
-                max-height: calc(100vh - ${this.getNavigationHeight()});
+                  font-family: "GT Walsheim", Helvetica, Arial, sans-serif;
+                  max-height: calc(100vh - ${this.getNavigationHeight()});
                 }
 
                 #messages {
@@ -1217,10 +1217,6 @@ export default {
                                 <div>
                                     <div class="k-content-item_label">Contacts</div>
                                     <div class="k-content-item_value">${item.contactCount}</div>
-                                </div>
-                                <div>
-                                    <div class="k-content-item_label">Sent Date</div>
-                                    <div class="k-content-item_value">${item.ratioPercentage}</div>
                                 </div>
                             </div>
                         </div>`
