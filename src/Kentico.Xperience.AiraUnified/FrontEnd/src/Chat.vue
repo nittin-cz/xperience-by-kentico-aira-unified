@@ -1073,6 +1073,12 @@ export default {
                 <div class="k-content-items">
                     ${this.getMarketingContactItems(insightsData.contactGroups)}
                 </div>
+                <h3 class="k-subtitle">Recipient Lists</h3>
+                <div class="k-content-items">
+                    ${this.getMarketingContactItems(
+                      insightsData.recipientLists
+                    )}
+                </div>
             </div>
 <div>${this.getMetadata(metadata)}</div>
         </div>`,

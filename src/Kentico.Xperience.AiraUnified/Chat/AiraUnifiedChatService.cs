@@ -427,10 +427,12 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <returns>A task containing the marketing insights data.</returns>
     private async Task<object?> GetMarketingInsights()
     {
-        var contactGroups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
-        var contactGroupNames = contactGroups.Select(x => x.ContactGroupDisplayName).ToArray();
+        var groups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
+        var contactGroupNames = groups.Where(x => !x.ContactGroupIsRecipientList).Select(x => x.ContactGroupDisplayName).ToArray();
+        var recipientListGroupNames = groups.Where(x => x.ContactGroupIsRecipientList).Select(x => x.ContactGroupDisplayName).ToArray();
 
         var contactGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(contactGroupNames);
+        var recipientListGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(recipientListGroupNames);
 
         return new MarketingInsightsDataModel
         {
@@ -440,7 +442,13 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 Name = item.Name,
                 ContactCount = item.Count,
                 RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
-            }).ToList()
+            }).ToList(),
+            RecipientLists = recipientListGroupInsights.Groups.Select(item => new ContactGroupModel()
+            {
+                Name = item.Name,
+                ContactCount = item.Count,
+                RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
+            }).ToList(),
         };
     }
 
@@ -497,7 +505,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             }
         };
     }
-    
+
     /// <summary>
     /// Gets the chat role string based on the message info.
     /// </summary>

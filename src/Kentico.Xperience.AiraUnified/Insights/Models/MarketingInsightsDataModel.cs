@@ -14,4 +14,9 @@ internal sealed class MarketingInsightsDataModel
     /// Gets or sets the list of contact groups with their respective metrics and statistics.
     /// </summary>
     public List<ContactGroupModel> ContactGroups { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the recipients lists with their respective metrics and statistics.
+    /// </summary>
+    public List<ContactGroupModel> RecipientLists { get; set; } = [];
 }
