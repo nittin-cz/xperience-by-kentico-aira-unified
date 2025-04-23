@@ -24,4 +24,9 @@ public sealed class SignInViewModel
     /// Error message displayed if the user misses a permission.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Xperience by Kentico admin path.
+    /// </summary>
+    public string AdminPath { get; set; } = string.Empty;
 }

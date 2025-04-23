@@ -14,6 +14,7 @@ using Kentico.Xperience.AiraUnified.NavBar.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Kentico.Xperience.AiraUnified;
 
@@ -28,10 +29,12 @@ internal sealed class AiraUnifiedController(
     IAiraUnifiedAssetService airaUnifiedAssetService,
     INavigationService navigationService,
     IAiraUnifiedChatService airaUnifiedChatService,
-    IEventLogService eventLogService)
+    IEventLogService eventLogService,
+    IOptions<AiraUnifiedOptions> airaUnifiedOptions)
     : Controller
 {
     private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
+    private const string InvalidAdministrationPathMessage = "Invalid administration path.";
 
     /// <summary>
     /// Endpoint exposing access to the Chat page.
@@ -440,12 +443,21 @@ internal sealed class AiraUnifiedController(
 
         var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
 
+        var adminPath = airaUnifiedOptions.Value.XbyKAdminPath ?? navigationService.BuildUriOrNull(baseUrl, "/admin")?.ToString();
+
+        if (adminPath is null)
+        {
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(SignIn), InvalidAdministrationPathMessage);
+            return BadRequest(InvalidAdministrationPathMessage);
+        }
+
         var model = new SignInViewModel
         {
             PathBase = airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase,
             ChatUrl = AiraUnifiedConstants.ChatRelativeUrl,
             LogoImageRelativePath = logoUrl,
-            ErrorMessage = errorMessage
+            ErrorMessage = errorMessage,
+            AdminPath = adminPath
         };
 
         return View("~/Authentication/SignIn.cshtml", model);
