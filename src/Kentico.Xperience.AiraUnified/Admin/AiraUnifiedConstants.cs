@@ -226,5 +226,5 @@ internal static class AiraUnifiedConstants
     /// Version string used for cache busting of static assets.
     /// This should match the version in package.json.
     /// </summary>
-    public const string AssetVersion = "1.1.3";
+    public const string AssetVersion = "1.1.4";
 }
