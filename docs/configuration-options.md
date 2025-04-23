@@ -61,9 +61,27 @@ This property allows you to override the default AI service endpoint for develop
 **Use case:**
 Use this when you need to connect to a specific AI service endpoint that differs from the default one defined in `AiraUnifiedConstants`.
 
+## Admin Path Configuration
+
+### XbyKAdminPath
+
+```json
+"XbyKAdminPath": "/custom-admin-path"
+```
+
+This property allows you to override the default admin UI path in case your administration uses a different domain or custom path.
+
+**Benefits:**
+- Flexibility to configure a custom admin path
+- Support for multi-domain or custom setups
+- Simplifies integration with non-standard environments
+
+**Use case:**
+Use this when your Xperience by Kentico administration interface is hosted on a different domain or uses a custom path.
+
 ## Complete Configuration Example
 
-Here's an example of how you might configure these options in your `appsettings.json` file for local development:
+Here's an updated example of how you might configure these options in your `appsettings.json` file for local development:
 
 ```json
 {
@@ -71,7 +89,8 @@ Here's an example of how you might configure these options in your `appsettings.
     "AiraUnifiedApiSubscriptionKey": "your-api-key-here",
     "AiraUnifiedAIEndpoint": "https://your-custom-endpoint.com/api",
     "AiraUnifiedUseMockClient": true,
-    "AiraUnifiedUseMockInsights": true
+    "AiraUnifiedUseMockInsights": true,
+    "XbyKAdminPath": "/custom-admin-path"
   }
 }
 ```
@@ -100,4 +119,4 @@ If you encounter issues with these configuration options:
 1. Verify that your `appsettings.json` file is being loaded correctly
 2. Check that the property names match exactly (they are case-sensitive)
 3. Ensure that the configuration section is properly registered in your application's startup code
-4. For mock implementations, verify that the mock implementations are properly registered in your dependency injection container 
+4. For mock implementations, verify that the mock implementations are properly registered in your dependency injection container
