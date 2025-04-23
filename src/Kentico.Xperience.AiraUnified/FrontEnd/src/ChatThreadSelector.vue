@@ -149,9 +149,9 @@ export default {
       this.threadsData = data.chatThreads;
     },
     timeAgo(lastUsed) {
-      const lastUsedUtc = new Date(lastUsed ?? new Date()); // Force UTC interpretation
-      const nowUtc = new Date(); // Already in UTC
-      const diffMs = nowUtc.getTime() - lastUsedUtc.getTime(); // Difference in milliseconds
+      const now = new Date();
+      const lastUsedConvert = new Date(new Date(`${lastUsed}Z`) ?? now); // Force UTC interpretation
+      const diffMs = now.getTime() - lastUsedConvert.getTime(); // Difference in milliseconds
 
       const diffMinutes = Math.floor(diffMs / (1000 * 60));
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));

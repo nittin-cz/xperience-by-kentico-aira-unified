@@ -72,9 +72,9 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             ),
             CreateAiraEndpointWithRouteValue(configuration,
                 $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}/{{{AiraUnifiedConstants.ChatThreadIdParameterName}:int}}",
-                nameof(AiraUnifiedController.GetChatHistory),
+                nameof(AiraUnifiedController.GetOrCreateChatHistory),
                 AiraUnifiedConstants.ChatThreadIdParameterName,
-                (controller, threadId) => controller.GetChatHistory(threadId),
+                (controller, threadId) => controller.GetOrCreateChatHistory(threadId),
                 requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraEndpoint(configuration,

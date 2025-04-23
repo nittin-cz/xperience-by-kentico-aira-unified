@@ -214,7 +214,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         var message = new AiraUnifiedChatMessageInfo
         {
             AiraUnifiedChatMessageText = text,
-            AiraUnifiedChatMessageCreatedWhen = DateTime.Now,
+            AiraUnifiedChatMessageCreatedWhen = DateTime.UtcNow,
             AiraUnifiedChatMessageThreadId = thread.AiraUnifiedChatThreadId,
             AiraUnifiedChatMessageUserId = userId,
             AiraUnifiedChatMessageRole = (int)role

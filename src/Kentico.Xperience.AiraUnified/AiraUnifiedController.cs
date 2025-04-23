@@ -189,13 +189,18 @@ internal sealed class AiraUnifiedController(
     /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetChatHistory(int chatThreadId)
+    public async Task<IActionResult> GetOrCreateChatHistory(int chatThreadId)
     {
         var user = await adminUserManager.GetUserAsync(User);
 
         // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
         var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID, chatThreadId);
         var chatThreadState = history.Count == 0 ? ChatStateType.initial : ChatStateType.returning;
+
+        if (chatThreadState == ChatStateType.returning && history[^1].CreatedWhen.AddDays(1) > DateTime.UtcNow)
+        {
+            return Ok(history);
+        }
 
         var initialMessages = await airaUnifiedChatService.GetInitialAIMessage(chatThreadState);
 
@@ -209,6 +214,8 @@ internal sealed class AiraUnifiedController(
             return Ok(history);
         }
 
+        var thread = await airaUnifiedChatService.GetAiraUnifiedThreadInfoOrNull(user.UserID, chatThreadId);
+
         foreach (var message in initialMessages.Responses)
         {
             history.Add(new AiraUnifiedChatMessageViewModel
@@ -216,11 +223,16 @@ internal sealed class AiraUnifiedController(
                 Message = message.Content,
                 Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
             });
+
+            if (thread is not null)
+            {
+                await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AI, thread);
+            }
         }
 
         var lastMessage = history[^1];
 
-        if (initialMessages.QuickOptions is not null)
+        if (initialMessages.QuickOptions is not null && chatThreadState != ChatStateType.returning)
         {
             var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.QuickOptions, chatThreadId);
             lastMessage.QuickPrompts = promptGroup.QuickPrompts;
