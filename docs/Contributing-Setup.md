@@ -44,6 +44,28 @@ Running the sample project requires creating a new Xperience by Kentico database
 Change directory in your console to `./examples/DancingGoat` and follow the instructions in the Xperience
 documentation on [creating a new database](https://docs.kentico.com/developers-and-admins/installation#Installation-CreateProjectDatabase).
 
+## FrontEnd Customization
+
+The Aira Unified application uses frontend assets located in:
+
+- `src/Kentico.Xperience.AiraUnified/wwwroot/js/index.js`
+- `src/Kentico.Xperience.AiraUnified/wwwroot/css/`
+
+These files are **generated** from source files located in the `src/Kentico.Xperience.AiraUnified/FrontEnd` folder.
+
+Changes made to the client-side code in the `FrontEnd` folder will **not** be reflected immediately. To apply the changes, you must rebuild the assets using Webpack.
+
+### Rebuilding Client Assets
+
+After making changes, navigate to the `FrontEnd` folder and run the following commands:
+
+```bash
+npm run build
+npm run build-css
+```
+
+This will recompile the JavaScript and CSS, and update the files in the wwwroot directory accordingly.
+
 ## Development Workflow
 
 1. Create a new branch with one of the following prefixes
@@ -92,3 +114,7 @@ public const string AssetVersion = "1.2.0";
 ### External Dependencies
 
 This project uses Bootstrap from CDN. If you need to use a local version of Bootstrap or a different version, you can modify the links in the `Views/Shared/_AiraLayout.cshtml` file.
+
+## Mock Messages
+
+See [Mock messages guide](Mock-Messages-Guide.md)

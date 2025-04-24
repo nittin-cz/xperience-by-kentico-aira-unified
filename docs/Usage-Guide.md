@@ -47,3 +47,11 @@ Admin application users with a role that includes **Create** permission for the 
 It can be opened by tapping the menu button and navigating to the **Smart Upload** page.  
 ![Menu](/images/AiraUnifiedNavigation.jpg)  
 ![Smart uploader](/images/SmartAssetUploader.jpg)
+
+## Upgrades and Uninstalling
+
+See [Upgrades](Upgrades.md)
+
+## Configuration options
+
+See [Configuration options](Configuration-Options.md)
