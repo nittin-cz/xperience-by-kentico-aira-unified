@@ -206,11 +206,6 @@ internal static class AiraUnifiedConstants
 
 
     /// <summary>
-    /// Insights in draft identifier.
-    /// </summary>
-    public const string InsightsInDraftIdentifier = "inDraft";
-
-    /// <summary>
     /// Insights draft identifier.
     /// </summary>
     public const string InsightsDraftIdentifier = "Draft";
@@ -223,9 +218,9 @@ internal static class AiraUnifiedConstants
 
 
     /// <summary>
-    /// Insights in scheduled identifier.
+    /// Insights published identifier.
     /// </summary>
-    public const string InsightsInScheduledIdentifier = "inScheduled";
+    public const string InsightsPublishedIdentifier = "Published";
 
 
     /// <summary>

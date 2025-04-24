@@ -5,6 +5,7 @@ using CMS.ContentWorkflowEngine;
 using CMS.DataEngine;
 using CMS.EmailLibrary;
 
+using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Insights;
@@ -37,10 +38,6 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     private const string CONTENT_ITEM_WEBSITE_TYPE = "Website";
     private const string CONTENT_ITEM_REUSABLE_TYPE = "Reusable";
     private const string REGULAR_EMAIL_TYPE = "Regular";
-
-    private const string SCHEDULED_IDENTIFIER = "Scheduled";
-    private const string DRAFT_IDENTIFIER = "Draft";
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AiraUnifiedInsightsService"/> class.
@@ -201,12 +198,23 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             return [];
         }
 
-        if (status == DRAFT_IDENTIFIER)
+        if (status == AiraUnifiedConstants.InsightsDraftIdentifier)
         {
-            builder.Parameters(q => q.Where(w => w
+            builder = builder.Parameters(q => q.Where(w => w
                 .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.Draft)
                 .Or()
-                .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.InitialDraft)));
+                .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.InitialDraft))
+            );
+
+            var itemsInDraft = await contentQueryExecutor.GetResult(builder, ContentItemBinder, options);
+            return await RemoveScheduled(userId, itemsInDraft);
+        }
+
+        if (status == AiraUnifiedConstants.InsightsPublishedIdentifier)
+        {
+            builder = builder.Parameters(q => q.Where(w => w
+                .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.Published))
+            );
 
             return await contentQueryExecutor.GetResult(builder, ContentItemBinder, options);
         }
@@ -220,8 +228,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 
         return status switch
         {
-            DRAFT_IDENTIFIER => FilterDrafts(items),
-            SCHEDULED_IDENTIFIER => await FilterScheduled(userId, items),
+            AiraUnifiedConstants.InsightsScheduledIdentifier => await GetScheduled(userId, items),
             _ => await FilterCustomWorkflowStep(items, status),
         };
     }
@@ -280,7 +287,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     /// <param name="userId">The user ID.</param>
     /// <param name="items">The content items to filter.</param>
     /// <returns>A collection of scheduled content items.</returns>
-    private async Task<IEnumerable<ContentItemModel>> FilterScheduled(int userId, IEnumerable<ContentItemModel> items)
+    private async Task<IEnumerable<ContentItemModel>> GetScheduled(int userId, IEnumerable<ContentItemModel> items)
     {
         List<ContentItemModel> result = [];
 
@@ -300,17 +307,21 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 
 
     /// <summary>
-    /// Filters content items to only include draft items.
+    /// Filters content items to only include scheduled items.
     /// </summary>
+    /// <param name="userId">The user ID.</param>
     /// <param name="items">The content items to filter.</param>
-    /// <returns>A collection of draft content items.</returns>
-    private static IEnumerable<ContentItemModel> FilterDrafts(IEnumerable<ContentItemModel> items)
+    /// <returns>A collection of scheduled content items.</returns>
+    private async Task<IEnumerable<ContentItemModel>> RemoveScheduled(int userId, IEnumerable<ContentItemModel> items)
     {
         List<ContentItemModel> result = [];
 
+        var contentItemManager = contentItemManagerFactory.Create(userId);
         foreach (var item in items)
         {
-            if (item.VersionStatus == VersionStatus.Draft)
+            var language = await contentLanguageInfoProvider.GetAsync(item.LanguageId);
+            var isScheduled = await contentItemManager.IsPublishScheduled(item.Id, language.ContentLanguageName);
+            if (!isScheduled)
             {
                 result.Add(item);
             }
