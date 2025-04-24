@@ -497,10 +497,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     {
         var reusableDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
         var reusableScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-        var reusablePublishedContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsPublishedIdentifier);
         var websiteDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
         var websiteScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-        var websitePublishedContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsPublishedIdentifier);
 
         return new ContentInsightsDataModel
         {
@@ -513,13 +511,13 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             {
                 DraftCount = reusableDraftContentInsights.Count,
                 ScheduledCount = reusableScheduledContentInsights.Count,
-                Items = reusableDraftContentInsights.Concat(reusableScheduledContentInsights).Concat(reusablePublishedContentInsights).ToList()
+                Items = reusableDraftContentInsights.Concat(reusableScheduledContentInsights).ToList()
             },
             WebsiteContent = new ContentCategoryModel()
             {
                 DraftCount = websiteDraftContentInsights.Count,
                 ScheduledCount = websiteScheduledContentInsights.Count,
-                Items = websiteScheduledContentInsights.Concat(websiteDraftContentInsights).Concat(websitePublishedContentInsights).ToList()
+                Items = websiteScheduledContentInsights.Concat(websiteDraftContentInsights).ToList()
             }
         };
     }
