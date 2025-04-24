@@ -12,8 +12,8 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 public sealed class AiraUnifiedConfigurationModel
 {
     [RequiredValidationRule]
-    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.RelativePathBase.ExplanationText$}", Order = 0,
-        ExplanationText = "{$AiraUnifiedConfigurationModel.RelativePathBase.Label$}")]
+    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.RelativePathBase.Label$}", Order = 0,
+        ExplanationText = "{$AiraUnifiedConfigurationModel.RelativePathBase.ExplanationText$}")]
     public string RelativePathBase { get; set; } = string.Empty;
 
 
