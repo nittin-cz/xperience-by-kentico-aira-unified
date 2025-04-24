@@ -10,6 +10,7 @@ internal sealed class ContactGroupsInsightsModel
     /// </summary>
     public List<ContactGroupInsightsModel> Groups { get; set; } = [];
 
+
     /// <summary>
     /// Contact groups dynamic count.
     /// </summary>

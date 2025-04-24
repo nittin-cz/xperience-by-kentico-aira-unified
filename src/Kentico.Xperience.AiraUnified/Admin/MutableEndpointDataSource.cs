@@ -14,6 +14,7 @@ internal abstract class MutableEndpointDataSource : EndpointDataSource
     private CancellationTokenSource cancellationTokenSource;
     private IChangeToken changeToken;
 
+
     /// <summary>
     /// Initializes a new instance of the MutableEndpointDataSource class.
     /// </summary>
@@ -26,11 +27,14 @@ internal abstract class MutableEndpointDataSource : EndpointDataSource
         this.changeToken = changeToken;
     }
 
+
     /// <inheritdoc />
     public override IChangeToken GetChangeToken() => changeToken;
 
+
     /// <inheritdoc />
     public override IReadOnlyList<Endpoint> Endpoints => endpoints;
+
 
     protected void SetEndpoints(IReadOnlyList<Endpoint> endpoints)
     {

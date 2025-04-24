@@ -13,6 +13,8 @@ internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfiguratio
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
     private readonly AiraUnifiedEndpointDataSource airaUnifiedEndpointDataSource;
 
+    private const string AiraUnifiedConfigurationNotFoundMessage = "Aira Unified has not been configured yet.";
+
     /// <summary>
     /// Initializes a new instance of the AiraUnifiedConfigurationService class.
     /// </summary>
@@ -23,6 +25,7 @@ internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfiguratio
         this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
         this.airaUnifiedEndpointDataSource = airaUnifiedEndpointDataSource;
     }
+
 
     /// <inheritdoc/>
     public async Task<bool> TrySaveOrUpdateConfiguration(AiraUnifiedConfigurationModel configurationModel)
@@ -57,12 +60,13 @@ internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfiguratio
         return true;
     }
 
+
     /// <inheritdoc />
     public Task<AiraUnifiedConfigurationItemInfo> GetAiraUnifiedConfiguration()
     {
         var airaUnifiedConfigurationItemList = airaUnifiedConfigurationProvider.Get().SingleOrDefault();
 
         return Task.FromResult(airaUnifiedConfigurationItemList
-                               ?? throw new InvalidOperationException("Aira Unified has not been configured yet."));
+                               ?? throw new InvalidOperationException(AiraUnifiedConfigurationNotFoundMessage));
     }
 }

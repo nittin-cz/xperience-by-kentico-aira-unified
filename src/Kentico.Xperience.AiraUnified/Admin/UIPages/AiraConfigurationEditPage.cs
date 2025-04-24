@@ -8,9 +8,9 @@ using Kentico.Xperience.AiraUnified.Admin.UIPages;
 
 [assembly: UIPage(
     parentType: typeof(AiraUnifiedApplicationPage),
-    slug: "configuration",
     uiPageType: typeof(AiraUnifiedConfigurationEditPage),
-    name: "Edit configuration",
+    slug: "configuration",
+    name: "{$AiraUnifiedConfigurationEditPage.Name$}",
     templateName: TemplateNames.EDIT,
     order: UIPageOrder.NoOrder)]
 
@@ -23,6 +23,9 @@ internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifi
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
 
+    private const string AiraUnifiedConfigurationUpdated = "Aira unified configuration updated.";
+    private const string AiraUnifiedConfigurationNotUpdated = "Could not update aira unified configuration.";
+
     public AiraUnifiedConfigurationEditPage(Xperience.Admin.Base.Forms.Internal.IFormItemCollectionProvider formItemCollectionProvider,
         IFormDataBinder formDataBinder,
         IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
@@ -32,6 +35,7 @@ internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifi
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
         this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
     }
+
 
     protected override AiraUnifiedConfigurationModel Model
     {
@@ -44,6 +48,7 @@ internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifi
             return model;
         }
     }
+
 
     protected override async Task<ICommandResponse> ProcessFormData(AiraUnifiedConfigurationModel model, ICollection<IFormItem> formItems)
     {
@@ -64,11 +69,11 @@ internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifi
 
         if (result)
         {
-            response.AddSuccessMessage("Aira unified configuration updated.");
+            response.AddSuccessMessage(AiraUnifiedConfigurationUpdated);
         }
         else
         {
-            response.AddErrorMessage("Could not update aira unified configuration.");
+            response.AddErrorMessage(AiraUnifiedConfigurationNotUpdated);
         }
 
         return response;

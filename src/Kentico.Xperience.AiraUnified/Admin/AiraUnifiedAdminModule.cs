@@ -15,6 +15,7 @@ internal sealed class AiraUnifiedAdminModule : AdminModule
 {
     public AiraUnifiedAdminModule() : base(nameof(AiraUnifiedAdminModule)) { }
 
+
     protected override void OnInit(ModuleInitParameters parameters)
     {
         base.OnInit(parameters);

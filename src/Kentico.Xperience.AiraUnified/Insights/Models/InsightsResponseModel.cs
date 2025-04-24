@@ -13,11 +13,13 @@ internal sealed class InsightsResponseModel
     [JsonPropertyName("is_insights_query")]
     public bool IsInsightsQuery { get; set; }
 
+
     /// <summary>
     /// The category of the query or insight.
     /// </summary>
     [JsonPropertyName("category")]
     public string? Category { get; set; }
+
 
     /// <summary>
     /// Description of the insights query.
@@ -25,10 +27,12 @@ internal sealed class InsightsResponseModel
     [JsonPropertyName("query_description")]
     public string? QueryDescription { get; set; }
 
+
     /// <summary>
     /// The data containing the insights.
     /// </summary>
     public object? InsightsData { get; set; }
+
 
     /// <summary>
     /// Metadata associated with the insights.

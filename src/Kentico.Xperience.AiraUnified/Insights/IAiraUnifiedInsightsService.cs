@@ -16,11 +16,13 @@ internal interface IAiraUnifiedInsightsService
     /// <returns><see cref="ContentItemModel"/></returns>
     Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null);
 
+
     /// <summary>
     /// Gets email insights.
     /// </summary>
     /// <returns><see cref="EmailCampaignModel"/></returns>
     Task<List<EmailCampaignModel>> GetEmailInsights();
+
 
     /// <summary>
     /// Gets contact groups insights.

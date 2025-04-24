@@ -10,10 +10,12 @@ internal sealed class ContactGroupModel
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
+
     /// <summary>
     /// Gets or sets the total number of contacts in the group.
     /// </summary>
     public int ContactCount { get; set; }
+
 
     /// <summary>
     /// Gets or sets the percentage ratio of contacts in this group compared to the total number of contacts.

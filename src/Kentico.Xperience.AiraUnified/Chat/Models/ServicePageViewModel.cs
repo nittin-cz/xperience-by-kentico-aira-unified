@@ -10,15 +10,18 @@ internal sealed class ServicePageViewModel
     /// </summary>
     public string ChatUnavailableIconUrl { get; set; } = string.Empty;
 
+
     /// <summary>
     /// The aira unified icon url.
     /// </summary>
     public string ChatAiraIconUrl { get; set; } = string.Empty;
 
+
     /// <summary>
     /// The message explaining that the chat service is unavailable.
     /// </summary>
     public string ChatUnavailableMainMessage { get; set; } = string.Empty;
+
 
     /// <summary>
     /// The message explaining to try again later.

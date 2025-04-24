@@ -12,34 +12,37 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 public sealed class AiraUnifiedConfigurationModel
 {
     [RequiredValidationRule]
-    [TextInputComponent(Label = "Relative Path Base", Order = 0,
-        ExplanationText = "Relative path where the Aira unified is available. " +
-        "The path is relative to the base url of your application. " +
-        "It must start with exactly one '/' and must not end with '/' . " +
-        "It can contain only letters, numbers, dashes and underscores. " +
-        "The path will prefix all other paths created by this integration.")]
+    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.RelativePathBase.ExplanationText$}", Order = 0,
+        ExplanationText = "{$AiraUnifiedConfigurationModel.RelativePathBase.Label$}")]
     public string RelativePathBase { get; set; } = string.Empty;
 
+
     [RequiredValidationRule]
-    [AssetSelectorComponent(Label = "Logo", Order = 1, ExplanationText = "Logo Image from a library.", AllowedExtensions = "jpg;jpeg;png", MaximumAssets = 1)]
+    [AssetSelectorComponent(Label = "{$AiraUnifiedConfigurationModel.Logo.Label$}", Order = 1, ExplanationText = "{$AiraUnifiedConfigurationModel.Logo.ExplanationText$}", AllowedExtensions = "jpg;jpeg;png", MaximumAssets = 1)]
     public IEnumerable<AssetRelatedItem>? Logo { get; set; }
 
+
     [RequiredValidationRule]
-    [TextInputComponent(Label = "Chat Title", Order = 2, ExplanationText = "Title of the chat.")]
+    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.ChatTitle.Label$}", Order = 2, ExplanationText = "{$AiraUnifiedConfigurationModel.ChatTitle.ExplanationText$}")]
     public string ChatTitle { get; set; } = string.Empty;
 
-    [RequiredValidationRule]
-    [TextInputComponent(Label = "Smart Upload Title", Order = 3, ExplanationText = "Title of the smart upload.")]
-    public string SmartUploadTitle { get; set; } = string.Empty;
 
     [RequiredValidationRule]
-    [DropDownComponent(Label = "Workspace", DataProviderType = typeof(WorkspaceProvider), Order = 4, ExplanationText = "The workspace used by the smart uploader.")]
+    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.SmartUploadTitle.Label$}", Order = 3, ExplanationText = "{$AiraUnifiedConfigurationModel.SmartUploadTitle.ExplanationText$}")]
+    public string SmartUploadTitle { get; set; } = string.Empty;
+
+
+    [RequiredValidationRule]
+    [DropDownComponent(Label = "{$AiraUnifiedConfigurationModel.Workspace.Label$}", DataProviderType = typeof(WorkspaceProvider), Order = 4, ExplanationText = "{$AiraUnifiedConfigurationModel.Workspace.ExplanationText$}")]
     public string Workspace { get; set; } = string.Empty;
+
 
     public AiraUnifiedConfigurationModel() { }
 
+
     public AiraUnifiedConfigurationModel(
         AiraUnifiedConfigurationItemInfo airaUnifiedConfigurationInfo) => MapFromAiraUnifiedConfigurationInfo(airaUnifiedConfigurationInfo);
+
 
     public void MapFromAiraUnifiedConfigurationInfo(AiraUnifiedConfigurationItemInfo info)
     {
@@ -59,6 +62,7 @@ public sealed class AiraUnifiedConfigurationModel
         SmartUploadTitle = info.AiraUnifiedConfigurationItemAiraSmartUploadTitle;
     }
 
+
     public AiraUnifiedConfigurationItemInfo MapToAiraUnifiedConfigurationInfo(
         AiraUnifiedConfigurationItemInfo? info = null
     )
@@ -73,6 +77,6 @@ public sealed class AiraUnifiedConfigurationModel
         return info;
     }
 
-    private static string GetImageIdentifier(IEnumerable<AssetRelatedItem>? asset) => asset?.FirstOrDefault()?.Identifier.ToString() ?? "";
 
+    private static string GetImageIdentifier(IEnumerable<AssetRelatedItem>? asset) => asset?.FirstOrDefault()?.Identifier.ToString() ?? string.Empty;
 }

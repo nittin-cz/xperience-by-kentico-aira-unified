@@ -36,9 +36,11 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     private const string CONTENT_ITEM_EMAIL_TYPE = "Email";
     private const string CONTENT_ITEM_WEBSITE_TYPE = "Website";
     private const string CONTENT_ITEM_REUSABLE_TYPE = "Reusable";
+    private const string REGULAR_EMAIL_TYPE = "Regular";
 
     private const string SCHEDULED_IDENTIFIER = "Scheduled";
     private const string DRAFT_IDENTIFIER = "Draft";
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AiraUnifiedInsightsService"/> class.
@@ -80,6 +82,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         this.emailChannelInfoProvider = emailChannelInfoProvider;
     }
 
+
     /// <inheritdoc />
     public async Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null)
     {
@@ -88,6 +91,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return content.ToList();
     }
 
+
     /// <inheritdoc />
     public async Task<List<EmailCampaignModel>> GetEmailInsights()
     {
@@ -95,19 +99,19 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 
         var regularEmails = await emailConfigurationInfoProvider
             .Get()
-            .WhereEquals(nameof(EmailConfigurationInfo.EmailConfigurationPurpose), "Regular")
+            .WhereEquals(nameof(EmailConfigurationInfo.EmailConfigurationPurpose), REGULAR_EMAIL_TYPE)
             .GetEnumerableTypedResultAsync();
 
         var emailsInsights = new List<EmailCampaignModel>();
         var emailChannels = (await emailChannelInfoProvider.Get().GetEnumerableTypedResultAsync()).ToList();
-        
+
         foreach (var email in regularEmails)
         {
             var stats = statistics.FirstOrDefault(s => s.EmailStatisticsEmailConfigurationID == email.EmailConfigurationID);
 
             var channelDefaultLanguage = emailChannels.FirstOrDefault(item =>
                 item.EmailChannelChannelID == email.EmailConfigurationEmailChannelID)?.EmailChannelPrimaryContentLanguageID ?? 1;
-            
+
             var languageMetadata = contentItemLanguageMetadataInfoProvider
                 .Get()
                 .WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentItemID), email.EmailConfigurationContentItemID)
@@ -120,7 +124,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
                 Id = email.EmailConfigurationID.ToString(),
                 LastModified = languageMetadata?.ContentItemLanguageMetadataModifiedWhen
             };
-            
+
             if (stats != null)
             {
                 emailInsight.Metrics = new EmailMetricsModel()
@@ -136,12 +140,13 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
                     HardBounces = stats.EmailStatisticsEmailHardBounces
                 };
             }
-            
+
             emailsInsights.Add(emailInsight);
         }
 
         return emailsInsights;
     }
+
 
     /// <inheritdoc />
     public ContactGroupsInsightsModel GetContactGroupInsights(string[] names)
@@ -167,6 +172,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             Groups = groups
         };
     }
+
 
     /// <summary>
     /// Gets content items based on the specified parameters.
@@ -220,6 +226,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         };
     }
 
+
     /// <summary>
     /// Gets contact groups by their names.
     /// </summary>
@@ -248,6 +255,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
+
     /// <summary>
     /// Gets a content item query builder for the specified content types.
     /// </summary>
@@ -264,6 +272,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             _ => builder.ForContentTypes(q => q.OfContentType(contentTypes)),
         };
     }
+
 
     /// <summary>
     /// Filters content items to only include scheduled items.
@@ -289,6 +298,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
+
     /// <summary>
     /// Filters content items to only include draft items.
     /// </summary>
@@ -308,6 +318,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 
         return result;
     }
+
 
     /// <summary>
     /// Filters content items to only include items in a specific workflow step.
@@ -340,6 +351,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
+
     /// <summary>
     /// Binds content query data to a content item model.
     /// </summary>
@@ -356,6 +368,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         LanguageId = container.ContentItemCommonDataContentLanguageID,
     };
 
+
     /// <summary>
     /// Gets an array of reusable content type names.
     /// </summary>
@@ -366,6 +379,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             .Select(c => c.ClassName)
             .ToArray();
 
+
     /// <summary>
     /// Gets an array of page content type names.
     /// </summary>
@@ -375,6 +389,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             .Where(nameof(DataClassInfo.ClassContentTypeType), QueryOperator.Equals, CONTENT_ITEM_WEBSITE_TYPE)
             .Select(c => c.ClassName)
             .ToArray();
+
 
     /// <summary>
     /// Gets an array of email content type names.

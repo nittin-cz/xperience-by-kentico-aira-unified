@@ -55,6 +55,7 @@ internal sealed class MockAiraUnifiedInsightsService : IAiraUnifiedInsightsServi
             }
         });
 
+
     /// <inheritdoc />
     public Task<List<EmailCampaignModel>> GetEmailInsights() =>
         Task.FromResult(new List<EmailCampaignModel>
@@ -103,6 +104,7 @@ internal sealed class MockAiraUnifiedInsightsService : IAiraUnifiedInsightsServi
                 }
             }
         });
+
 
     /// <inheritdoc />
     public ContactGroupsInsightsModel GetContactGroupInsights(string[] names) =>

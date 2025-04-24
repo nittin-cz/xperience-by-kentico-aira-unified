@@ -46,6 +46,7 @@ internal sealed class NavigationService(
         };
     }
 
+
     public Uri? BuildUriOrNull(string baseUrl, string airaPathBase, params string[] relativePathParts)
         => Uri.TryCreate($"{baseUrl}{airaPathBase}/{string.Join('/', relativePathParts)}", UriKind.Absolute, out var uri) ? uri : null;
 }

@@ -26,6 +26,20 @@ public static class AiraUnifiedServiceCollectionExtensions
     public static IServiceCollection AddKenticoAiraUnified(this IServiceCollection services, IConfiguration configuration)
         => services.AddKenticoAiraUnifiedInternal(configuration);
 
+
+    /// <summary>
+    /// Allows using the Aira Unified dynamic endpoint creation.
+    /// </summary>
+    /// <param name="endpoints"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static void UseAiraUnifiedEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        var dataSource = endpoints.ServiceProvider.GetService<AiraUnifiedEndpointDataSource>()
+            ?? throw new InvalidOperationException("Did you forget to call Services.AddKenticoAiraUnified()?");
+        endpoints.DataSources.Add(dataSource);
+    }
+
+
     private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllersWithViews();
@@ -50,17 +64,5 @@ public static class AiraUnifiedServiceCollectionExtensions
             .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
 
         return services;
-    }
-
-    /// <summary>
-    /// Allows using the Aira Unified dynamic endpoint creation.
-    /// </summary>
-    /// <param name="endpoints"></param>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static void UseAiraUnifiedEndpoints(this IEndpointRouteBuilder endpoints)
-    {
-        var dataSource = endpoints.ServiceProvider.GetService<AiraUnifiedEndpointDataSource>()
-            ?? throw new InvalidOperationException("Did you forget to call Services.AddKenticoAiraUnified()?");
-        endpoints.DataSources.Add(dataSource);
     }
 }

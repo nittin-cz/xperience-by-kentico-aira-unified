@@ -10,10 +10,12 @@ internal sealed class ContentCategoryModel
     /// </summary>
     public int DraftCount { get; set; }
 
+
     /// <summary>
     /// Gets or sets the number of content items in scheduled status.
     /// </summary>
     public int ScheduledCount { get; set; }
+
 
     /// <summary>
     /// Gets or sets the list of content items in this category.

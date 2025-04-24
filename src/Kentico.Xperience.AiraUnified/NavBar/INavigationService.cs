@@ -15,6 +15,7 @@ internal interface INavigationService
     /// <returns><see cref="NavBarViewModel"/>Navigation View Model.</returns>
     Task<NavBarViewModel> GetNavBarViewModel(string activePage, string baseUrl);
 
+
     /// <summary>
     /// Safely builds an absolute aira URI by combining a base URL with a relative path validating the uri can be created from the aira path base.
     /// </summary>

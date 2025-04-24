@@ -32,6 +32,17 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
     private readonly IEventLogService eventLogService;
     private readonly ISettingsService settingsService;
 
+    private const string AssetFieldName = "AssetFieldName";
+    private const string INHERITED = "_INHERITED_";
+    private const string ContentTypeGuid = "ContentTypeGuid";
+    private const string AllowedExtensions = "allowedExtensions";
+    private const string CMSMediaFileAllowedExtensions = "CMSMediaFileAllowedExtensions";
+    private const string AIRAUnifiedLogoImagePurpose = "AIRA Unified Logo";
+    private const string NoFileFormatConfiguredWarning = "No file format is configured for Smart Upload.";
+    private const string ConfiguredUrlEmptyWarning = "Configured URL is empty, using default";
+    private const string NoContentTypeConfiguredError = "No content type is configured for mass upload.";
+
+
     public AiraUnifiedAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
         IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
         IInfoProvider<SettingsKeyInfo> settingsKeyProvider,
@@ -51,6 +62,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         this.settingsKeyProvider = settingsKeyProvider;
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
     }
+
 
     public async Task<bool> DoesUserHaveAiraUnifiedPermission(string permission, int userId)
     {
@@ -76,25 +88,12 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return countOfRolesWithTheRightWhereUserIsContained > 0;
     }
 
-    private async Task<Dictionary<string, string>> GetMassAssetUploadConfiguration()
-    {
-        var massAssetUploadConfiguration = (await settingsKeyProvider
-           .Get()
-           .WhereEquals(nameof(SettingsKeyInfo.KeyName), AiraUnifiedConstants.MassAssetUploadConfigurationKey)
-           .GetEnumerableTypedResultAsync())
-           .First();
-
-        var contentTypeInfo = JsonSerializer.Deserialize<Dictionary<string, string>>(massAssetUploadConfiguration.KeyValue) ??
-            throw new InvalidOperationException("No content type is configured for mass upload.");
-
-        return contentTypeInfo;
-    }
 
     public async Task<string> GetAllowedFileExtensions()
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
-        var contentItemAssetColumnCodeName = massAssetConfigurationInfo["AssetFieldName"];
-        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo["ContentTypeGuid"]);
+        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[AssetFieldName];
+        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[ContentTypeGuid]);
 
         var contentType = (await DataClassInfoProvider.ProviderObject
            .Get()
@@ -105,18 +104,18 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         var contentTypeFormInfo = new FormInfo(contentType.ClassFormDefinition);
         var fields = contentTypeFormInfo.GetFormField(contentItemAssetColumnCodeName);
 
-        var allowedExtensions = fields.Settings["AllowedExtensions"];
+        var allowedExtensions = fields.Settings[AllowedExtensions];
 
         if (allowedExtensions is not string)
         {
-            eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), "No file format is configured for Smart Upload.");
+            eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), NoFileFormatConfiguredWarning);
 
             return string.Empty;
         }
 
         var settings = (string)allowedExtensions;
 
-        if (string.Equals(settings, "_INHERITED_"))
+        if (string.Equals(settings, INHERITED))
         {
             return GetGlobalAllowedFileExtensions();
         }
@@ -124,11 +123,12 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return settings;
     }
 
+
     public async Task<bool> HandleFileUpload(IFormFileCollection files, int userId)
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
 
-        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo["ContentTypeGuid"]);
+        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[ContentTypeGuid]);
 
         var contentType = (await DataClassInfoProvider.ProviderObject
             .Get()
@@ -143,7 +143,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
             .First()
             .ContentLanguageName;
 
-        var contentItemAssetColumnCodeName = massAssetConfigurationInfo["AssetFieldName"];
+        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[AssetFieldName];
 
         var workspaceName = (await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration()).AiraUnifiedConfigurationWorkspaceName;
 
@@ -161,6 +161,79 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
         return true;
     }
+
+
+    public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
+    {
+        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
+
+        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRAUnifiedLogoImagePurpose).TrimStart('~');
+    }
+
+
+    public async Task<string> GetSanitizedLogoUrl()
+    {
+        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
+
+        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
+
+        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRAUnifiedLogoImagePurpose).TrimStart('~');
+    }
+
+
+    public IMediaFileUrl? GetMediaFileUrl(string identifier)
+    {
+        if (!Guid.TryParse(identifier, out var identifierGuid))
+        {
+            return null;
+        }
+
+        var mediaLibraryFiles = mediaFileInfoProvider
+            .Get()
+            .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
+
+        if (!mediaLibraryFiles.Any())
+        {
+            return null;
+        }
+
+        var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
+
+        return media;
+    }
+
+
+    public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
+    {
+        if (!string.IsNullOrEmpty(configuredUrl))
+        {
+            return configuredUrl;
+        }
+
+        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, ConfiguredUrlEmptyWarning);
+        return defaultUrl;
+    }
+
+
+    public string GetGlobalAllowedFileExtensions() => settingsService[CMSMediaFileAllowedExtensions];
+
+
+    private async Task<Dictionary<string, string>> GetMassAssetUploadConfiguration()
+    {
+        var massAssetUploadConfiguration = (await settingsKeyProvider
+           .Get()
+           .WhereEquals(nameof(SettingsKeyInfo.KeyName), AiraUnifiedConstants.MassAssetUploadConfigurationKey)
+           .GetEnumerableTypedResultAsync())
+           .First();
+
+        var contentTypeInfo = JsonSerializer.Deserialize<Dictionary<string, string>>(massAssetUploadConfiguration.KeyValue) ??
+            throw new InvalidOperationException(NoContentTypeConfiguredError);
+
+        return contentTypeInfo;
+    }
+
 
     private async Task<bool> IsFileExtensionAllowed(string fileExtension)
     {
@@ -182,6 +255,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         allowedExtensions = string.Format(";{0};", allowedExtensions);
         return allowedExtensions.Contains(string.Format(";{0};", fileExtension)) || allowedExtensions.Contains(";." + fileExtension + ";");
     }
+
 
     private async Task<bool> CreateContentAssetItem(CreateContentItemParameters createContentItemParameters, IFormFile file, int userId, string contentItemAssetColumnCodeName)
     {
@@ -228,56 +302,4 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
         return true;
     }
-
-    public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
-    {
-        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
-
-        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA unified Logo").TrimStart('~');
-    }
-
-    public async Task<string> GetSanitizedLogoUrl()
-    {
-        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
-
-        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
-
-        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA unified Logo").TrimStart('~');
-    }
-
-    public IMediaFileUrl? GetMediaFileUrl(string identifier)
-    {
-        if (!Guid.TryParse(identifier, out var identifierGuid))
-        {
-            return null;
-        }
-
-        var mediaLibraryFiles = mediaFileInfoProvider
-            .Get()
-            .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
-
-        if (!mediaLibraryFiles.Any())
-        {
-            return null;
-        }
-
-        var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
-
-        return media;
-    }
-
-    public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
-    {
-        if (!string.IsNullOrEmpty(configuredUrl))
-        {
-            return configuredUrl;
-        }
-
-        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, "Configured URL is empty, using default");
-        return defaultUrl;
-    }
-
-    public string GetGlobalAllowedFileExtensions() => settingsService["CMSMediaFileAllowedExtensions"];
 }

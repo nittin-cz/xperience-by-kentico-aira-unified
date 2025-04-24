@@ -10,12 +10,15 @@ internal sealed class AiraUnifiedChatThreadModel
     /// </summary>
     public string ThreadName { get; set; } = string.Empty;
 
+
     /// <summary>
     /// The id of the thread.
     /// </summary>
     public int ThreadId { get; set; }
 
+
     public DateTime? LastUsed { get; set; }
+
 
     public string LastMessage { get; set; } = string.Empty;
 }

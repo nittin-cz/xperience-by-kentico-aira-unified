@@ -33,6 +33,7 @@ internal sealed class AiraUnifiedController(
 {
     private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
 
+
     /// <summary>
     /// Endpoint exposing access to the Chat page.
     /// <param name="chatThreadId">The chat thread id.</param>
@@ -88,6 +89,7 @@ internal sealed class AiraUnifiedController(
         return View("~/Chat/Chat.cshtml", chatModel);
     }
 
+
     [HttpGet]
     public async Task<IActionResult> GetChatThreads()
     {
@@ -100,6 +102,7 @@ internal sealed class AiraUnifiedController(
             ChatThreads = chatThreads
         });
     }
+
 
     [HttpGet]
     public async Task<IActionResult> ChatThreadSelector()
@@ -135,6 +138,7 @@ internal sealed class AiraUnifiedController(
         return View("~/Chat/ChatThreadSelector.cshtml", model);
     }
 
+
     /// <summary>
     /// Creates new chat thread and redirects to the newly created chat thread.
     /// </summary>
@@ -157,6 +161,7 @@ internal sealed class AiraUnifiedController(
 
         return Redirect(chatRedirectUrl.ToString());
     }
+
 
     /// <summary>
     /// Retrieves the navigation view model.
@@ -183,6 +188,7 @@ internal sealed class AiraUnifiedController(
 
         return Ok(model);
     }
+
 
     /// <summary>
     /// Endpoint exposing the user's chat history.
@@ -241,6 +247,7 @@ internal sealed class AiraUnifiedController(
 
         return Ok(history);
     }
+
 
     /// <summary>
     /// Endpoint allowing chat communication via the chat interface.
@@ -330,6 +337,7 @@ internal sealed class AiraUnifiedController(
         return Ok(result);
     }
 
+
     /// <summary>
     /// Endpoint allowing removal of a used suggested prompt group.
     /// </summary>
@@ -341,6 +349,7 @@ internal sealed class AiraUnifiedController(
 
         return Ok();
     }
+
 
     /// <summary>
     /// Endpoint allowing upload of the files via smart upload.
@@ -361,6 +370,7 @@ internal sealed class AiraUnifiedController(
 
         return BadRequest("Attempted to upload file with forbidden format.");
     }
+
 
     /// <summary>
     /// Endpoint allowing accessing the smart upload page.
@@ -398,6 +408,7 @@ internal sealed class AiraUnifiedController(
         return View("~/AssetUploader/Assets.cshtml", model);
     }
 
+
     /// <summary>
     /// Endpoint retrieving the allowed smart upload file extensions.
     /// </summary>
@@ -408,6 +419,7 @@ internal sealed class AiraUnifiedController(
 
         return Ok(allowedExtensions);
     }
+
 
     /// <summary>
     /// Endpoint retrieving the SignIn page.
@@ -451,7 +463,9 @@ internal sealed class AiraUnifiedController(
         return View("~/Authentication/SignIn.cshtml", model);
     }
 
+
     private sealed record ConfigurationModel(string BaseUrl, string AiraUnifiedPathBase);
+
 
     private async Task<ConfigurationModel> GetConfiguration()
     {

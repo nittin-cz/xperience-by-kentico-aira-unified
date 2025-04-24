@@ -10,6 +10,7 @@ internal sealed class EmailInsightsDataModel
     /// </summary>
     public EmailSummaryModel Summary { get; set; } = new();
 
+
     /// <summary>
     /// Gets or sets the list of email campaigns with their individual metrics and details.
     /// </summary>

@@ -17,6 +17,7 @@ internal interface IAiraUnifiedAssetService
     /// <param name="userId">The admin application user id.</param>
     Task<bool> HandleFileUpload(IFormFileCollection files, int userId);
 
+
     /// <summary>
     /// Checks whether the specified user has a role which contains the specified permission to the Aira unified. 
     /// </summary>
@@ -25,11 +26,13 @@ internal interface IAiraUnifiedAssetService
     /// <returns>A Task indicating whether the user has the specified permission.</returns>
     Task<bool> DoesUserHaveAiraUnifiedPermission(string permission, int userId);
 
+
     /// <summary>
     /// Retrieves the file extensions which are configured for mass asset upload.
     /// </summary>
     /// <returns>Allowed file extensions.</returns>
     Task<string> GetAllowedFileExtensions();
+
 
     /// <summary>
     /// Retrieves url for a file displayed in the PWA.
@@ -37,6 +40,7 @@ internal interface IAiraUnifiedAssetService
     /// <param name="identifier">Identifier of the file.</param>
     /// <returns><see cref="IMediaFileUrl"/>The file reference.</returns>
     IMediaFileUrl? GetMediaFileUrl(string identifier);
+
 
     /// <summary>
     /// Retrieves url of an image with configured url or logs warning if it doesn't exist.
@@ -46,11 +50,13 @@ internal interface IAiraUnifiedAssetService
     /// <param name="imagePurpose"></param>
     string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose);
 
+
     /// <summary>
     /// Retrieves url of the aira unified logo specified in the configuration.
     /// </summary>
     /// <param name="configuration"></param>
     string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration);
+
 
     /// <summary>
     /// Retrieves url of the aira unified logo specified in the configuration.
