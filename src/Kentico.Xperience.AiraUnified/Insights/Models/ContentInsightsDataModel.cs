@@ -10,10 +10,12 @@ internal sealed class ContentInsightsDataModel
     /// </summary>
     public ContentSummaryModel Summary { get; set; } = new();
 
+
     /// <summary>
     /// Gets or sets the website content category with its statistics and items.
     /// </summary>
     public ContentCategoryModel WebsiteContent { get; set; } = new();
+
 
     /// <summary>
     /// Gets or sets the reusable content category with its statistics and items.

@@ -10,6 +10,7 @@ internal sealed class AiraUnifiedChatMessageModel
     /// </summary>
     public string Role { get; set; } = string.Empty;
 
+
     /// <summary>
     /// Gets or sets the content of the chat message.
     /// </summary>

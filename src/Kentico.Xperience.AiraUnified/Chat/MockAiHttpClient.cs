@@ -1,5 +1,4 @@
 using Kentico.Xperience.AiraUnified.Chat.Models;
-using Kentico.Xperience.AiraUnified.Insights;
 using Kentico.Xperience.AiraUnified.Insights.Models;
 
 using static Kentico.Xperience.AiraUnified.Chat.Models.ChatStateType;
@@ -26,6 +25,7 @@ internal sealed class MockAiHttpClient : IAiHttpClient
         };
     }
 
+
     private static Task<AiraUnifiedAIResponse?> GetInitialMessageResponse() => Task.FromResult<AiraUnifiedAIResponse?>(new AiraUnifiedAIResponse
     {
         Responses =
@@ -40,6 +40,7 @@ internal sealed class MockAiHttpClient : IAiHttpClient
         ]
     });
 
+
     private static Task<AiraUnifiedAIResponse?> GetReturningMessageResponse() => Task.FromResult<AiraUnifiedAIResponse?>(new AiraUnifiedAIResponse
     {
         Responses =
@@ -53,6 +54,7 @@ internal sealed class MockAiHttpClient : IAiHttpClient
             "Show me my content"
         ]
     });
+
 
     private static Task<AiraUnifiedAIResponse?> GetOngoingMessageResponse(AiraUnifiedAIRequest request)
     {
@@ -78,6 +80,7 @@ internal sealed class MockAiHttpClient : IAiHttpClient
             } : new InsightsResponseModel { IsInsightsQuery = false }
         });
     }
+
 
     private static string? GetInsightsCategory(string message)
     {

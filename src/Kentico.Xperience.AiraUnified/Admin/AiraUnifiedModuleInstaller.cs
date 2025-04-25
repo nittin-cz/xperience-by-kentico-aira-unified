@@ -17,6 +17,7 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
 {
     private readonly IInfoProvider<ResourceInfo> resourceInfoProvider;
 
+
     /// <summary>
     /// Initializes a new instance of the AiraUnifiedModuleInstaller class.
     /// </summary>
@@ -24,12 +25,14 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
     public AiraUnifiedModuleInstaller(IInfoProvider<ResourceInfo> resourceInfoProvider)
         => this.resourceInfoProvider = resourceInfoProvider;
 
+
     /// <inheritdoc />
     public void Install()
     {
         var resourceInfo = InstallModule();
         InstallModuleClasses(resourceInfo);
     }
+
 
     private ResourceInfo InstallModule()
     {
@@ -47,6 +50,7 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
 
         return resourceInfo;
     }
+
 
     private static void InstallModuleClasses(ResourceInfo resourceInfo)
     {
@@ -186,6 +190,7 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
         );
     }
 
+
     private static void InstallAiraUnifiedClass(ResourceInfo resourceInfo,
         string objectClassName,
         string objectType,
@@ -206,6 +211,7 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
         SetFormDefinition(info, infoType, idPropertyName, dependencies);
     }
 
+
     private sealed class FormFieldModel
     {
         public ObjectDependencyEnum ReferenceType { get; set; }
@@ -213,6 +219,7 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
         public string? ReferenceToObjectType { get; set; }
         public string? FormFieldType { get; set; }
     }
+
 
     private static void SetFormDefinition(DataClassInfo info, Type infoType, string idPropertyName, List<FormFieldModel>? dependencies = null)
     {
@@ -236,6 +243,7 @@ internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
             DataClassInfoProvider.SetDataClassInfo(info);
         }
     }
+
 
     private static FormInfo AddFormItems(FormInfo formInfo, Type infoType, string idPropertyName, List<FormFieldModel>? formFieldModels = null)
     {

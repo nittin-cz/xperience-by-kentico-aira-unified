@@ -20,12 +20,14 @@ internal sealed class AiraUnifiedModule : Module
     private IAiraUnifiedModuleInstaller installer = null!;
     private AiraUnifiedEndpointDataSource endpointDataSource = null!;
 
+
     /// <summary>
     /// Initializes a new instance of the AiraUnifiedModule class.
     /// </summary>
     public AiraUnifiedModule() : base(nameof(AiraUnifiedModule))
     {
     }
+
 
     /// <inheritdoc />
     protected override void OnInit(ModuleInitParameters parameters)
@@ -39,6 +41,7 @@ internal sealed class AiraUnifiedModule : Module
 
         ApplicationEvents.Initialized.Execute += InitializeModule;
     }
+
 
     private void InitializeModule(object? sender, EventArgs e)
     {

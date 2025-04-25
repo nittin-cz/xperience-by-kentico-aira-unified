@@ -10,6 +10,7 @@ internal sealed class AiraUnifiedPromptGroupModel
     /// </summary>
     public int QuickPromptsGroupId { get; set; }
 
+
     /// <summary>
     /// Gets or sets the collection of suggested prompt texts.
     /// </summary>

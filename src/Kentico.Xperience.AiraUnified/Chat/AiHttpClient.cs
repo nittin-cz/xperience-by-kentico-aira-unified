@@ -15,6 +15,7 @@ internal sealed class AiHttpClient(IHttpClientFactory httpClientFactory, IOption
 {
     private readonly AiraUnifiedOptions airaUnifiedOptions = airaUnifiedOptions.Value;
 
+
     /// <inheritdoc />
     public async Task<AiraUnifiedAIResponse?> SendRequestAsync(AiraUnifiedAIRequest request)
     {

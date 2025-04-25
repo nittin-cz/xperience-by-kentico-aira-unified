@@ -1,7 +1,7 @@
 ﻿namespace Kentico.Xperience.AiraUnified.Admin;
 
 /// <summary>
-/// Installs Aira unified data classes(Info objects) to Database.
+/// Installs Aira Unified data classes(Info objects) to Database.
 /// </summary>
 internal interface IAiraUnifiedModuleInstaller
 {

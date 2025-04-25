@@ -20,6 +20,7 @@ internal static class HttpRequestExtensions
         return !string.IsNullOrWhiteSpace(pathBase) ? $"{baseUrl}{pathBase}" : baseUrl;
     }
 
+
     /// <summary>
     /// Gets the URL with the schema of the request.
     /// </summary>

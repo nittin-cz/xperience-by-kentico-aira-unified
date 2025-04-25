@@ -25,6 +25,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     private readonly IAiraUnifiedInsightsService airaUnifiedInsightsService;
     private readonly IAiHttpClient aiHttpClient;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AiraUnifiedChatService"/> class.
     /// </summary>
@@ -54,6 +55,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         this.airaUnifiedChatSummaryProvider = airaUnifiedChatSummaryProvider;
         this.aiHttpClient = aiHttpClient;
     }
+
 
     /// <inheritdoc />
     public async Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId)
@@ -105,6 +107,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         .OrderBy(x => x.CreatedWhen)
         .ToList();
     }
+
 
     /// <inheritdoc />
     public async Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, bool setAsLastUsed, int? threadId = null)
@@ -160,6 +163,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+
     /// <inheritdoc />
     public async Task<AiraUnifiedChatThreadInfo?> GetAiraUnifiedThreadInfoOrNull(int userId, int threadId)
     => (await airaUnifiedChatThreadProvider
@@ -208,6 +212,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     }))
     .ToList();
 
+
     /// <inheritdoc />
     public async Task<AiraUnifiedChatMessageInfo> SaveMessage(string text, int userId, ChatRoleType role, AiraUnifiedChatThreadInfo thread)
     {
@@ -228,6 +233,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         return message;
     }
 
+
     /// <inheritdoc />
     public async Task<bool> ValidateUserThread(int userId, int threadId)
     {
@@ -240,6 +246,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         return thread is not null && thread.AiraUnifiedChatThreadUserId == userId;
     }
+
 
     /// <inheritdoc />
     public async Task<AiraUnifiedAIResponse?> GetAIResponseOrNull(string message, int numberOfIncludedHistoryMessages, int userId)
@@ -283,6 +290,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         return aiResponse;
     }
 
+
     /// <inheritdoc />
     public async Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState)
     {
@@ -299,6 +307,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         return await aiHttpClient.SendRequestAsync(request);
     }
+
 
     /// <inheritdoc />
     public async Task<AiraUnifiedPromptGroupModel> SaveAiraPrompts(int userId, List<string> suggestions, int threadId)
@@ -334,6 +343,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+
     /// <inheritdoc />
     public async Task UpdateChatSummary(int userId, string summary)
     {
@@ -351,6 +361,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         await airaUnifiedChatSummaryProvider.SetAsync(summaryInfo);
     }
+
 
     /// <inheritdoc />
     public async Task<AiraUnifiedChatThreadModel> CreateNewChatThread(int userId)
@@ -376,6 +387,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+
     /// <inheritdoc />
     public void RemoveUsedPrompts(string promptGroupId)
     {
@@ -385,6 +397,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             airaUnifiedChatPromptProvider.BulkDelete(new WhereCondition($"{nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptChatPromptGroupId)} = {id}"));
         }
     }
+
 
     /// <summary>
     /// Adds insights data to the AI response based on the category.
@@ -409,6 +422,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 case "marketing":
                     aiResponse.Insights.InsightsData = await GetMarketingInsights();
                     break;
+                default:
+                    break;
             }
 
             if (aiResponse.Insights.InsightsData != null)
@@ -420,6 +435,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             }
         }
     }
+
 
     /// <summary>
     /// Gets marketing insights data.
@@ -452,6 +468,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+
     /// <summary>
     /// Gets email insights data.
     /// </summary>
@@ -470,6 +487,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+
     /// <summary>
     /// Gets content insights data for a specific user.
     /// </summary>
@@ -487,9 +505,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             Summary = new ContentSummaryModel()
             {
                 DraftCount = reusableDraftContentInsights.Count + websiteDraftContentInsights.Count,
-                ScheduledCount = reusableScheduledContentInsights.Count + websiteScheduledContentInsights.Count,
-                // PublishedCount = 43,
-                // TotalCount = 123
+                ScheduledCount = reusableScheduledContentInsights.Count + websiteScheduledContentInsights.Count
             },
             ReusableContent = new ContentCategoryModel()
             {
@@ -506,13 +522,14 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
     }
 
+
     /// <summary>
     /// Gets the chat role string based on the message info.
     /// </summary>
-    /// <param name="x">The chat message info.</param>
+    /// <param name="chatMessage">The chat message info.</param>
     /// <returns>The role string.</returns>
-    private static string GetChatRole(AiraUnifiedChatMessageInfo x) =>
-        (ChatRoleType)x.AiraUnifiedChatMessageRole switch
+    private static string GetChatRole(AiraUnifiedChatMessageInfo chatMessage) =>
+        (ChatRoleType)chatMessage.AiraUnifiedChatMessageRole switch
         {
             ChatRoleType.AI => AiraUnifiedConstants.AIRequestAssistantRoleName,
             ChatRoleType.User => AiraUnifiedConstants.AIRequestUserRoleName,

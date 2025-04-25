@@ -13,6 +13,9 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
+/// <summary>
+/// Data container class for <see cref="AiraUnifiedChatSummaryInfo"/>.
+/// </summary>
 internal class AiraUnifiedChatSummaryInfo : AbstractInfo<AiraUnifiedChatSummaryInfo, IInfoProvider<AiraUnifiedChatSummaryInfo>>
 {
     /// <summary>

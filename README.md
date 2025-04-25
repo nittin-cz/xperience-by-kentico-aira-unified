@@ -18,13 +18,14 @@ Aira Unified integration provides an alternative administration UI and chatbot t
 
 | Xperience Version |    Library Version   |
 | ----------------- | -------------------- |
-| >= 30.2.0         | >= 0.2.0-prerelase-2 |
+| >= 30.2.0         | >= 0.3.0-prerelease-3 |
 | >= 30.0.0         | >= 0.1.0-prerelase-1 |
 
 ## Dependencies
 
 - [ASP.NET Core 8.0](https://dotnet.microsoft.com/en-us/download)
 - [Xperience by Kentico](https://docs.xperience.io/xp/changelog)
+- [Node.js](https://nodejs.org/en/download) 20.10.0 or newer (for development)
 
 ## Full Instructions
 
@@ -42,13 +43,27 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 ### Quick Start
 
-1. Add the Aira Unified API subscription key to your `appsettings.json`.:
+1. Add the Aira Unified configuration to your `appsettings.json`. The minimal required configuration is:
 
 ```json
 "AiraUnifiedOptions": {
   "AiraUnifiedApiSubscriptionKey": "<your Aira Unified API key>"
 }
 ```
+
+For development and testing purposes, you can override default settings:
+
+```json
+"AiraUnifiedOptions": {
+  "AiraUnifiedApiSubscriptionKey": "<your Aira Unified API key>",
+  "AiraUnifiedAIEndpoint": "https://your-custom-endpoint.com/api",
+  "AiraUnifiedUseMockClient": true,
+  "AiraUnifiedUseMockInsights": true
+}
+```
+
+For detailed configuration options, see [Configuration Options](docs/configuration-options.md).
+
 2. Configure your project for [HTTPS](https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl).
 
 3. Include the `Kentico.Xperience.AiraUnified` package in your project:
@@ -98,13 +113,15 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 8. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
 
-View the [Usage Guide](docs/Usage-Guide.md) for more instructions.
+For usage instructions, see [Usage Guide](docs/Usage-Guide.md).
+
+For upgrade instructions, see [Upgrades](docs/Upgrades.md).
 
 ## Contributing
 
 To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
-Find project-specific contribution details.
+Instructions and technical details for contributing to **this** project can be found in [Contributing Setup](./docs/Contributing-Setup.md).
 
 ## License
 

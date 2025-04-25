@@ -12,10 +12,11 @@ public interface IAiraUnifiedConfigurationService
     /// </summary>
     Task<AiraUnifiedConfigurationItemInfo> GetAiraUnifiedConfiguration();
 
+
     /// <summary>
     /// Tries to save or update the Aira Unified configuration.
     /// </summary>
     /// <param name="configurationModel">The configuration model to save or update.</param>
     /// <returns>True if the configuration was saved or updated successfully, false otherwise.</returns>
-    Task<bool> TrySaveOrUpdateConfiguration(AiraUnifiedConfigurationModel configurationModel); 
+    Task<bool> TrySaveOrUpdateConfiguration(AiraUnifiedConfigurationModel configurationModel);
 }

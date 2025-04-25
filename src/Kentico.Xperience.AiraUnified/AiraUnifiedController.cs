@@ -33,10 +33,12 @@ internal sealed class AiraUnifiedController(
 {
     private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
 
+
     /// <summary>
     /// Endpoint exposing access to the Chat page.
-    /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
+    /// <param name="chatThreadId">The chat thread id. If not specified, a new thread will be created.</param>
+    /// <returns>A view containing the chat interface.</returns>
     [HttpGet]
     public async Task<IActionResult> Index(int? chatThreadId = null)
     {
@@ -88,6 +90,11 @@ internal sealed class AiraUnifiedController(
         return View("~/Chat/Chat.cshtml", chatModel);
     }
 
+
+    /// <summary>
+    /// Retrieves all chat threads for the current user.
+    /// </summary>
+    /// <returns>A list of chat threads wrapped in <see cref="AiraUnifiedChatThreadsViewModel"/>.</returns>
     [HttpGet]
     public async Task<IActionResult> GetChatThreads()
     {
@@ -101,6 +108,11 @@ internal sealed class AiraUnifiedController(
         });
     }
 
+
+    /// <summary>
+    /// Retrieves the chat thread selector view with navigation and thread management URLs.
+    /// </summary>
+    /// <returns>A view containing the chat thread selector interface.</returns>
     [HttpGet]
     public async Task<IActionResult> ChatThreadSelector()
     {
@@ -135,9 +147,11 @@ internal sealed class AiraUnifiedController(
         return View("~/Chat/ChatThreadSelector.cshtml", model);
     }
 
+
     /// <summary>
-    /// Creates new chat thread and redirects to the newly created chat thread.
+    /// Creates a new chat thread and redirects to the chat interface.
     /// </summary>
+    /// <returns>A redirect to the chat interface with the newly created thread.</returns>
     [HttpGet]
     public async Task<IActionResult> NewChatThread()
     {
@@ -158,9 +172,12 @@ internal sealed class AiraUnifiedController(
         return Redirect(chatRedirectUrl.ToString());
     }
 
+
     /// <summary>
     /// Retrieves the navigation view model.
     /// </summary>
+    /// <param name="request">The <see cref="NavBarRequestModel"/> containing the page identifier.</param>
+    /// <returns>A <see cref="NavBarViewModel"/> containing the navigation view model.</returns>
     [HttpPost]
     public async Task<IActionResult> Navigation([FromBody] NavBarRequestModel request)
     {
@@ -184,10 +201,12 @@ internal sealed class AiraUnifiedController(
         return Ok(model);
     }
 
+
     /// <summary>
     /// Endpoint exposing the user's chat history.
-    /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
+    /// <param name="chatThreadId">The chat thread id to retrieve history for.</param>
+    /// <returns>A list of chat messages wrapped in <see cref="AiraUnifiedChatMessageViewModel"/>. If no history exists, initial AI messages will be added.</returns>
     [HttpGet]
     public async Task<IActionResult> GetOrCreateChatHistory(int chatThreadId)
     {
@@ -216,15 +235,17 @@ internal sealed class AiraUnifiedController(
 
         var thread = await airaUnifiedChatService.GetAiraUnifiedThreadInfoOrNull(user.UserID, chatThreadId);
 
-        foreach (var message in initialMessages.Responses)
+        var messages = initialMessages.Responses.Select(message => new AiraUnifiedChatMessageViewModel
         {
-            history.Add(new AiraUnifiedChatMessageViewModel
-            {
-                Message = message.Content,
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
-            });
+            Message = message.Content,
+            Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
+        });
 
-            if (thread is not null)
+        history.AddRange(messages);
+
+        if (thread is not null)
+        {
+            foreach (var message in initialMessages.Responses)
             {
                 await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AI, thread);
             }
@@ -242,11 +263,13 @@ internal sealed class AiraUnifiedController(
         return Ok(history);
     }
 
+
     /// <summary>
     /// Endpoint allowing chat communication via the chat interface.
-    /// <param name = "chatThreadId" > The chat thread id.</param>
     /// </summary>
-    /// <param name="request">The <see cref="IFormCollection"/> including the chat message.</param>
+    /// <param name="request">The <see cref="IFormCollection"/> containing the chat message.</param>
+    /// <param name="chatThreadId">The chat thread id to post the message to.</param>
+    /// <returns>A chat message response wrapped in <see cref="AiraUnifiedChatMessageViewModel"/>. If the service is unavailable, an error message will be returned.</returns>
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request, int chatThreadId)
     {
@@ -330,10 +353,12 @@ internal sealed class AiraUnifiedController(
         return Ok(result);
     }
 
+
     /// <summary>
     /// Endpoint allowing removal of a used suggested prompt group.
     /// </summary>
     /// <param name="model">The <see cref="AiraUnifiedUsedPromptGroupModel"/> with the information about the prompt group.</param>
+    /// <returns>An empty response.</returns>
     [HttpPost]
     public IActionResult RemoveUsedPromptGroup([FromBody] AiraUnifiedUsedPromptGroupModel model)
     {
@@ -342,10 +367,12 @@ internal sealed class AiraUnifiedController(
         return Ok();
     }
 
+
     /// <summary>
-    /// Endpoint allowing upload of the files via smart upload.
+    /// Endpoint allowing upload of files via smart upload.
     /// </summary>
-    /// <param name="request">The <see cref="IFormCollection"/> request containing the uploaded files.</param>
+    /// <param name="request">The <see cref="IFormCollection"/> containing the uploaded files.</param>
+    /// <returns>An empty response on success, or a BadRequest response if the file format is not allowed.</returns>
     [HttpPost]
     public async Task<IActionResult> PostImages(IFormCollection request)
     {
@@ -362,9 +389,11 @@ internal sealed class AiraUnifiedController(
         return BadRequest("Attempted to upload file with forbidden format.");
     }
 
+
     /// <summary>
     /// Endpoint allowing accessing the smart upload page.
     /// </summary>
+    /// <returns>A view containing the smart upload interface.</returns>
     [HttpGet]
     public async Task<IActionResult> Assets()
     {
@@ -398,9 +427,11 @@ internal sealed class AiraUnifiedController(
         return View("~/AssetUploader/Assets.cshtml", model);
     }
 
+
     /// <summary>
     /// Endpoint retrieving the allowed smart upload file extensions.
     /// </summary>
+    /// <returns>A list of allowed file extensions.</returns>
     [HttpGet]
     public async Task<IActionResult> GetAllowedFileExtensions()
     {
@@ -409,9 +440,11 @@ internal sealed class AiraUnifiedController(
         return Ok(allowedExtensions);
     }
 
+
     /// <summary>
     /// Endpoint retrieving the SignIn page.
     /// </summary>
+    /// <returns>A view containing the SignIn page.</returns>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> SignIn()
@@ -451,7 +484,9 @@ internal sealed class AiraUnifiedController(
         return View("~/Authentication/SignIn.cshtml", model);
     }
 
+
     private sealed record ConfigurationModel(string BaseUrl, string AiraUnifiedPathBase);
+
 
     private async Task<ConfigurationModel> GetConfiguration()
     {

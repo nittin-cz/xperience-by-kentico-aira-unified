@@ -13,11 +13,13 @@ internal sealed class AiraUnifiedAIRequest
     [JsonPropertyName("conversation_history")]
     public List<AiraUnifiedChatMessageModel> ConversationHistory { get; set; } = [];
 
+
     /// <summary>
     /// Gets or sets the current chat message being sent to the AI service.
     /// </summary>
     [JsonPropertyName("chat_message")]
     public string ChatMessage { get; set; } = string.Empty;
+
 
     /// <summary>
     /// Gets or sets the current state of the chat session.
