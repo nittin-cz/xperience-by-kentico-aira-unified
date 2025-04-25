@@ -68,13 +68,18 @@ This will recompile the JavaScript and CSS, and update the files in the wwwroot 
 
 ## Development Workflow
 
-1. Create a new branch with one of the following prefixes
+1. **Branch Creation**
+   - Create a new branch with one of the following prefixes:
+     - `feat/` - for new functionality
+     - `refactor/` - for restructuring of existing features
+     - `fix/` - for bugfixes
+     - `docs/` - for documentation changes
+     - `test/` - for test-related changes
 
-   - `feat/` - for new functionality
-   - `refactor/` - for restructuring of existing features
-   - `fix/` - for bugfixes
-
-1. Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution
+2. **Code Formatting**
+   - Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution
+   - Use `dotnet: format` VS Code task
+   - Ensure consistent code style across the project
 
    > use `dotnet: format` VS Code task.
 

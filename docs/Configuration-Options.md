@@ -1,48 +1,20 @@
-# Configuration Options for Local Development
+# Configuration Options
 
-This document provides detailed information about the configuration options available in the `AiraUnifiedOptions` class, with a focus on settings that help developers run and test the code locally.
+This document provides detailed information about the configuration options available in the `AiraUnifiedOptions` class.
 
 ## Overview
 
-The `AiraUnifiedOptions` class contains several configuration properties that can be set in your `appsettings.json` file. These options allow you to customize the behavior of the Aira Unified integration, particularly for local development and testing scenarios.
+The `AiraUnifiedOptions` class contains several configuration properties that can be set in your `appsettings.json` file. These options allow you to customize the behavior of the Aira Unified integration.
 
-## Mock Client Options
+## Core Configuration Options
 
-### AiraUnifiedUseMockClient
-
-```json
-"AiraUnifiedUseMockClient": true
-```
-
-When set to `true`, this option enables a mock implementation of the AI client that returns predefined responses instead of making actual HTTP requests to the AI service.
-
-**Benefits:**
-- Develop locally without requiring a valid API key
-- Test functionality without consuming API quota
-- Work offline without internet connectivity
-- Avoid rate limiting issues during development
-
-**Use case:**
-This is particularly useful when you're developing features that interact with the AI service but don't need to make actual API calls during development.
-
-### AiraUnifiedUseMockInsights
+### AiraUnifiedApiSubscriptionKey
 
 ```json
-"AiraUnifiedUseMockInsights": true
+"AiraUnifiedApiSubscriptionKey": "your-api-key-here"
 ```
 
-When enabled, this option uses a mock implementation of the insights service that simulates analytics and reporting functionality without sending data to the actual service.
-
-**Benefits:**
-- Test insights-related features without affecting production data
-- Debug analytics functionality in isolation
-- Avoid unnecessary data collection during development
-- Develop without requiring access to the insights service
-
-**Use case:**
-Use this when you're working on features that interact with the insights service but don't need to send actual analytics data during development.
-
-## Custom Endpoint Configuration
+Required API key for authenticating with the Aira Unified service.
 
 ### AiraUnifiedAIEndpoint
 
@@ -50,20 +22,55 @@ Use this when you're working on features that interact with the insights service
 "AiraUnifiedAIEndpoint": "https://your-custom-endpoint.com/api"
 ```
 
-This property allows you to override the default AI service endpoint for development or testing purposes.
+Optional custom endpoint for the AI service. If not specified, the default endpoint from `AiraUnifiedConstants` will be used.
+
+## Development Options
+
+### AiraUnifiedUseMockClient
+
+```json
+"AiraUnifiedUseMockClient": true
+```
+
+When set to `true`, enables a mock implementation of the AI client that returns predefined responses.
 
 **Benefits:**
-- Point to a local instance of the AI service
-- Connect to a test environment instead of production
-- Use a different API version for testing
-- Route requests through a proxy for debugging
+- Develop locally without requiring a valid API key
+- Test functionality without consuming API quota
+- Work offline without internet connectivity
+- Avoid rate limiting issues during development
 
-**Use case:**
-Use this when you need to connect to a specific AI service endpoint that differs from the default one defined in `AiraUnifiedConstants`.
+### AiraUnifiedUseMockInsights
 
-## Complete Configuration Example
+```json
+"AiraUnifiedUseMockInsights": true
+```
 
-Here's an example of how you might configure these options in your `appsettings.json` file for local development:
+When enabled, uses a mock implementation of the insights service.
+
+**Benefits:**
+- Test insights-related features without affecting production data
+- Debug analytics functionality in isolation
+- Avoid unnecessary data collection during development
+
+## Security Options
+
+## Complete Configuration Examples
+
+### Development Configuration
+
+```json
+{
+  "AiraUnifiedOptions": {
+    "AiraUnifiedApiSubscriptionKey": "dev-key-here",
+    "AiraUnifiedAIEndpoint": "https://dev-endpoint.com/api",
+    "AiraUnifiedUseMockClient": true,
+    "AiraUnifiedUseMockInsights": true
+  }
+}
+```
+
+### Production Configuration
 
 ```json
 {
@@ -95,9 +102,14 @@ Here's an example of how you might configure these options in your `appsettings.
 
 ## Troubleshooting
 
-If you encounter issues with these configuration options:
+If you encounter issues with configuration:
 
-1. Verify that your `appsettings.json` file is being loaded correctly
-2. Check that the property names match exactly (they are case-sensitive)
-3. Ensure that the configuration section is properly registered in your application's startup code
-4. For mock implementations, verify that the mock implementations are properly registered in your dependency injection container 
+1. **Verify Settings:**
+   - Check that your `appsettings.json` file is being loaded
+   - Ensure property names match exactly (case-sensitive)
+   - Verify the configuration section is registered in startup
+
+2. **Check Logs:**
+   - Review application logs for configuration errors
+   - Check for missing or invalid settings
+   - Look for connection issues with the AI service
