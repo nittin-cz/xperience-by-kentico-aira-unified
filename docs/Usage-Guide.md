@@ -55,3 +55,7 @@ See [Upgrades](Upgrades.md)
 ## Configuration options
 
 See [Configuration options](Configuration-Options.md)
+
+## Mock Messages Guide
+
+See [Mock messages guide](Mock-Messages-Guide.md)
