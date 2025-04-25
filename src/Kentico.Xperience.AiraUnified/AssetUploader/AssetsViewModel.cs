@@ -44,7 +44,7 @@ internal sealed class AssetsViewModel
 
 
     /// <summary>
-    /// Smart upload upload url.
+    /// Smart upload upload URL.
     /// </summary>
     public string UploadUrl { get; set; } = string.Empty;
 }

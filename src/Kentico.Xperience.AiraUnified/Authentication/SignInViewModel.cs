@@ -6,13 +6,13 @@
 internal sealed class SignInViewModel
 {
     /// <summary>
-    /// Url of the chat page relative to the Aira unified base url.
+    /// URL of the chat page relative to the Aira Unified base URL.
     /// </summary>
     public string ChatUrl { get; set; } = string.Empty;
 
 
     /// <summary>
-    /// Aira unified base url.
+    /// Aira Unified base URL.
     /// </summary>
     public string PathBase { get; set; } = string.Empty;
 

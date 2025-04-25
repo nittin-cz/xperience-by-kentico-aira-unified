@@ -13,7 +13,7 @@ internal interface IAiraUnifiedChatService
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
     /// <param name="threadId">The chat thread id.</param>
-    /// <returns>A Task returning a List of <see cref="AiraUnifiedChatMessageViewModel"/> in User's history.</returns>
+    /// <returns>A task returning a List of <see cref="AiraUnifiedChatMessageViewModel"/> in User's history.</returns>
     Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId);
 
 
@@ -81,17 +81,17 @@ internal interface IAiraUnifiedChatService
 
 
     /// <summary>
-    /// Calls the ai endpoint with a message from the user.
+    /// Calls the AI endpoint with a message from the user.
     /// </summary>
     /// <param name="message">The user message.</param>
     /// <param name="numberOfIncludedHistoryMessages">Number of history messages added to the context.</param>
     /// <param name="userId">The user id.</param>
-    /// <returns>A task returning the <see cref="AiraUnifiedAIResponse"/> with the ai response.</returns>
+    /// <returns>A task returning the <see cref="AiraUnifiedAIResponse"/> with the AI response.</returns>
     Task<AiraUnifiedAIResponse?> GetAIResponseOrNull(string message, int numberOfIncludedHistoryMessages, int userId);
 
 
     /// <summary>
-    /// Gets an initial ai message displayed in a new thread or when returning to a thread.
+    /// Gets an initial AI message displayed in a new thread or when returning to a thread.
     /// </summary>
     /// <param name="chatState">The <see cref="ChatStateType"/> of the chat context.</param>
     /// <returns>A task containing the initial AI response.</returns>

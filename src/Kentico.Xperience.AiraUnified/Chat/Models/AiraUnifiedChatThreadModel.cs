@@ -17,8 +17,14 @@ internal sealed class AiraUnifiedChatThreadModel
     public int ThreadId { get; set; }
 
 
+    /// <summary>
+    /// The timestamp when the thread was last used.
+    /// </summary>
     public DateTime? LastUsed { get; set; }
 
 
+    /// <summary>
+    /// The content of the last message in the thread.
+    /// </summary>
     public string LastMessage { get; set; } = string.Empty;
 }

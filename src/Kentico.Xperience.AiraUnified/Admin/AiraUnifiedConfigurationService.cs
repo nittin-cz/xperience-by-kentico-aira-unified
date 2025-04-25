@@ -20,7 +20,9 @@ internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfiguratio
     /// </summary>
     /// <param name="airaUnifiedConfigurationProvider">The provider for Aira Unified configuration items.</param>
     /// <param name="airaUnifiedEndpointDataSource">The data source for Aira Unified endpoints.</param>
-    public AiraUnifiedConfigurationService(IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider, AiraUnifiedEndpointDataSource airaUnifiedEndpointDataSource)
+    public AiraUnifiedConfigurationService(
+        IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider,
+        AiraUnifiedEndpointDataSource airaUnifiedEndpointDataSource)
     {
         this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
         this.airaUnifiedEndpointDataSource = airaUnifiedEndpointDataSource;
@@ -30,7 +32,8 @@ internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfiguratio
     /// <inheritdoc/>
     public async Task<bool> TrySaveOrUpdateConfiguration(AiraUnifiedConfigurationModel configurationModel)
     {
-        var existingConfiguration = (await airaUnifiedConfigurationProvider.Get().GetEnumerableTypedResultAsync()).SingleOrDefault();
+        var existingConfiguration = (await airaUnifiedConfigurationProvider.Get().GetEnumerableTypedResultAsync())
+            .SingleOrDefault();
 
         if (existingConfiguration is null)
         {
@@ -38,6 +41,7 @@ internal sealed class AiraUnifiedConfigurationService : IAiraUnifiedConfiguratio
             {
                 return false;
             }
+
             var configurationCount = await airaUnifiedConfigurationProvider.Get().GetCountAsync();
 
             if (configurationCount > 0)

@@ -8,13 +8,13 @@ namespace Kentico.Xperience.AiraUnified.Chat.Models;
 internal sealed class ChatViewModel
 {
     /// <summary>
-    /// View model for the service page displayed when the ai service is unavailable.
+    /// View model for the service page displayed when the AI service is unavailable.
     /// </summary>
     public ServicePageViewModel ServicePageViewModel { get; set; } = new ServicePageViewModel();
 
 
     /// <summary>
-    /// Aira Unified base url.
+    /// Aira Unified base URL.
     /// </summary>
     public string AiraUnifiedPathBase { get; set; } = string.Empty;
 

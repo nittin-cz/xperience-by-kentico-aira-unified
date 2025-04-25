@@ -45,7 +45,7 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     /// </summary>
     /// <param name="airaUnifiedConfigurationProvider">The provider for Aira Unified configuration items.</param>
     public AiraUnifiedEndpointDataSource(IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider)
-        : base(new CancellationTokenSource(), new CancellationChangeToken(new CancellationToken()))
+        : base(new CancellationTokenSource(), new CancellationChangeToken(CancellationToken.None))
         => this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
 
 
@@ -479,9 +479,7 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
     {
         var controllerShortName = nameof(AiraUnifiedController).Replace("Controller", string.Empty);
 
-        var routeData = new RouteData();
-        routeData.Values["controller"] = controllerShortName;
-        routeData.Values["action"] = actionName;
+        var routeData = new RouteData { Values = { ["controller"] = controllerShortName, ["action"] = actionName } };
 
         var actionDescriptor = new ControllerActionDescriptor
         {
@@ -506,13 +504,13 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
     private static async Task AuthenticateAiraEndpoint(HttpContext context)
     {
-        if (context.User?.Identity is null || !context.User.Identity.IsAuthenticated)
+        if (context.User.Identity is null || !context.User.Identity.IsAuthenticated)
         {
             var authenticateResult = await context.RequestServices
                 .GetRequiredService<IAuthenticationService>()
                 .AuthenticateAsync(context, AiraUnifiedConstants.XperienceAdminSchemeName);
 
-            if (authenticateResult.Succeeded && authenticateResult.Principal is not null)
+            if (authenticateResult is { Succeeded: true, Principal: not null })
             {
                 context.User = authenticateResult.Principal;
             }
@@ -573,6 +571,7 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         context.Response.Redirect(signInRedirectUrl);
+        
         return false;
     }
 
@@ -595,6 +594,7 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         context.Response.Redirect(fullRedirectUrl);
+        
         return true;
     }
 }

@@ -18,22 +18,28 @@ public sealed class AiraUnifiedConfigurationModel
 
 
     [RequiredValidationRule]
-    [AssetSelectorComponent(Label = "{$AiraUnifiedConfigurationModel.Logo.Label$}", Order = 1, ExplanationText = "{$AiraUnifiedConfigurationModel.Logo.ExplanationText$}", AllowedExtensions = "jpg;jpeg;png", MaximumAssets = 1)]
+    [AssetSelectorComponent(Label = "{$AiraUnifiedConfigurationModel.Logo.Label$}", Order = 1,
+        ExplanationText = "{$AiraUnifiedConfigurationModel.Logo.ExplanationText$}", AllowedExtensions = "jpg;jpeg;png",
+        MaximumAssets = 1)]
     public IEnumerable<AssetRelatedItem>? Logo { get; set; }
 
 
     [RequiredValidationRule]
-    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.ChatTitle.Label$}", Order = 2, ExplanationText = "{$AiraUnifiedConfigurationModel.ChatTitle.ExplanationText$}")]
+    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.ChatTitle.Label$}", Order = 2,
+        ExplanationText = "{$AiraUnifiedConfigurationModel.ChatTitle.ExplanationText$}")]
     public string ChatTitle { get; set; } = string.Empty;
 
 
     [RequiredValidationRule]
-    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.SmartUploadTitle.Label$}", Order = 3, ExplanationText = "{$AiraUnifiedConfigurationModel.SmartUploadTitle.ExplanationText$}")]
+    [TextInputComponent(Label = "{$AiraUnifiedConfigurationModel.SmartUploadTitle.Label$}", Order = 3,
+        ExplanationText = "{$AiraUnifiedConfigurationModel.SmartUploadTitle.ExplanationText$}")]
     public string SmartUploadTitle { get; set; } = string.Empty;
 
 
     [RequiredValidationRule]
-    [DropDownComponent(Label = "{$AiraUnifiedConfigurationModel.Workspace.Label$}", DataProviderType = typeof(WorkspaceProvider), Order = 4, ExplanationText = "{$AiraUnifiedConfigurationModel.Workspace.ExplanationText$}")]
+    [DropDownComponent(Label = "{$AiraUnifiedConfigurationModel.Workspace.Label$}",
+        DataProviderType = typeof(WorkspaceProvider), Order = 4,
+        ExplanationText = "{$AiraUnifiedConfigurationModel.Workspace.ExplanationText$}")]
     public string Workspace { get; set; } = string.Empty;
 
 
@@ -41,7 +47,8 @@ public sealed class AiraUnifiedConfigurationModel
 
 
     public AiraUnifiedConfigurationModel(
-        AiraUnifiedConfigurationItemInfo airaUnifiedConfigurationInfo) => MapFromAiraUnifiedConfigurationInfo(airaUnifiedConfigurationInfo);
+        AiraUnifiedConfigurationItemInfo airaUnifiedConfigurationInfo) =>
+        MapFromAiraUnifiedConfigurationInfo(airaUnifiedConfigurationInfo);
 
 
     public void MapFromAiraUnifiedConfigurationInfo(AiraUnifiedConfigurationItemInfo info)
@@ -50,10 +57,7 @@ public sealed class AiraUnifiedConfigurationModel
 
         if (Guid.TryParse(info.AiraUnifiedConfigurationItemAiraRelativeLogoId, out var relativeLogoUrlGuid))
         {
-            var relativeLogoUrlAsset = new AssetRelatedItem
-            {
-                Identifier = relativeLogoUrlGuid
-            };
+            var relativeLogoUrlAsset = new AssetRelatedItem { Identifier = relativeLogoUrlGuid };
             Logo = [relativeLogoUrlAsset];
         }
 
@@ -78,5 +82,6 @@ public sealed class AiraUnifiedConfigurationModel
     }
 
 
-    private static string GetImageIdentifier(IEnumerable<AssetRelatedItem>? asset) => asset?.FirstOrDefault()?.Identifier.ToString() ?? string.Empty;
+    private static string GetImageIdentifier(IEnumerable<AssetRelatedItem>? asset) =>
+        asset?.FirstOrDefault()?.Identifier.ToString() ?? string.Empty;
 }

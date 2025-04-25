@@ -8,7 +8,7 @@ namespace Kentico.Xperience.AiraUnified.Chat.Models;
 internal sealed class ChatThreadSelectorViewModel
 {
     /// <summary>
-    /// Aira Unified base url.
+    /// Aira Unified base URL.
     /// </summary>
     public string AiraUnifiedBaseUrl { get; set; } = string.Empty;
 

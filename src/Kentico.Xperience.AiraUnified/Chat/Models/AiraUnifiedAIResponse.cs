@@ -5,12 +5,12 @@ using Kentico.Xperience.AiraUnified.Insights.Models;
 namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
-/// The ai response model.
+/// The AI response model.
 /// </summary>
 internal sealed class AiraUnifiedAIResponse
 {
     /// <summary>
-    /// The chat summary retrieved from the ai response according to the user's conversation history.
+    /// The chat summary retrieved from the AI response according to the user's conversation history.
     /// </summary>
     [JsonPropertyName("summary")]
     public string Summary { get; set; } = string.Empty;
@@ -24,7 +24,7 @@ internal sealed class AiraUnifiedAIResponse
 
 
     /// <summary>
-    /// The text response of the ai endpoint.
+    /// The text response of the AI endpoint.
     /// </summary>
     [JsonPropertyName("responses")]
     public List<ResponseMessageModel> Responses { get; set; } = [];

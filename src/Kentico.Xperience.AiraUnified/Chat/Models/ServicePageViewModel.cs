@@ -1,18 +1,18 @@
 ﻿namespace Kentico.Xperience.AiraUnified.Chat.Models;
 
 /// <summary>
-/// View model for the service page displayed when the ai service is unavailable.
+/// View model for the service page displayed when the AI service is unavailable.
 /// </summary>
 internal sealed class ServicePageViewModel
 {
     /// <summary>
-    /// The chat unavailable icon url.
+    /// The chat unavailable icon URL.
     /// </summary>
     public string ChatUnavailableIconUrl { get; set; } = string.Empty;
 
 
     /// <summary>
-    /// The aira unified icon url.
+    /// The Aira Unified icon URL.
     /// </summary>
     public string ChatAiraIconUrl { get; set; } = string.Empty;
 

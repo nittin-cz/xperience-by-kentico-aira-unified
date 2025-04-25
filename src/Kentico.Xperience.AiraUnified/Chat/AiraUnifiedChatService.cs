@@ -526,10 +526,10 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <summary>
     /// Gets the chat role string based on the message info.
     /// </summary>
-    /// <param name="x">The chat message info.</param>
+    /// <param name="chatMessage">The chat message info.</param>
     /// <returns>The role string.</returns>
-    private static string GetChatRole(AiraUnifiedChatMessageInfo x) =>
-        (ChatRoleType)x.AiraUnifiedChatMessageRole switch
+    private static string GetChatRole(AiraUnifiedChatMessageInfo chatMessage) =>
+        (ChatRoleType)chatMessage.AiraUnifiedChatMessageRole switch
         {
             ChatRoleType.AI => AiraUnifiedConstants.AIRequestAssistantRoleName,
             ChatRoleType.User => AiraUnifiedConstants.AIRequestUserRoleName,

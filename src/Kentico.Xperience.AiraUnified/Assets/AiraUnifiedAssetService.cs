@@ -21,6 +21,7 @@ using Path = CMS.IO.Path;
 
 namespace Kentico.Xperience.AiraUnified.Assets;
 
+/// <inheritdoc />
 internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
 {
     private readonly IInfoProvider<ContentLanguageInfo> contentLanguageProvider;
@@ -63,7 +64,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
     }
 
-
+    /// <inheritdoc />
     public async Task<bool> DoesUserHaveAiraUnifiedPermission(string permission, int userId)
     {
         var countOfRolesWithTheRightWhereUserIsContained = await roleProvider
@@ -88,7 +89,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return countOfRolesWithTheRightWhereUserIsContained > 0;
     }
 
-
+    /// <inheritdoc />
     public async Task<string> GetAllowedFileExtensions()
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
@@ -106,24 +107,17 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
         var allowedExtensions = fields.Settings[AllowedExtensions];
 
-        if (allowedExtensions is not string)
+        if (allowedExtensions is not string settings)
         {
             eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), NoFileFormatConfiguredWarning);
 
             return string.Empty;
         }
 
-        var settings = (string)allowedExtensions;
-
-        if (string.Equals(settings, INHERITED))
-        {
-            return GetGlobalAllowedFileExtensions();
-        }
-
-        return settings;
+        return string.Equals(settings, INHERITED) ? GetGlobalAllowedFileExtensions() : settings;
     }
 
-
+    /// <inheritdoc />
     public async Task<bool> HandleFileUpload(IFormFileCollection files, int userId)
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
@@ -162,7 +156,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return true;
     }
 
-
+    /// <inheritdoc />
     public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
     {
         var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
@@ -171,7 +165,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRAUnifiedLogoImagePurpose).TrimStart('~');
     }
 
-
+    /// <inheritdoc />
     public async Task<string> GetSanitizedLogoUrl()
     {
         var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
@@ -182,7 +176,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRAUnifiedLogoImagePurpose).TrimStart('~');
     }
 
-
+    /// <inheritdoc />
     public IMediaFileUrl? GetMediaFileUrl(string identifier)
     {
         if (!Guid.TryParse(identifier, out var identifierGuid))
@@ -204,7 +198,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return media;
     }
 
-
+    /// <inheritdoc />
     public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
     {
         if (!string.IsNullOrEmpty(configuredUrl))
@@ -216,8 +210,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return defaultUrl;
     }
 
-
-    public string GetGlobalAllowedFileExtensions() => settingsService[CMSMediaFileAllowedExtensions];
+    private string GetGlobalAllowedFileExtensions() => settingsService[CMSMediaFileAllowedExtensions];
 
 
     private async Task<Dictionary<string, string>> GetMassAssetUploadConfiguration()
@@ -274,7 +267,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
             return false;
         }
 
-        using var fileStream = File.Create(tempFilePath);
+        await using var fileStream = File.Create(tempFilePath);
         await file.CopyToAsync(fileStream);
 
         fileStream.Seek(0, SeekOrigin.Begin);

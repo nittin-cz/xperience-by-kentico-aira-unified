@@ -92,39 +92,33 @@ internal static class AiraUnifiedConstants
 
 
     /// <summary>
-    /// Aira unified chat role name.
+    /// Aira Unified chat role name.
     /// </summary>
     public const string AiraUnifiedChatRoleName = "ai";
 
 
     /// <summary>
-    /// Aira unified system role name.
+    /// Aira Unified system role name.
     /// </summary>
     public const string AiraUnifiedSystemRoleName = "system";
 
 
     /// <summary>
-    /// The name of the ai role used for ai endpoint identifier.
+    /// The name of the AI role used for AI endpoint identifier.
     /// </summary>
     public const string AIRequestAssistantRoleName = "assistant";
 
 
     /// <summary>
-    /// The name of the user role used for ai endpoint identifier.
+    /// The name of the user role used for AI endpoint identifier.
     /// </summary>
     public const string AIRequestUserRoleName = "user";
 
 
     /// <summary>
-    /// The ai endpoint.
+    /// The AI endpoint.
     /// </summary>
     public const string AiraUnifiedAIEndpoint = "https://kenticoairaapimanager.azure-api.net/aira/rag";
-
-
-    /// <summary>
-    /// User chat role name.
-    /// </summary>
-    public const string UserChatRoleName = "user";
 
 
     /// <summary>
@@ -194,18 +188,6 @@ internal static class AiraUnifiedConstants
 
 
     /// <summary>
-    /// Insights email identifier.
-    /// </summary>
-    public const string InsightsEmailIdentifier = "email";
-
-
-    /// <summary>
-    /// Insights content identifier.
-    /// </summary>
-    public const string InsightsContentIdentifier = "content";
-
-
-    /// <summary>
     /// Insights draft identifier.
     /// </summary>
     public const string InsightsDraftIdentifier = "Draft";
@@ -221,42 +203,6 @@ internal static class AiraUnifiedConstants
     /// Insights published identifier.
     /// </summary>
     public const string InsightsPublishedIdentifier = "Published";
-
-
-    /// <summary>
-    /// Insights reusable identifier.
-    /// </summary>
-    public const string InsightsReusableIdentifier = "reusable";
-
-
-    /// <summary>
-    /// Insights website identifier.
-    /// </summary>
-    public const string InsightsWebsiteIdentifier = "website";
-
-
-    /// <summary>
-    /// Insights all accounts identifier.
-    /// </summary>
-    public const string InsightsAllAccountsIdentifier = "allAccounts";
-
-
-    /// <summary>
-    /// Insights contact group identifier.
-    /// </summary>
-    public const string InsightsContactGroupIdentifier = "contactGroup";
-
-
-    /// <summary>
-    /// Insights count identifier.
-    /// </summary>
-    public const string InsightsCountIdentifier = "count";
-
-
-    /// <summary>
-    /// Insights ratio of contacts to other contacts identifier.
-    /// </summary>
-    public const string InsightsRatioToAllContactsIdentifier = "ratioOfContactsInGroupToOtherContacts";
 
 
     /// <summary>

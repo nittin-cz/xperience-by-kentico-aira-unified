@@ -14,7 +14,7 @@ internal sealed class AiraUnifiedChatMessageViewModel
 
 
     /// <summary>
-    /// Url of an asset which can be displayed in the chat.
+    /// URL of an asset which can be displayed in the chat.
     /// </summary>
     public string? Url { get; set; }
 
@@ -44,7 +44,7 @@ internal sealed class AiraUnifiedChatMessageViewModel
 
 
     /// <summary>
-    /// True if the ai service is unavailable.
+    /// True if the AI service is unavailable.
     /// </summary>
     public bool ServiceUnavailable { get; set; } = false;
 

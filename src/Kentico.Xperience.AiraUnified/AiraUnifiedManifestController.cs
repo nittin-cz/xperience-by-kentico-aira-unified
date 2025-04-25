@@ -15,6 +15,7 @@ public sealed class AiraUnifiedManifestController(IAiraUnifiedConfigurationServi
     /// <summary>
     /// Endpoint exposing the manifest file for the PWA.
     /// </summary>
+    /// <returns>The manifest file for the PWA.</returns>
     [HttpGet($"/{AiraUnifiedConstants.RCLUrlPrefix}/manifest.json")]
     [Produces("application/json")]
     public async Task<IActionResult> GetPwaManifest()
@@ -51,5 +52,4 @@ public sealed class AiraUnifiedManifestController(IAiraUnifiedConfigurationServi
 
         return Json(manifest);
     }
-
 }

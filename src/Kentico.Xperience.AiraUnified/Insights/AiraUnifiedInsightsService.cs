@@ -174,7 +174,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     /// <summary>
     /// Gets content items based on the specified parameters.
     /// </summary>
-    /// <param name="userId">The user ID.</param>
+    /// <param name="userId">The user id.</param>
     /// <param name="classType">The content class type.</param>
     /// <param name="status">The content status.</param>
     /// <returns>A collection of content item models.</returns>
@@ -284,7 +284,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     /// <summary>
     /// Filters content items to only include scheduled items.
     /// </summary>
-    /// <param name="userId">The user ID.</param>
+    /// <param name="userId">The user id.</param>
     /// <param name="items">The content items to filter.</param>
     /// <returns>A collection of scheduled content items.</returns>
     private async Task<IEnumerable<ContentItemModel>> GetScheduled(int userId, IEnumerable<ContentItemModel> items)
@@ -309,7 +309,7 @@ internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     /// <summary>
     /// Filters content items to only include scheduled items.
     /// </summary>
-    /// <param name="userId">The user ID.</param>
+    /// <param name="userId">The user id.</param>
     /// <param name="items">The content items to filter.</param>
     /// <returns>A collection of scheduled content items.</returns>
     private async Task<IEnumerable<ContentItemModel>> RemoveScheduled(int userId, IEnumerable<ContentItemModel> items)

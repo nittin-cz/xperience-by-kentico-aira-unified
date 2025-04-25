@@ -24,7 +24,7 @@ internal sealed class MenuItemModel
 
 
     /// <summary>
-    /// Url of the page represented by this menu item.
+    /// URL of the page represented by this menu item.
     /// </summary>
     public string? Url { get; set; } = string.Empty;
 }
