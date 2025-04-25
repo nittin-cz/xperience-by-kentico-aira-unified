@@ -11,10 +11,8 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// <summary>
 /// Manages administration features and integration.
 /// </summary>
-internal class AiraUnifiedAdminModule : AdminModule
+internal sealed class AiraUnifiedAdminModule() : AdminModule(nameof(AiraUnifiedAdminModule))
 {
-    public AiraUnifiedAdminModule() : base(nameof(AiraUnifiedAdminModule)) { }
-
     protected override void OnInit(ModuleInitParameters parameters)
     {
         base.OnInit(parameters);

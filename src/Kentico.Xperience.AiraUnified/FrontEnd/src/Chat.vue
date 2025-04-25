@@ -1,419 +1,960 @@
 <template>
-    <div class="c-app_inner">
-        <div id="loading" class="c-loading">
-            <img :src="`${this.baseUrl}/_content/Kentico.Xperience.AiraUnified/img/spinner.svg`" class="c-loading_spinner" alt="loading spinner" />
-        </div>
-
-        <div class="c-app_header">
-            <NavBarComponent :airaUnifiedBaseUrl="airaUnifiedBaseUrl" :navigationPageIdentifier="navigationPageIdentifier" :navigationUrl="navigationUrl" :baseUrl="baseUrl"/>
-        </div>
-
-        <div class="c-app_body">
-            <deep-chat v-if="serviceAvailable"
-                :avatars="{
-                    ai : {
-                        src: `${this.baseUrl}${this.aiIconUrl}`,
-                        styles: {
-                            avatar:
-                            {
-                                height: '1.75rem',
-                                width: '1.75rem'
-                            }
-                        }
-                    },
-                    user : {
-                        styles: {
-                            avatar:
-                            {
-                                height: '1.75rem',
-                                width: '1.75rem'
-                            }
-                        }
-                    }
-                }"
-                :dropupStyles="{
-                    button: {
-                        styles: {
-                            container: {
-                                default: { backgroundColor: '#eff8ff'},
-                                hover: { backgroundColor: '#e4f3ff'},
-                                click: { backgroundColor: '#d7edff'}
-                            }
-                        }
-                    },
-                    menu: {
-                        container: {
-                            boxShadow: '#e2e2e2 0px 1px 3px 2px'
-                        },
-                        item: {
-                            hover: {
-                                backgroundColor: '#e1f2ff'
-                            },
-                            click: {
-                                backgroundColor: '#cfeaff'
-                            }
-                        },
-                        iconContainer: {
-                            width: '1.8em'
-                        },
-                        text: {
-                            fontSize: '1.05em'
-                        }
-                    }
-                }"
-                :connect="{
-                    url: `${this.chatUrl}/${this.threadId}`,
-                    method: 'POST'
-                }"
-              :chatStyle="{ height: '100%', width: '100%' }"
-              :history="[]"
-                :textInput="{
-                    styles: {
-                        container: {
-                            borderRadius: '1.5rem',
-                            border: '1px solid #8C8C8C',
-                            backgroundColor: '#ffffff',
-                            boxShadow: 'none',
-                            width: '90%',
-                        },
-                        text: {
-                            padding: '.625rem .875rem',
-                            fontSize: '.875rem',
-                            color: '#231F20',
-                            lineHeight: '1.333',
-                        },
-                            },
-                            placeholder: {
-                            text: 'Message AIRA' ,
-                            style: {
-                                color: '#999'
-                            }
-                        }
-                    }"
-              :submitButtonStyles="{
-                submit: {
-                    container: {
-                        default: {
-                            width: '1.375rem',
-                            height: '1.375rem',
-                            marginBottom: '0',
-                            padding: '.5rem',
-                        }
-                    },
-                    svg: {
-                        styles: {
-                            default: {
-                                width: '1.375rem',
-                                height: '1.375rem',
-                            }
-                        }
-                    },
-                    loading: {
-                        svg: {
-                            styles: {
-                                default: {
-                                    width: '.1875rem',
-                                    height: '.1875rem',
-                                }
-                            }
-                        }
-                    }
-                }
-              }"
-              id="chatElement"
-              ref="chatElementRef"
-              :requestBodyLimits="{ maxMessages: 1 }"
-              style="border-radius: 8px;"
-              :introMessage="{ text: '' }"
-              :messageStyles="{
-                    default: {
-                        shared: { bubble: { fontSize: '0.75rem', lineHeight: '1.375rem', padding: '0.5rem 0.75rem', marginTop: '.375rem' } },
-                        ai: { bubble: { background: '#edeeff', borderRadius: '0 1.125rem 1.125rem 1.125rem' } },
-                        user: { bubble: { color: '#fff', borderRadius: '1.125rem 1.125rem 0 1.125rem' } }
-                    },
-                    image: {
-                        user: { bubble: { borderRadius: '1rem', overflow: 'clip', textAlign: 'left', display: 'inline-block' } }
-                    },
-                    html: {
-                        shared: {
-                            bubble: {
-                                backgroundColor: 'unset', 
-                                padding: '0px'
-                            }
-                        }
-                    }
-                }">
-            </deep-chat>
-            <div class="c-empty-page-layout justify-content-start" v-if="!serviceAvailable">
-                <div class="d-flex flex-wrap justify-content-center gap-3 text-center">
-                    <svg class="c-image service-unavailable" width="150" height="189" viewBox="0 0 150 189" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g clip-path="url(#clip0_844_34259)">
-                            <g clip-path="url(#clip1_844_34259)">
-                                <path d="M46.7024 68.3112C44.8611 66.516 41.9132 66.5533 40.118 68.3946C38.3228 70.2358 38.3601 73.1837 40.2013 74.979L68.3623 102.436L40.2013 129.893C38.3601 131.689 38.3228 134.637 40.118 136.478C41.9132 138.319 44.8611 138.356 46.7024 136.561L75.0322 108.939L103.361 136.561C105.203 138.356 108.151 138.319 109.946 136.477C111.741 134.636 111.704 131.688 109.863 129.893L81.7021 102.436L109.863 74.9795C111.704 73.1842 111.741 70.2363 109.946 68.3951C108.151 66.5538 105.203 66.5165 103.361 68.3117L75.0322 95.933L46.7024 68.3112Z" fill="#FF8852"/>
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M22.0883 49.3125C15.3474 49.3125 9.81273 54.8471 9.81273 61.5881L9.8125 139.595C9.8125 146.307 15.3186 151.791 22.088 151.791H42.3854C44.9569 151.791 47.0416 153.876 47.0416 156.447V174.234L71.9733 152.909C72.8167 152.187 73.89 151.791 74.9999 151.791H127.912C134.681 151.791 140.187 146.307 140.187 139.595V61.5881C140.187 54.8471 134.653 49.3125 127.912 49.3125H22.0883ZM0.50023 61.5881C0.50023 49.704 10.2042 40 22.0883 40H127.912C139.796 40 149.5 49.704 149.5 61.5881V139.595C149.5 151.507 139.767 161.103 127.912 161.103H76.7196L45.4119 187.882C44.0307 189.064 42.0884 189.333 40.4375 188.573C38.7867 187.813 37.7291 186.161 37.7291 184.344V161.103H22.088C10.2325 161.103 0.5 151.507 0.5 139.595L0.50023 61.5881Z" fill="#FF8852"/>
-                            </g>
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M139.738 10.6021L148.592 13.5533C149.803 13.9571 149.803 15.6703 148.592 16.074L139.738 19.0252C139.341 19.1574 139.03 19.4687 138.898 19.8654L135.947 28.7189C135.543 29.9301 133.83 29.9301 133.426 28.7189L130.475 19.8654C130.343 19.4687 130.031 19.1574 129.635 19.0252L120.781 16.074C119.57 15.6703 119.57 13.9571 120.781 13.5533L129.635 10.6021C130.031 10.4699 130.343 10.1586 130.475 9.76191L133.426 0.908415C133.83 -0.302802 135.543 -0.302806 135.947 0.908411L138.898 9.76191C139.03 10.1586 139.341 10.4699 139.738 10.6021ZM138.618 13.9631L141.169 14.8137L138.618 15.6642C137.163 16.1491 136.022 17.2905 135.537 18.7451L134.686 21.2968L133.836 18.7451C133.351 17.2905 132.209 16.1491 130.755 15.6642L128.203 14.8137L130.755 13.9631C132.209 13.4782 133.351 12.3368 133.836 10.8822L134.686 8.3305L135.537 10.8822C136.022 12.3368 137.163 13.4782 138.618 13.9631Z" fill="black"/>
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M109.892 27.1831C109.496 27.0508 109.184 26.7395 109.052 26.3428L104.996 14.1732C104.592 12.9619 102.879 12.9619 102.475 14.1732L98.4183 26.3428C98.2861 26.7395 97.9748 27.0508 97.5781 27.1831L85.4084 31.2396C84.1972 31.6434 84.1972 33.3566 85.4084 33.7604L97.5781 37.8169C97.9748 37.9492 98.2861 38.2605 98.4183 38.6572L102.475 50.8268C102.879 52.0381 104.592 52.0381 104.996 50.8269L109.052 38.6572C109.184 38.2605 109.496 37.9492 109.892 37.8169L122.062 33.7604C123.273 33.3566 123.273 31.6434 122.062 31.2396L109.892 27.1831ZM114.64 32.5L108.772 30.544C107.318 30.0592 106.176 28.9177 105.691 27.4632L103.735 21.5952L101.779 27.4632C101.294 28.9177 100.153 30.0592 98.6984 30.544L92.8305 32.5L98.6984 34.456C100.153 34.9408 101.294 36.0822 101.779 37.5368L103.735 43.4048L105.691 37.5368C106.176 36.0822 107.318 34.9408 108.772 34.456L114.64 32.5Z" fill="black"/>
-                            <path d="M121.897 51.5018C122.294 51.3695 122.605 51.0583 122.737 50.6615L124.583 45.1242C124.987 43.913 126.7 43.913 127.104 45.1242L128.949 50.6615C129.082 51.0583 129.393 51.3695 129.79 51.5018L135.327 53.3476C136.538 53.7513 136.538 55.4645 135.327 55.8683L129.79 57.714C129.393 57.8463 129.082 58.1576 128.949 58.5543L127.104 64.0916C126.7 65.3028 124.987 65.3028 124.583 64.0916L122.737 58.5543C122.605 58.1576 122.294 57.8463 121.897 57.714L116.359 55.8683C115.148 55.4645 115.148 53.7513 116.359 53.3476L121.897 51.5018Z" fill="black"/>
-                        </g>
-                        <defs>
-                            <clipPath id="clip0_844_34259">
-                                <rect width="149" height="189" fill="white" transform="translate(0.5)"/>
-                            </clipPath>
-                            <clipPath id="clip1_844_34259">
-                                <rect width="149" height="149" fill="white" transform="translate(0.5 40)"/>
-                            </clipPath>
-                        </defs>
-                    </svg>
-                    <p class="mt-5"><strong>{{`${this.servicePageModel.chatUnavailableMainMessage}`}}</strong></p>
-                    <p class="fs-2">{{`${this.servicePageModel.chatUnavailableTryAgainMessage}`}}</p>
-                </div>
-            </div>
-          <InstallDialogComponent v-if="!isInstalledPWA" :baseUrl="baseUrl" :logoImgRelativePath="logoImgRelativePath" />
-        </div>
+  <div class="c-app_inner">
+    <div id="loading" class="c-loading">
+      <img
+        :src="`${this.baseUrl}/_content/Kentico.Xperience.AiraUnified/img/spinner.svg`"
+        class="c-loading_spinner"
+        alt="loading spinner"
+      />
     </div>
+
+    <div class="c-app_header">
+      <NavBarComponent
+        :airaUnifiedBaseUrl="airaUnifiedBaseUrl"
+        :navigationPageIdentifier="navigationPageIdentifier"
+        :navigationUrl="navigationUrl"
+        :baseUrl="baseUrl"
+      />
+    </div>
+
+    <div class="c-app_body">
+      <deep-chat
+        v-if="serviceAvailable"
+        :avatars="{
+          ai: {
+            src: `${this.baseUrl}${this.aiIconUrl}`,
+            styles: {
+              avatar: {
+                height: '1.75rem',
+                width: '1.75rem',
+              },
+            },
+          },
+          user: {
+            styles: {
+              avatar: {
+                height: '1.75rem',
+                width: '1.75rem',
+              },
+            },
+          },
+        }"
+        :dropupStyles="{
+          button: {
+            styles: {
+              container: {
+                default: { backgroundColor: '#eff8ff' },
+                hover: { backgroundColor: '#e4f3ff' },
+                click: { backgroundColor: '#d7edff' },
+              },
+            },
+          },
+          menu: {
+            container: {
+              boxShadow: '#e2e2e2 0px 1px 3px 2px',
+            },
+            item: {
+              hover: {
+                backgroundColor: '#e1f2ff',
+              },
+              click: {
+                backgroundColor: '#cfeaff',
+              },
+            },
+            iconContainer: {
+              width: '1.8em',
+            },
+            text: {
+              fontSize: '1.05em',
+            },
+          },
+        }"
+        :connect="{
+          url: `${this.chatUrl}/${this.threadId}`,
+          method: 'POST',
+        }"
+        :chatStyle="{ height: '100%', width: '100%' }"
+        :history="[]"
+        :textInput="{
+          styles: {
+            container: {
+              borderRadius: '1.5rem',
+              border: '1px solid #8C8C8C',
+              backgroundColor: '#ffffff',
+              boxShadow: 'none',
+              width: '90%',
+            },
+            text: {
+              padding: '0.625rem 2rem 0.625rem 0.875rem',
+              fontSize: '.875rem',
+              color: '#231F20',
+              lineHeight: '1.333',
+            },
+          },
+          placeholder: {
+            text: 'Message AIRA',
+            style: {
+              color: '#999',
+            },
+          },
+        }"
+        :submitButtonStyles="{
+          submit: {
+            container: {
+              default: {
+                width: '1.375rem',
+                height: '1.375rem',
+                marginBottom: '0',
+                padding: '.5rem',
+              },
+            },
+            loading: {
+              svg: {
+                styles: {
+                  default: {
+                    width: '.1875rem',
+                    height: '.1875rem',
+                  },
+                },
+              },
+            },
+          },
+        }"
+        id="chatElement"
+        ref="chatElementRef"
+        :requestBodyLimits="{ maxMessages: 1 }"
+        style="border-radius: 8px"
+        :introMessage="{ text: '' }"
+        :messageStyles="{
+          default: {
+            shared: {
+              bubble: {
+                fontSize: '0.875rem',
+                lineHeight: '1.375rem',
+                padding: '0.5rem 0.75rem',
+                marginTop: '.375rem',
+              },
+            },
+            ai: {
+              bubble: {
+                background: '#edeeff',
+                borderRadius: '0 1.125rem 1.125rem 1.125rem',
+              },
+            },
+            user: {
+              bubble: {
+                color: '#fff',
+                borderRadius: '1.125rem 1.125rem 0 1.125rem',
+              },
+            },
+          },
+          image: {
+            user: {
+              bubble: {
+                borderRadius: '1rem',
+                overflow: 'clip',
+                textAlign: 'left',
+                display: 'inline-block',
+              },
+            },
+          },
+          html: {
+            shared: {
+              bubble: {
+                backgroundColor: 'unset',
+                padding: '0px',
+              },
+            },
+          },
+        }"
+      >
+      </deep-chat>
+      <div
+        class="c-empty-page-layout justify-content-start"
+        v-if="!serviceAvailable"
+      >
+        <div class="d-flex flex-wrap justify-content-center gap-3 text-center">
+          <svg
+            class="c-image service-unavailable"
+            width="150"
+            height="189"
+            viewBox="0 0 150 189"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g clip-path="url(#clip0_844_34259)">
+              <g clip-path="url(#clip1_844_34259)">
+                <path
+                  d="M46.7024 68.3112C44.8611 66.516 41.9132 66.5533 40.118 68.3946C38.3228 70.2358 38.3601 73.1837 40.2013 74.979L68.3623 102.436L40.2013 129.893C38.3601 131.689 38.3228 134.637 40.118 136.478C41.9132 138.319 44.8611 138.356 46.7024 136.561L75.0322 108.939L103.361 136.561C105.203 138.356 108.151 138.319 109.946 136.477C111.741 134.636 111.704 131.688 109.863 129.893L81.7021 102.436L109.863 74.9795C111.704 73.1842 111.741 70.2363 109.946 68.3951C108.151 66.5538 105.203 66.5165 103.361 68.3117L75.0322 95.933L46.7024 68.3112Z"
+                  fill="#FF8852"
+                />
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M22.0883 49.3125C15.3474 49.3125 9.81273 54.8471 9.81273 61.5881L9.8125 139.595C9.8125 146.307 15.3186 151.791 22.088 151.791H42.3854C44.9569 151.791 47.0416 153.876 47.0416 156.447V174.234L71.9733 152.909C72.8167 152.187 73.89 151.791 74.9999 151.791H127.912C134.681 151.791 140.187 146.307 140.187 139.595V61.5881C140.187 54.8471 134.653 49.3125 127.912 49.3125H22.0883ZM0.50023 61.5881C0.50023 49.704 10.2042 40 22.0883 40H127.912C139.796 40 149.5 49.704 149.5 61.5881V139.595C149.5 151.507 139.767 161.103 127.912 161.103H76.7196L45.4119 187.882C44.0307 189.064 42.0884 189.333 40.4375 188.573C38.7867 187.813 37.7291 186.161 37.7291 184.344V161.103H22.088C10.2325 161.103 0.5 151.507 0.5 139.595L0.50023 61.5881Z"
+                  fill="#FF8852"
+                />
+              </g>
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M139.738 10.6021L148.592 13.5533C149.803 13.9571 149.803 15.6703 148.592 16.074L139.738 19.0252C139.341 19.1574 139.03 19.4687 138.898 19.8654L135.947 28.7189C135.543 29.9301 133.83 29.9301 133.426 28.7189L130.475 19.8654C130.343 19.4687 130.031 19.1574 129.635 19.0252L120.781 16.074C119.57 15.6703 119.57 13.9571 120.781 13.5533L129.635 10.6021C130.031 10.4699 130.343 10.1586 130.475 9.76191L133.426 0.908415C133.83 -0.302802 135.543 -0.302806 135.947 0.908411L138.898 9.76191C139.03 10.1586 139.341 10.4699 139.738 10.6021ZM138.618 13.9631L141.169 14.8137L138.618 15.6642C137.163 16.1491 136.022 17.2905 135.537 18.7451L134.686 21.2968L133.836 18.7451C133.351 17.2905 132.209 16.1491 130.755 15.6642L128.203 14.8137L130.755 13.9631C132.209 13.4782 133.351 12.3368 133.836 10.8822L134.686 8.3305L135.537 10.8822C136.022 12.3368 137.163 13.4782 138.618 13.9631Z"
+                fill="black"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M109.892 27.1831C109.496 27.0508 109.184 26.7395 109.052 26.3428L104.996 14.1732C104.592 12.9619 102.879 12.9619 102.475 14.1732L98.4183 26.3428C98.2861 26.7395 97.9748 27.0508 97.5781 27.1831L85.4084 31.2396C84.1972 31.6434 84.1972 33.3566 85.4084 33.7604L97.5781 37.8169C97.9748 37.9492 98.2861 38.2605 98.4183 38.6572L102.475 50.8268C102.879 52.0381 104.592 52.0381 104.996 50.8269L109.052 38.6572C109.184 38.2605 109.496 37.9492 109.892 37.8169L122.062 33.7604C123.273 33.3566 123.273 31.6434 122.062 31.2396L109.892 27.1831ZM114.64 32.5L108.772 30.544C107.318 30.0592 106.176 28.9177 105.691 27.4632L103.735 21.5952L101.779 27.4632C101.294 28.9177 100.153 30.0592 98.6984 30.544L92.8305 32.5L98.6984 34.456C100.153 34.9408 101.294 36.0822 101.779 37.5368L103.735 43.4048L105.691 37.5368C106.176 36.0822 107.318 34.9408 108.772 34.456L114.64 32.5Z"
+                fill="black"
+              />
+              <path
+                d="M121.897 51.5018C122.294 51.3695 122.605 51.0583 122.737 50.6615L124.583 45.1242C124.987 43.913 126.7 43.913 127.104 45.1242L128.949 50.6615C129.082 51.0583 129.393 51.3695 129.79 51.5018L135.327 53.3476C136.538 53.7513 136.538 55.4645 135.327 55.8683L129.79 57.714C129.393 57.8463 129.082 58.1576 128.949 58.5543L127.104 64.0916C126.7 65.3028 124.987 65.3028 124.583 64.0916L122.737 58.5543C122.605 58.1576 122.294 57.8463 121.897 57.714L116.359 55.8683C115.148 55.4645 115.148 53.7513 116.359 53.3476L121.897 51.5018Z"
+                fill="black"
+              />
+            </g>
+            <defs>
+              <clipPath id="clip0_844_34259">
+                <rect
+                  width="149"
+                  height="189"
+                  fill="white"
+                  transform="translate(0.5)"
+                />
+              </clipPath>
+              <clipPath id="clip1_844_34259">
+                <rect
+                  width="149"
+                  height="149"
+                  fill="white"
+                  transform="translate(0.5 40)"
+                />
+              </clipPath>
+            </defs>
+          </svg>
+          <p class="mt-5">
+            <strong>{{
+              `${this.servicePageModel.chatUnavailableMainMessage}`
+            }}</strong>
+          </p>
+          <p class="fs-2">
+            {{ `${this.servicePageModel.chatUnavailableTryAgainMessage}` }}
+          </p>
+        </div>
+      </div>
+      <InstallDialogComponent
+        v-if="!isInstalledPWA"
+        :baseUrl="baseUrl"
+        :logoImgRelativePath="logoImgRelativePath"
+      />
+    </div>
+  </div>
 </template>
 
 <script>
-import 'deep-chat';
+import "deep-chat";
 import NavBarComponent from "./Navigation.vue";
-import InstallDialogComponent from './InstallDialog.vue';
+import InstallDialogComponent from "./InstallDialog.vue";
 
 export default {
-    components: {
-        NavBarComponent,
-        InstallDialogComponent
-    },
-    props: {
-        airaUnifiedBaseUrl: null,
-        aiIconUrl: null,
-        baseUrl: null,
-        usePromptUrl: null,
-        servicePageModel: null,
-        historyUrl: null,
-        navigationUrl: null,
-        navigationPageIdentifier: null,
-        chatUrl: null,
-        logoImgRelativePath: null,
-        threadId: null
-    },
-    data() {
-        return {
-            themeColor: "#8107c1",
-            themeColorInRgb: "rgb(129, 7, 193)",
-            submitButton: null,
-            started: false,
-            messagesMetadata: new Map(),
-            history: [],
-            showAllSuggestions: false,
-            isInstalledPWA: false,
-            serviceAvailable: true
+  components: {
+    NavBarComponent,
+    InstallDialogComponent,
+  },
+  props: {
+    airaUnifiedBaseUrl: null,
+    aiIconUrl: null,
+    baseUrl: null,
+    usePromptUrl: null,
+    servicePageModel: null,
+    historyUrl: null,
+    navigationUrl: null,
+    navigationPageIdentifier: null,
+    chatUrl: null,
+    logoImgRelativePath: null,
+    threadId: null,
+  },
+  data() {
+    return {
+      themeColor: "#8107c1",
+      themeColorInRgb: "rgb(129, 7, 193)",
+      submitButton: null,
+      started: false,
+      messagesMetadata: new Map(),
+      history: [],
+      showAllSuggestions: false,
+      isInstalledPWA: false,
+      serviceAvailable: true,
+    };
+  },
+  mounted() {
+    document.onreadystatechange = () => {
+      if (document.readyState === "complete") {
+        this.main();
+
+        this.isInstalledPWA =
+          window.matchMedia("(display-mode: window-controls-overlay)")
+            .matches || window.matchMedia("(display-mode: standalone)").matches;
+      }
+    };
+  },
+  methods: {
+    main() {
+      this.$refs.chatElementRef.onComponentRender = async () => {
+        this.setBorders();
+
+        if (!this.started) {
+          this.started = true;
+          document.addEventListener("visibilitychange", function () {
+            if (
+              this.$refs?.chatElementRef &&
+              document.visibilityState === "visible"
+            ) {
+              this.$refs.chatElementRef.scrollToBottom();
+            }
+          });
+
+          this.setRequestInterceptor();
+          this.setOnMessage();
+          this.setOnError();
+          this.setResponseInterceptor();
+          this.setHistory();
         }
+
+        const newSubmitButton =
+          this.$refs.chatElementRef.shadowRoot.querySelector(".input-button");
+        if (this.submitButton !== newSubmitButton) {
+          this.submitButton = newSubmitButton;
+          this.addClassesToShadowRoot();
+        }
+      };
     },
-    mounted() {
-        document.onreadystatechange = () => {
-            if (document.readyState === "complete") {
-                this.main();
+    typeIntoInput(inputElement, text) {
+      inputElement.focus();
+      inputElement.innerHTML = "";
 
-                this.isInstalledPWA = window.matchMedia('(display-mode: window-controls-overlay)').matches ||
-                    window.matchMedia('(display-mode: standalone)').matches;
-            }
-        };
+      for (let char of text) {
+        inputElement.style.color = "#231f20";
+        inputElement.innerHTML += char;
+        inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     },
-    methods: {
-        main() {
-            setTimeout(() => {
-                var modal = document.querySelector('#loading');
-                if (modal) {
-                    modal.classList.add('is-hidden');
+    bindPromptButtons() {
+      this.$refs.chatElementRef.shadowRoot
+        .querySelectorAll("button[prompt-quick-suggestion-button]")
+        .forEach((button) => {
+          button.addEventListener("click", async () => {
+            const text = button.value.valueOf();
 
-                    setTimeout(function () {
-                        modal.parentNode.removeChild(modal);
-                    }, 500);
-                }
+            this.$refs.chatElementRef.clearMessages(true);
 
-                this.bindPromptButtons();
-
-            }, 1000);
-
-            this.$refs.chatElementRef.onComponentRender = async () => {
-                this.setBorders();
-
-                if (!this.started) {
-                    this.started = true;
-                    document.addEventListener('visibilitychange', function () {
-                        if (this.$refs.chatElementRef && document.visibilityState === 'visible')
-                        {
-                            this.$refs.chatElementRef.scrollToBottom();
-                        }
-                    });
-
-                    this.setRequestInterceptor();
-                    this.setOnMessage();
-                    this.setOnError();
-                    this.setResponseInterceptor();
-                    this.setHistory();
-                }
-
-                const newSubmitButton = this.$refs.chatElementRef.shadowRoot.querySelector('.input-button');
-                if (this.submitButton !== newSubmitButton) {
-                    this.submitButton = newSubmitButton;
-                    this.addClassesToShadowRoot();
-                }
-            };
-        },
-        typeIntoInput(inputElement, text) {
-            inputElement.focus();
-            inputElement.innerHTML  = "";
-
-            for (let char of text) {
-                inputElement.innerHTML  += char;
-                inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-        },
-        bindPromptButtons() {
-            this.$refs.chatElementRef.shadowRoot.querySelectorAll('button[prompt-quick-suggestion-button]').forEach(button => {
-                button.addEventListener('click', async () => {
-                    const text = button.value.valueOf();
-
-                    const buttonGroupId = button.parentNode.getAttribute("prompt-quick-suggestion-button-group-id");
-
-                    this.history = this.history.filter(x => (x.promptQuickSuggestionGroupId === undefined) || x.promptQuickSuggestionGroupId.toString() !== buttonGroupId);
-                    this.$refs.chatElementRef.clearMessages(true);
-
-                    this.history.forEach(x => {
-                        this.$refs.chatElementRef.addMessage(x);
-                    });
-
-                    this.bindPromptButtons();
-
-                    setTimeout(() => {
-                        const textInput = this.$refs.chatElementRef.shadowRoot.getElementById("text-input");
-                        textInput.classList.remove("text-input-placeholder");
-
-                        this.typeIntoInput(textInput, text);
-                    }, 50);
-
-                    await this.removeUsedPromptGroup(buttonGroupId);
-                });
+            this.history.forEach((x) => {
+              this.$refs.chatElementRef.addMessage(x);
             });
-        },
-        async removeUsedPromptGroup(groupId) {
-            try {
-                await fetch(this.usePromptUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        groupId: groupId,
-                    }),
-                });
+
+            this.bindPromptButtons();
+
+            const textInput =
+              this.$refs.chatElementRef.shadowRoot.getElementById("text-input");
+            textInput.classList.remove("text-input-placeholder");
+
+            this.typeIntoInput(textInput, text);
+          });
+        });
+    },
+    async removeUsedPromptGroup(groupId) {
+      try {
+        await fetch(this.usePromptUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            groupId: groupId,
+          }),
+        });
+      } catch (error) {
+        console.error("An error occurred:", error.message);
+        this.hideLoadingModal();
+      }
+    },
+    setRequestInterceptor() {
+      this.$refs.chatElementRef.requestInterceptor = async (requestDetails) => {
+        const formData = new FormData();
+
+        this.history.push(requestDetails.body.messages[0]);
+
+        let jsonData = "";
+
+        if (Object.hasOwn(requestDetails.body, "messages")) {
+          jsonData = requestDetails.body.messages[0].text;
+        } else {
+          const entries = requestDetails.body.entries();
+
+          if (entries !== null) {
+            let hasMessages = false;
+            for (const [key, value] of requestDetails.body.entries()) {
+              if (key === "message1") {
+                let parsedValue;
+                try {
+                  parsedValue = JSON.parse(value);
+                } catch (e) {
+                  parsedValue = value;
+                }
+                if (parsedValue && parsedValue.text) {
+                  formData.append("message", parsedValue.text);
+                  hasMessages = true;
+                }
+              } else if (key === "files") {
+                formData.append(key, value);
+              }
             }
-            catch (error) {
-                console.error('An error occurred:', error.message);
+
+            if (!hasMessages) {
+              formData.append("messages", "");
             }
-        },
-        setRequestInterceptor() {
-            this.$refs.chatElementRef.requestInterceptor = async (requestDetails) => {
-                const formData = new FormData();
+          }
+        }
 
-                this.history.push(requestDetails.body.messages[0]);
+        const modifiedRequestDetails = {
+          ...requestDetails,
+          body: jsonData ?? formData,
+          headers: {
+            ...requestDetails.headers,
+          },
+        };
 
-                let jsonData = "";
+        return modifiedRequestDetails;
+      };
+    },
+    setResponseInterceptor() {
+      this.$refs.chatElementRef.responseInterceptor = (response) => {
+        var messageViewModel = this.getMessageViewModel(response);
 
-                if (Object.hasOwn(requestDetails.body, 'messages'))
-                { 
-                    jsonData = requestDetails.body.messages[0].text;
+        this.history.push(messageViewModel);
+
+        if (response.serviceUnavailable) {
+          this.serviceAvailable = false;
+        }
+
+        if (
+          response.insights !== null &&
+          response.insights.insightsData !== null &&
+          response.insights.is_insights_query
+        ) {
+          var message = null;
+          if (response.insights.category === "content") {
+            message = this.contentInsightMessage(response.insights);
+          }
+
+          if (response.insights.category === "email") {
+            message = this.emailsInsightMessage(response.insights);
+          }
+
+          if (response.insights.category === "marketing") {
+            message = this.marketingInsightMessage(response.insights);
+          }
+
+          if (response.quickPrompts && response.quickPrompts.length > 0) {
+            const promptMessage = this.getPromptsViewModel(response);
+            message.html += promptMessage.html;
+            message.promptQuickSuggestionGroupId =
+              promptMessage.promptQuickSuggestionGroupId;
+          }
+
+          this.history.push(message);
+          return message;
+        }
+
+        if (response.quickPrompts && response.quickPrompts.length > 0) {
+          this.$refs.chatElementRef.addMessage(messageViewModel);
+          const promptMessage = this.getPromptsViewModel(response);
+
+          this.history.push(promptMessage);
+
+          return promptMessage;
+        }
+
+        return messageViewModel;
+      };
+    },
+    setOnMessage() {
+      this.$refs.chatElementRef.onMessage = (message) => {
+        this.bindPromptButtons();
+      };
+    },
+    setOnError() {
+      this.$refs.chatElementRef.onError = (error) => {
+        this.hideLoadingModal();
+        this.serviceAvailable = false;
+      };
+    },
+    setBorders() {
+      this.$refs.chatElementRef.style.borderLeftStyle = "none";
+      this.$refs.chatElementRef.style.borderTopStyle = "none";
+      this.$refs.chatElementRef.style.borderRightStyle = "none";
+      this.$refs.chatElementRef.style.borderBottomStyle = "none";
+    },
+    async setHistory() {
+      const historyUrlWithThread = `${this.historyUrl}/${this.threadId}`;
+      const historyResponse = await fetch(historyUrlWithThread, {
+        method: "GET",
+      });
+      if (!historyResponse.ok) {
+        console.error("An error occurred:", historyResponse.error);
+        this.hideLoadingModal();
+        return;
+      }
+      const rawHistory = await historyResponse.json();
+
+      for (const x of rawHistory) {
+        if (x.message !== "" && x.message !== null && x.role !== "system") {
+          const messageViewModel = this.getMessageViewModel(x);
+
+          this.history.push(messageViewModel);
+          this.$refs.chatElementRef.history.push(messageViewModel);
+          this.$refs.chatElementRef.addMessage(messageViewModel);
+        }
+
+        if (x.role === "system") {
+          const insights = JSON.parse(x.message);
+          var message = null;
+
+          if (insights.category === "content") {
+            message = this.contentInsightMessage(insights);
+          }
+
+          if (insights.category === "email") {
+            message = this.emailsInsightMessage(insights);
+          }
+
+          if (insights.category === "marketing") {
+            message = this.marketingInsightMessage(insights);
+          }
+
+          this.history.push(message);
+          this.$refs.chatElementRef.history.push(message);
+          this.$refs.chatElementRef.addMessage(message);
+        }
+
+        if (x.quickPrompts.length > 0) {
+          const promptMessage = this.getPromptsViewModel(x);
+          this.history.push(promptMessage);
+          this.$refs.chatElementRef.history.push(promptMessage);
+          this.$refs.chatElementRef.addMessage(promptMessage);
+        }
+      }
+
+      this.bindPromptButtons();
+      this.hideLoadingModal();
+    },
+    hideLoadingModal() {
+      var modal = document.querySelector("#loading");
+      if (modal) {
+        modal.classList.add("is-hidden");
+        modal.parentNode.removeChild(modal);
+      }
+    },
+    getPromptsViewModel(message) {
+      let prompts = `<div class="c-prompt-btn-wrapper" prompt-quick-suggestion-button-group-id="${message.quickPromptsGroupId}">`;
+
+      for (var prompt of message.quickPrompts) {
+        prompts += `<button class="c-prompt-btn" prompt-quick-suggestion-button value="${prompt}">${prompt}</button>`;
+      }
+
+      prompts += "</div>";
+
+      return {
+        role: "ai",
+        html: prompts,
+        promptQuickSuggestionGroupId: `${message.quickPromptsGroupId}`,
+      };
+    },
+    getMessageViewModel(message) {
+      return {
+        role: message.role ?? "",
+        text: message.message ?? "",
+      };
+    },
+    isJSONWithProperty(string, property) {
+      try {
+        const json = JSON.parse(string);
+        return json && typeof json === "object" && property in json;
+      } catch (e) {
+        return false;
+      }
+    },
+    contentInsightMessage(insights) {
+      var insightsData = insights.insightsData;
+      var metadata = insights.metadata;
+
+      return {
+        role: "ai",
+        html: `<div>
+      <div>
+        <h2 class="k-title">Content Insights</h2>
+        <h3 class="k-subtitle">Summary</h3>
+        <div class="k-summary">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${
+                  insightsData.summary.draftCount
+                }</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Scheduled
+                </h4>
+                <div class="k-summary_value">${
+                  insightsData.summary.scheduledCount
+                }</div>
+            </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="k-subtitle">Website content</h3>
+        <div class="k-summary">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${
+                  insightsData.websiteContent.draftCount
+                }</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Scheduled
+                </h4>
+                <div class="k-summary_value">${
+                  insightsData.websiteContent.scheduledCount
+                }</div>
+            </div>
+        </div>
+        <h3 class="k-subtitle small">Draft Websites</h3>
+        <div class="k-content-items">
+            ${this.getItems(insightsData.websiteContent.items)}
+        </div>
+      </div>
+
+      <div>
+        <h3 class="k-subtitle">Reusable content</h3>
+        <div class="k-summary">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Drafts
+                </h4>
+                <div class="k-summary_value">${
+                  insightsData.reusableContent.draftCount
+                }</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">
+                    Scheduled
+                </h4>
+                <div class="k-summary_value">${
+                  insightsData.reusableContent.scheduledCount
+                }</div>
+            </div>
+        </div>
+        <h3 class="k-subtitle small">Draft Reusable contents</h3>
+        <div class="k-content-items">
+            ${this.getItems(insightsData.reusableContent.items)}
+        </div>
+      </div>
+      <div>${this.getMetadata(metadata)}</div>
+    </div>`,
+      };
+    },
+    emailsInsightMessage(insights) {
+      var insightsData = insights.insightsData;
+      var metadata = insights.metadata;
+
+      return {
+        role: "ai",
+        html: `<div>
+            <div>
+                <h2 class="k-title">E-mails Insights</h2>
+                <h3 class="k-subtitle">Summary</h3>
+                <div class="k-summary">
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Drafts
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.summary.draftCount
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Scheduled
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.summary.scheduledCount
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Sent
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.summary.sentCount
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Total
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.summary.totalCount
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Avg. Open Rate
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.summary.averageOpenRate
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Avg. Click Rate
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.summary.averageClickRate
+                        }</div>
+                    </div>
+                </div>
+
+                <h3 class="k-subtitle">Regular Emails</h3>
+                <div class="k-content-items">
+                    ${this.getEmailItems(insightsData.campaigns)}
+                </div>
+            </div>
+            <div>${this.getMetadata(metadata)}</div>
+        </div>`,
+      };
+    },
+    marketingInsightMessage(insights) {
+      var insightsData = insights.insightsData;
+      var metadata = insights.metadata;
+
+      return {
+        role: "ai",
+        html: `<div>
+            <div>
+                <h2 class="k-title">Marketing Insights</h2>
+                <h3 class="k-subtitle">Contacts</h3>
+                <div class="k-summary">
+                    <div class="k-summary_item span-2">
+                        <h4 class="k-summary_title">
+                            Total Count
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.contacts.totalCount || "-"
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Active
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.contacts.activeCount || "-"
+                        }</div>
+                    </div>
+                    <div class="k-summary_item">
+                        <h4 class="k-summary_title">
+                            Inactive
+                        </h4>
+                        <div class="k-summary_value">${
+                          insightsData.contacts.inactiveCount || "-"
+                        }</div>
+                    </div>
+                </div>
+
+                <h3 class="k-subtitle">Contact Groups</h3>
+                <div class="k-content-items">
+                    ${this.getMarketingContactItems(insightsData.contactGroups)}
+                </div>
+                <h3 class="k-subtitle">Recipient Lists</h3>
+                <div class="k-content-items">
+                    ${this.getMarketingContactItems(
+                      insightsData.recipientLists
+                    )}
+                </div>
+            </div>
+<div>${this.getMetadata(metadata)}</div>
+        </div>`,
+      };
+    },
+    getItems(items) {
+      var status = [
+        { code: 0, value: "Initial Draft" },
+        { code: 1, value: "Draft" },
+        { code: 2, value: "Published" },
+        { code: 3, value: "Unpublished" },
+      ];
+      return items
+        .map(
+          (item) =>
+            `<div class="k-content-item">
+                <div class="k-content-item_title">${item.displayName}</div>
+            <div class="k-content-item_tags">
+                <span class="k-content-item_tag">${
+                  status.find((s) => s.code === item.versionStatus)?.value
+                }</span>
+                <span class="k-content-item_tag">${item.contentTypeName}</span>
+            </div>
+            </div>`
+        )
+        .join("");
+    },
+    getEmailItems(items) {
+      return items
+        .map(
+          (item) =>
+            `<div class="k-content-item">
+                            <div class="k-content-item_title">${item.name}</div>
+                            <div class="k-content-item_tags">
+                                <span class="k-content-item_tag">${
+                                  item.status
+                                } Draft <!--"Draft" for demo purpose only--></span>
+                                <span class="k-content-item_tag">${
+                                  item.type
+                                } Type <!--"Type" for demo purpose only--></span>
+                            </div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Last Modified</div>
+                                    <div class="k-content-item_value">${
+                                      item.lastModified
+                                        ? item.lastModified
+                                            .toString()
+                                            .split("T")[0]
+                                        : "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Sent Date</div>
+                                    <div class="k-content-item_value">${
+                                      item.sendDate
+                                        ? item.sendDate.toString().split("T")[0]
+                                        : "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Clicks</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.clicks ?? "-"
+                                    }</div>
+                                </div>
+                            </div>
+                            <div class="k-content-item_grid">
+
+                                <div>
+                                    <div class="k-content-item_label">Delivered</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.delivered ?? "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Hard bounces</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.hardBounces ?? "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Open rate</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.openRate ?? "-"
+                                    }</div>
+                                </div>
+                            </div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Opened</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.opened ?? "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Soft bounces</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.softBounces ?? "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Spam reports</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.spamReports ?? "-"
+                                    }</div>
+                                </div>
+                            </div>
+                            <div class="k-content-item_grid">
+
+                                <div>
+                                    <div class="k-content-item_label">Total sent</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.totalSent ?? "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Unique clicks</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.uniqueClicks ?? "-"
+                                    }</div>
+                                </div>
+                                <div>
+                                    <div class="k-content-item_label">Unsubscribe rate</div>
+                                    <div class="k-content-item_value">${
+                                      item.metrics?.unsubscribeRate ?? "-"
+                                    }</div>
+                                </div>
+                            </div>
+                        </div>`
+        )
+        .join("");
+    },
+    getMarketingContactItems(items) {
+      return items
+        .map(
+          (item) =>
+            `<div class="k-content-item">
+                            <div class="k-content-item_title">${item.name}</div>
+                            <div class="k-content-item_grid">
+                                <div>
+                                    <div class="k-content-item_label">Contacts</div>
+                                    <div class="k-content-item_value">${item.contactCount}</div>
+                                </div>
+                            </div>
+                        </div>`
+        )
+        .join("");
+    },
+    getMetadata(metadata) {
+      var metadataString = "";
+      metadata.version = "1.0.0";
+
+      if (metadata && metadata.timestamp) {
+        metadataString += `<div>Request was generated at ${new Date(
+          metadata.timestamp
+        ).toLocaleString()}.</div>`;
+      }
+      return metadataString;
+    },
+    addClassesToShadowRoot() {
+      let shadowRoot = this.$refs.chatElementRef.shadowRoot;
+
+      const style = document.createElement("style");
+
+      style.textContent = `
+                #container{
+                  font-family: "GT Walsheim", Helvetica, Arial, sans-serif;
                 }
-                else
-                {
-                    const entries = requestDetails.body.entries();
-                    if (entries !== null)
-                    {
-                        let hasMessages = false;
-                        for (const [key, value] of requestDetails.body.entries()) {
-                            if (key === 'message1')
-                            {
-                                let parsedValue;
-                                try {
-                                    parsedValue = JSON.parse(value);
-                                } catch (e) {
-                                    parsedValue = value;
-                                }
-                                if (parsedValue && parsedValue.text) {
-                                    formData.append('message', parsedValue.text);
-                                    hasMessages = true;
-                                }
-                            }
-                            else if (key === 'files') {
-                                formData.append(key, value);
-                            }
-                        }
 
-                        if (!hasMessages) {
-                            formData.append('messages', "");
-                        }
-                    }
-                }
-
-                const modifiedRequestDetails = {
-                    ...requestDetails,
-                    body: jsonData ?? formData,
-                    headers: {
-                        ...requestDetails.headers
-                    },
-                };
-
-                return modifiedRequestDetails;
-            };
-        },
-        setResponseInterceptor() {
-            this.$refs.chatElementRef.responseInterceptor = (response) => {
-                const messageViewModel = this.getMessageViewModel(response);
-                
-                this.history.push(messageViewModel);
-
-                if (response.serviceUnavailable)
-                {
-                    this.serviceAvailable = false
-                }
-
-                if (response.quickPrompts && response.quickPrompts.length > 0)
-                {
-                    this.$refs.chatElementRef.addMessage(messageViewModel);
-                    const promptMessage = this.getPromptsViewModel(response);
-                    
-                    this.history.push(promptMessage);
-
-                    return promptMessage;
-                }
-                return messageViewModel;
-            };
-        },
-        setOnMessage() {
-            this.$refs.chatElementRef.onMessage = (message) => {
-                this.bindPromptButtons();
-            };
-        },
-        setOnError() {
-            this.$refs.chatElementRef.onError = (error) => {
-                this.serviceAvailable = false;
-            }
-        },
-        setBorders(){
-            this.$refs.chatElementRef.style.borderLeftStyle = 'none';
-            this.$refs.chatElementRef.style.borderTopStyle = 'none';
-            this.$refs.chatElementRef.style.borderRightStyle = 'none';
-            this.$refs.chatElementRef.style.borderBottomStyle = 'none';
-        },
-        addClassesToShadowRoot() {
-            let shadowRoot = this.$refs.chatElementRef.shadowRoot;
-
-            const style = document.createElement('style');
-
-            style.textContent =
-                `
                 #messages {
                     scrollbar-width: none;
                 }
@@ -462,6 +1003,10 @@ export default {
 
                 .user-message-text {
                     background-color: ${this.themeColor} !important;
+                }
+
+                .message-bubble.html-message{
+                    width: 100%;
                 }
 
                 .btn-outline-primary:hover {
@@ -538,6 +1083,136 @@ export default {
                 .lds-ring div:nth-child(3) {
                     animation-delay: -0.15s;
                 }
+                .k-title{
+                    font-size: 1.125rem;
+                }
+                .k-title:after{
+                    content: '.';
+                    color: #F05A22;
+                }
+                .k-subtitle{
+                    text-transform: uppercase;
+                    font-size: .75rem;
+                    font-weight: 700;
+                    margin-block: 1.125rem .25rem;
+                }
+                .k-subtitle.small{
+                    font-size: .625rem;
+                    margin-block: .625rem .25rem;
+                }
+
+                .k-summary{
+                    width: 100%;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: .75rem;
+                }
+                .k-summary_item{
+                    border-radius: 1.25rem;
+                    padding: .625rem 1.25rem;
+                    background: #f7f1ff;
+                    flex: 1 1 0px;
+                }
+                .k-summary_item.span-2{
+                    grid-column: span 2 / span 2;
+                }
+                .message-bubble .k-summary_item{
+                    margin-bottom: 0;
+                }
+                .k-summary_title{
+                   margin: 0;
+                   font-weight: inherit;
+                   color: #231F20;
+                }
+                .k-summary_value{
+                   margin-block: .125rem 0;
+                   font-size: 2rem;
+                   font-weight: 700;
+                   color: #7f09b7;
+                   line-height: 1;
+                }
+                .message-bubble .k-summary_value{
+                   margin-block: .125rem 0;
+                }
+                .k-summary_item.yellow{
+                    background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
+                }
+                .k-summary_item.yellow .k-summary_value{
+                    color: #a16208;
+                }
+                .k-summary_item.green{
+                    background-image: linear-gradient(60deg, #f0fdf4 50%, #e0fde9);
+                }
+                .k-summary_item.green .k-summary_value{
+                    color: #25803d;
+                }
+
+                .k-content-items{
+                    width: 100%;
+                }
+                .k-content-item{
+                    border-radius: 1.25rem;
+                    border: 1px solid #cfc9ca;
+                    display: block;
+                    color: inherit;
+                    text-decoration: inherit;
+                    font-size: .875rem;
+                    padding: .6255rem 1rem;
+                }
+                .k-content-item_title{
+
+                }
+                .k-content-item_tags{
+                    margin-top: .5rem;
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: .375rem;
+                }
+                .message-bubble .k-content-item_tags{
+                    margin-bottom: 0;
+                }
+                .k-content-item_tag{
+                    color: #7f09b7;
+                    font-weight: bold;
+                    background: #fff;
+                    display: inline-flex;
+                    align-items: center;
+                    border-radius: 2rem;
+                    padding: .25rem .5rem;
+                    font-size: .625rem;
+                    white-space: nowrap;
+                    letter-spacing: normal;
+                    background-image: linear-gradient(60deg, #f7f1ff 50%, #f1e6fe);
+                    border: 1px solid #7f09b766;
+                    line-height: 1.5;
+                }
+                .k-content-item_tag.yellow{
+                    color: #a16208;
+                    background-image: linear-gradient(60deg, #fbf8da 50%, #fcf8c9);
+                    border: 1px solid #a1620866;
+                }
+                .k-content-item_grid{
+                    display: grid;
+                    width: 100%;
+                    text-align: center;
+                    justify-content: space-evenly;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    gap: .75rem;
+                    margin-top: .5rem;
+                }
+                .k-content-item_label{
+                    font-size: .75rem;
+                }
+                .k-content-item_value{
+                    font-weight: bold;
+                    color: #7f09b7;
+                }
+                .message-bubble .k-content-item_grid,
+                .message-bubble .k-content-item_label,
+                .message-bubble .k-content-item_value{
+                    margin-bottom: 0;
+                }
 
                 @@keyframes lds-ring {
                     0% {
@@ -547,70 +1222,11 @@ export default {
                     100% {
                         transform: rotate(360deg);
                     }
-                }`
-            shadowRoot.appendChild(style);
-        },
-        async setHistory() {
-            const historyUrlWithThread = `${this.historyUrl}/${this.threadId}`;
-            const historyResponse = await fetch(historyUrlWithThread, {
-                method: 'GET'
-            });
-            if (!historyResponse.ok)
-            {
-                console.error('An error occurred:', historyResponse.error);
-                return;
-            }
-            const rawHistory = await historyResponse.json();
-            for (const x of rawHistory) {
-                if (x.serviceUnavailable)
-                {
-                    this.serviceAvailable = false
                 }
 
-                const messageViewModel = this.getMessageViewModel(x);
-                
-                this.history.push(messageViewModel);
-                this.$refs.chatElementRef.history.push(messageViewModel);
-                this.$refs.chatElementRef.addMessage(messageViewModel);
-
-                if (x.quickPrompts.length > 0)
-                {
-                    const promptMessage = this.getPromptsViewModel(x);
-                    this.history.push(promptMessage);
-                    this.$refs.chatElementRef.history.push(promptMessage);
-                    this.$refs.chatElementRef.addMessage(promptMessage);
-                }
-            }
-        },
-        getPromptsViewModel(message) {
-            let prompts = `<div class="c-prompt-btn-wrapper" prompt-quick-suggestion-button-group-id="${message.quickPromptsGroupId}">`;
-
-            for (var prompt of message.quickPrompts) {
-                prompts += `<button class="c-prompt-btn" prompt-quick-suggestion-button value="${prompt}">${prompt}</button>`;
-            }
-
-            prompts += '</div>';
-
-            return {
-                role: 'ai',
-                html: prompts,
-                promptQuickSuggestionGroupId: `${message.quickPromptsGroupId}`
-            }
-        },
-        getMessageViewModel(message) {
-            return {
-                role: message.role ?? "",
-                text: message.message ?? ""
-            }
-        },
-        isJSONWithProperty(string, property) {
-            try {
-                const json = JSON.parse(string);
-                return json && typeof json === 'object' && property in json;
-            } catch (e) {
-                return false;
-            }
-        }
-    }
+                `;
+      shadowRoot.appendChild(style);
+    },
+  },
 };
 </script>

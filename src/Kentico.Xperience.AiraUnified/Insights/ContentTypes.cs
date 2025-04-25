@@ -1,10 +1,17 @@
 ﻿namespace Kentico.Xperience.AiraUnified.Insights;
 
 /// <summary>
-/// Content type type.
+/// Defines the types of content that can be managed in the system.
 /// </summary>
-public enum ContentType
+internal enum ContentType
 {
+    /// <summary>
+    /// Represents reusable content items that can be used across multiple pages or components.
+    /// </summary>
     Reusable,
+
+    /// <summary>
+    /// Represents website content items that are specific to individual pages.
+    /// </summary>
     Website
 }

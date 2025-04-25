@@ -14,7 +14,7 @@ namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 /// <summary>
 /// Data container class for <see cref="AiraUnifiedConfigurationItemInfo"/>.
 /// </summary>
-public partial class AiraUnifiedConfigurationItemInfo : AbstractInfo<AiraUnifiedConfigurationItemInfo, IInfoProvider<AiraUnifiedConfigurationItemInfo>>
+public class AiraUnifiedConfigurationItemInfo : AbstractInfo<AiraUnifiedConfigurationItemInfo, IInfoProvider<AiraUnifiedConfigurationItemInfo>>
 {
     /// <summary>
     /// Object type.
@@ -115,6 +115,7 @@ public partial class AiraUnifiedConfigurationItemInfo : AbstractInfo<AiraUnified
         get => ValidationHelper.GetString(GetValue(nameof(AiraUnifiedConfigurationItemAiraSmartUploadTitle)), string.Empty);
         set => SetValue(nameof(AiraUnifiedConfigurationItemAiraSmartUploadTitle), value);
     }
+
 
     /// <summary>
     /// Deletes the object using appropriate provider.

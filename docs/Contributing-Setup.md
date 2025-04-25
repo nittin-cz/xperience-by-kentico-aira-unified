@@ -44,15 +44,42 @@ Running the sample project requires creating a new Xperience by Kentico database
 Change directory in your console to `./examples/DancingGoat` and follow the instructions in the Xperience
 documentation on [creating a new database](https://docs.kentico.com/developers-and-admins/installation#Installation-CreateProjectDatabase).
 
+## FrontEnd Customization
+
+The Aira Unified application uses frontend assets located in:
+
+- `src/Kentico.Xperience.AiraUnified/wwwroot/js/index.js`
+- `src/Kentico.Xperience.AiraUnified/wwwroot/css/`
+
+These files are **generated** from source files located in the `src/Kentico.Xperience.AiraUnified/FrontEnd` folder.
+
+Changes made to the client-side code in the `FrontEnd` folder will **not** be reflected immediately. To apply the changes, you must rebuild the assets using Webpack.
+
+### Rebuilding Client Assets
+
+After making changes, navigate to the `FrontEnd` folder and run the following commands:
+
+```bash
+npm run build
+npm run build-css
+```
+
+This will recompile the JavaScript and CSS, and update the files in the wwwroot directory accordingly.
+
 ## Development Workflow
 
-1. Create a new branch with one of the following prefixes
+1. **Branch Creation**
+   - Create a new branch with one of the following prefixes:
+     - `feat/` - for new functionality
+     - `refactor/` - for restructuring of existing features
+     - `fix/` - for bugfixes
+     - `docs/` - for documentation changes
+     - `test/` - for test-related changes
 
-   - `feat/` - for new functionality
-   - `refactor/` - for restructuring of existing features
-   - `fix/` - for bugfixes
-
-1. Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution
+2. **Code Formatting**
+   - Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution
+   - Use `dotnet: format` VS Code task
+   - Ensure consistent code style across the project
 
    > use `dotnet: format` VS Code task.
 
@@ -63,3 +90,36 @@ documentation on [creating a new database](https://docs.kentico.com/developers-a
    - The PR should have a helpful description of the scope of changes being contributed.
    - Include screenshots or video to reflect UX or UI updates
    - Indicate if new settings need to be applied when the changes are merged - locally or in other environments
+
+## Asset Management
+
+### JavaScript Versioning
+
+When updating JavaScript files, it's important to update the version in the following locations:
+
+1. In the `FrontEnd/package.json` file - update the `version` field
+2. In the `Admin/AiraUnifiedConstants.cs` file - update the `AssetVersion` constant
+
+These two values should always be synchronized to ensure proper loading of new file versions in browsers.
+
+Example:
+```json
+// FrontEnd/package.json
+{
+  "version": "1.2.0",
+  ...
+}
+```
+
+```csharp
+// Admin/AiraUnifiedConstants.cs
+public const string AssetVersion = "1.2.0";
+```
+
+### External Dependencies
+
+This project uses Bootstrap from CDN. If you need to use a local version of Bootstrap or a different version, you can modify the links in the `Views/Shared/_AiraLayout.cshtml` file.
+
+## Mock Messages
+
+See [Mock messages guide](Mock-Messages-Guide.md)

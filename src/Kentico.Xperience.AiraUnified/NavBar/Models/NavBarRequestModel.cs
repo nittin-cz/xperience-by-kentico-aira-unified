@@ -1,9 +1,9 @@
-﻿namespace Kentico.Xperience.AiraUnified.NavBar;
+﻿namespace Kentico.Xperience.AiraUnified.NavBar.Models;
 
 /// <summary>
 /// Holds navbar identifier for a specified page.
 /// </summary>
-public class NavBarRequestModel
+internal sealed class NavBarRequestModel
 {
     /// <summary>
     /// The navbar page identifier.

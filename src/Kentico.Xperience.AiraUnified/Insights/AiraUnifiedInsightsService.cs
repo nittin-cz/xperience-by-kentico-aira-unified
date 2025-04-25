@@ -4,11 +4,16 @@ using CMS.ContentEngine.Internal;
 using CMS.ContentWorkflowEngine;
 using CMS.DataEngine;
 using CMS.EmailLibrary;
-using CMS.Websites;
+
+using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Insights;
 
-internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
+/// <summary>
+/// Implementation of the Aira Unified insights service that provides content, email, and contact group insights.
+/// </summary>
+internal sealed class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 {
     private readonly IContentItemManagerFactory contentItemManagerFactory;
     private readonly IContentQueryExecutor contentQueryExecutor;
@@ -20,6 +25,7 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     private readonly IInfoProvider<EmailStatisticsInfo> emailStatisticsInfoProvider;
     private readonly IInfoProvider<EmailConfigurationInfo> emailConfigurationInfoProvider;
     private readonly IInfoProvider<ContactInfo> contactInfoProvider;
+    private readonly IInfoProvider<EmailChannelInfo> emailChannelInfoProvider;
 
     private string[]? reusableTypes;
     private string[]? emailTypes;
@@ -31,10 +37,22 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
     private const string CONTENT_ITEM_EMAIL_TYPE = "Email";
     private const string CONTENT_ITEM_WEBSITE_TYPE = "Website";
     private const string CONTENT_ITEM_REUSABLE_TYPE = "Reusable";
+    private const string REGULAR_EMAIL_TYPE = "Regular";
 
-    private const string SCHEDULED_IDENTIFIER = "Scheduled";
-    private const string DRAFT_IDENTIFIER = "Draft";
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AiraUnifiedInsightsService"/> class.
+    /// </summary>
+    /// <param name="contentItemManagerFactory">Factory for creating content item managers.</param>
+    /// <param name="contentQueryExecutor">Executor for content queries.</param>
+    /// <param name="contentLanguageInfoProvider">Provider for content language information.</param>
+    /// <param name="contactGroupInfoProvider">Provider for contact group information.</param>
+    /// <param name="contactGroupMemberInfoProvider">Provider for contact group member information.</param>
+    /// <param name="contentItemLanguageMetadataInfoProvider">Provider for content item language metadata.</param>
+    /// <param name="contentWorkflowStepInfoProvider">Provider for content workflow step information.</param>
+    /// <param name="emailStatisticsInfoProvider">Provider for email statistics information.</param>
+    /// <param name="emailConfigurationInfoProvider">Provider for email configuration information.</param>
+    /// <param name="contactInfoProvider">Provider for contact information.</param>
+    /// <param name="emailChannelInfoProvider">Provider for email channel information.</param>
     public AiraUnifiedInsightsService(
         IContentItemManagerFactory contentItemManagerFactory,
         IContentQueryExecutor contentQueryExecutor,
@@ -45,7 +63,8 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         IInfoProvider<ContentWorkflowStepInfo> contentWorkflowStepInfoProvider,
         IInfoProvider<EmailStatisticsInfo> emailStatisticsInfoProvider,
         IInfoProvider<EmailConfigurationInfo> emailConfigurationInfoProvider,
-        IInfoProvider<ContactInfo> contactInfoProvider)
+        IInfoProvider<ContactInfo> contactInfoProvider,
+        IInfoProvider<EmailChannelInfo> emailChannelInfoProvider)
     {
         this.contentItemManagerFactory = contentItemManagerFactory;
         this.contentQueryExecutor = contentQueryExecutor;
@@ -57,62 +76,76 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         this.emailStatisticsInfoProvider = emailStatisticsInfoProvider;
         this.emailConfigurationInfoProvider = emailConfigurationInfoProvider;
         this.contactInfoProvider = contactInfoProvider;
+        this.emailChannelInfoProvider = emailChannelInfoProvider;
     }
 
-    public async Task<ContentInsightsModel> GetContentInsights(ContentType contentType, int userId, string? status = null)
+
+    /// <inheritdoc />
+    public async Task<List<ContentItemModel>> GetContentInsights(ContentType contentType, int userId, string? status = null)
     {
         var content = await GetContent(userId, contentType.ToString(), status);
 
-        var items = new List<ContentItemInsightsModel>();
-
-        foreach (var contentItem in content)
-        {
-            items.Add(new ContentItemInsightsModel
-            {
-                Id = contentItem.Id,
-                DisplayName = contentItem.Name
-            });
-        }
-
-        return new ContentInsightsModel
-        {
-            Items = items
-        };
+        return content.ToList();
     }
 
-    public async Task<List<EmailInsightsModel>> GetEmailInsights()
+
+    /// <inheritdoc />
+    public async Task<List<EmailCampaignModel>> GetEmailInsights()
     {
         var statistics = await emailStatisticsInfoProvider.Get().GetEnumerableTypedResultAsync();
 
         var regularEmails = await emailConfigurationInfoProvider
             .Get()
-            .WhereEquals(nameof(EmailConfigurationInfo.EmailConfigurationPurpose), "Regular")
+            .WhereEquals(nameof(EmailConfigurationInfo.EmailConfigurationPurpose), REGULAR_EMAIL_TYPE)
             .GetEnumerableTypedResultAsync();
 
-        var emailsInsights = new List<EmailInsightsModel>();
+        var emailsInsights = new List<EmailCampaignModel>();
+        var emailChannels = (await emailChannelInfoProvider.Get().GetEnumerableTypedResultAsync()).ToList();
 
         foreach (var email in regularEmails)
         {
             var stats = statistics.FirstOrDefault(s => s.EmailStatisticsEmailConfigurationID == email.EmailConfigurationID);
 
+            var channelDefaultLanguage = emailChannels.FirstOrDefault(item =>
+                item.EmailChannelChannelID == email.EmailConfigurationEmailChannelID)?.EmailChannelPrimaryContentLanguageID ?? 1;
+
+            var languageMetadata = contentItemLanguageMetadataInfoProvider
+                .Get()
+                .WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentItemID), email.EmailConfigurationContentItemID)
+                .WhereEquals(nameof(ContentItemLanguageMetadataInfo.ContentItemLanguageMetadataContentLanguageID), channelDefaultLanguage)
+                .FirstOrDefault();
+
+            var emailInsight = new EmailCampaignModel
+            {
+                Name = languageMetadata?.ContentItemLanguageMetadataDisplayName ?? email.EmailConfigurationName,
+                Id = email.EmailConfigurationID.ToString(),
+                LastModified = languageMetadata?.ContentItemLanguageMetadataModifiedWhen
+            };
+
             if (stats != null)
             {
-                emailsInsights.Add(new EmailInsightsModel
+                emailInsight.Metrics = new EmailMetricsModel()
                 {
-                    EmailsSent = stats.EmailStatisticsTotalSent,
-                    EmailsDelivered = stats.EmailStatisticsEmailsDelivered,
-                    EmailsOpened = stats.EmailStatisticsEmailOpens,
-                    LinksClicked = stats.EmailStatisticsEmailUniqueClicks,
+                    TotalSent = stats.EmailStatisticsTotalSent,
+                    Delivered = stats.EmailStatisticsEmailsDelivered,
+                    Opened = stats.EmailStatisticsEmailOpens,
+                    Clicks = stats.EmailStatisticsEmailClicks,
+                    UniqueClicks = stats.EmailStatisticsEmailUniqueClicks,
                     UnsubscribeRate = stats.EmailStatisticsUniqueUnsubscribes,
                     SpamReports = stats.EmailStatisticsSpamReports ?? 0,
-                    EmailConfigurationName = email.EmailConfigurationName
-                });
+                    SoftBounces = stats.EmailStatisticsEmailSoftBounces,
+                    HardBounces = stats.EmailStatisticsEmailHardBounces
+                };
             }
+
+            emailsInsights.Add(emailInsight);
         }
 
         return emailsInsights;
     }
 
+
+    /// <inheritdoc />
     public ContactGroupsInsightsModel GetContactGroupInsights(string[] names)
     {
         var allCount = contactInfoProvider.Get().ToList().Count;
@@ -137,6 +170,14 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         };
     }
 
+
+    /// <summary>
+    /// Gets content items based on the specified parameters.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="classType">The content class type.</param>
+    /// <param name="status">The content status.</param>
+    /// <returns>A collection of content item models.</returns>
     private async Task<IEnumerable<ContentItemModel>> GetContent(int userId, string classType = CONTENT_ITEM_REUSABLE_TYPE, string? status = null)
     {
         var builder = classType switch
@@ -157,12 +198,23 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             return [];
         }
 
-        if (status == DRAFT_IDENTIFIER)
+        if (status == AiraUnifiedConstants.InsightsDraftIdentifier)
         {
-            builder.Parameters(q => q.Where(w => w
+            builder = builder.Parameters(q => q.Where(w => w
                 .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.Draft)
                 .Or()
-                .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.InitialDraft)));
+                .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.InitialDraft))
+            );
+
+            var itemsInDraft = await contentQueryExecutor.GetResult(builder, ContentItemBinder, options);
+            return await RemoveScheduled(userId, itemsInDraft);
+        }
+
+        if (status == AiraUnifiedConstants.InsightsPublishedIdentifier)
+        {
+            builder = builder.Parameters(q => q.Where(w => w
+                .WhereEquals(nameof(ContentItemCommonDataInfo.ContentItemCommonDataVersionStatus), VersionStatus.Published))
+            );
 
             return await contentQueryExecutor.GetResult(builder, ContentItemBinder, options);
         }
@@ -176,12 +228,17 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
 
         return status switch
         {
-            DRAFT_IDENTIFIER => FilterDrafts(items),
-            SCHEDULED_IDENTIFIER => await FilterScheduled(userId, items),
+            AiraUnifiedConstants.InsightsScheduledIdentifier => await GetScheduled(userId, items),
             _ => await FilterCustomWorkflowStep(items, status),
         };
     }
 
+
+    /// <summary>
+    /// Gets contact groups by their names.
+    /// </summary>
+    /// <param name="names">Array of contact group names.</param>
+    /// <returns>A collection of contact group information.</returns>
     private IEnumerable<ContactGroupInfo> GetContactGroups(string[] names)
     {
         List<ContactGroupInfo> result = [];
@@ -205,6 +262,12 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
+
+    /// <summary>
+    /// Gets a content item query builder for the specified content types.
+    /// </summary>
+    /// <param name="contentTypes">Array of content type names.</param>
+    /// <returns>A content item query builder or null if no content types are specified.</returns>
     private static ContentItemQueryBuilder? GetContentItemBuilder(string[] contentTypes)
     {
         var builder = new ContentItemQueryBuilder();
@@ -217,7 +280,14 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         };
     }
 
-    private async Task<IEnumerable<ContentItemModel>> FilterScheduled(int userId, IEnumerable<ContentItemModel> items)
+
+    /// <summary>
+    /// Filters content items to only include scheduled items.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="items">The content items to filter.</param>
+    /// <returns>A collection of scheduled content items.</returns>
+    private async Task<IEnumerable<ContentItemModel>> GetScheduled(int userId, IEnumerable<ContentItemModel> items)
     {
         List<ContentItemModel> result = [];
 
@@ -235,13 +305,23 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
-    private static IEnumerable<ContentItemModel> FilterDrafts(IEnumerable<ContentItemModel> items)
+
+    /// <summary>
+    /// Filters content items to only include scheduled items.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="items">The content items to filter.</param>
+    /// <returns>A collection of scheduled content items.</returns>
+    private async Task<IEnumerable<ContentItemModel>> RemoveScheduled(int userId, IEnumerable<ContentItemModel> items)
     {
         List<ContentItemModel> result = [];
 
+        var contentItemManager = contentItemManagerFactory.Create(userId);
         foreach (var item in items)
         {
-            if (item.VersionStatus == VersionStatus.Draft)
+            var language = await contentLanguageInfoProvider.GetAsync(item.LanguageId);
+            var isScheduled = await contentItemManager.IsPublishScheduled(item.Id, language.ContentLanguageName);
+            if (!isScheduled)
             {
                 result.Add(item);
             }
@@ -250,6 +330,13 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
+
+    /// <summary>
+    /// Filters content items to only include items in a specific workflow step.
+    /// </summary>
+    /// <param name="items">The content items to filter.</param>
+    /// <param name="status">The workflow step status.</param>
+    /// <returns>A collection of content items in the specified workflow step.</returns>
     private async Task<IEnumerable<ContentItemModel>> FilterCustomWorkflowStep(IEnumerable<ContentItemModel> items, string? status)
     {
         List<ContentItemModel> result = [];
@@ -275,6 +362,12 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         return result;
     }
 
+
+    /// <summary>
+    /// Binds content query data to a content item model.
+    /// </summary>
+    /// <param name="container">The content query data container.</param>
+    /// <returns>A content item model.</returns>
     private ContentItemModel ContentItemBinder(IContentQueryDataContainer container) => new()
     {
         Id = container.ContentItemID,
@@ -284,15 +377,24 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
         ContentTypeName = container.ContentTypeName,
         VersionStatus = container.ContentItemCommonDataVersionStatus,
         LanguageId = container.ContentItemCommonDataContentLanguageID,
-
     };
 
+
+    /// <summary>
+    /// Gets an array of reusable content type names.
+    /// </summary>
+    /// <returns>Array of reusable content type names.</returns>
     private static string[] GetReusableTypes() =>
         DataClassInfoProvider.GetClasses()
             .Where(nameof(DataClassInfo.ClassContentTypeType), QueryOperator.Equals, CONTENT_ITEM_REUSABLE_TYPE)
             .Select(c => c.ClassName)
             .ToArray();
 
+
+    /// <summary>
+    /// Gets an array of page content type names.
+    /// </summary>
+    /// <returns>Array of page content type names.</returns>
     private static string[] GetPageTypes() =>
         DataClassInfoProvider.GetClasses()
             .Where(nameof(DataClassInfo.ClassContentTypeType), QueryOperator.Equals, CONTENT_ITEM_WEBSITE_TYPE)
@@ -300,7 +402,10 @@ internal class AiraUnifiedInsightsService : IAiraUnifiedInsightsService
             .ToArray();
 
 
-
+    /// <summary>
+    /// Gets an array of email content type names.
+    /// </summary>
+    /// <returns>Array of email content type names.</returns>
     private static string[] GetEmailTypes() =>
         DataClassInfoProvider.GetClasses()
             .Where(nameof(DataClassInfo.ClassContentTypeType), QueryOperator.Equals, CONTENT_ITEM_EMAIL_TYPE)

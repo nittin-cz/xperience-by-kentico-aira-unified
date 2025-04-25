@@ -1,14 +1,15 @@
 ﻿using CMS.Core;
 
 using Kentico.Membership;
-using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
-using Kentico.Xperience.AiraUnified.AssetUploader.Models;
+using Kentico.Xperience.AiraUnified.AssetUploader;
 using Kentico.Xperience.AiraUnified.Authentication;
 using Kentico.Xperience.AiraUnified.Chat;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.NavBar;
+using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -21,37 +22,23 @@ namespace Kentico.Xperience.AiraUnified;
 /// </summary>
 [ApiController]
 [Route("[controller]/[action]")]
-public sealed class AiraUnifiedController : Controller
+internal sealed class AiraUnifiedController(
+    AdminUserManager adminUserManager,
+    IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
+    IAiraUnifiedAssetService airaUnifiedAssetService,
+    INavigationService navigationService,
+    IAiraUnifiedChatService airaUnifiedChatService,
+    IEventLogService eventLogService)
+    : Controller
 {
-    private readonly AdminUserManager adminUserManager;
-    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
-    private readonly IAiraUnifiedChatService airaUnifiedChatService;
-    private readonly IAiraUnifiedAssetService airaUnifiedAssetService;
-    private readonly INavigationService navigationService;
-    private readonly IEventLogService eventLogService;
-
-    public AiraUnifiedController(
-        AdminUserManager adminUserManager,
-        IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
-        IAiraUnifiedAssetService airaUnifiedAssetService,
-        INavigationService navigationService,
-        IAiraUnifiedChatService airaUnifiedChatService,
-        IEventLogService eventLogService)
-    {
-        this.adminUserManager = adminUserManager;
-        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
-        this.airaUnifiedAssetService = airaUnifiedAssetService;
-        this.airaUnifiedChatService = airaUnifiedChatService;
-        this.navigationService = navigationService;
-        this.eventLogService = eventLogService;
-    }
-
     private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
+
 
     /// <summary>
     /// Endpoint exposing access to the Chat page.
-    /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
+    /// <param name="chatThreadId">The chat thread id. If not specified, a new thread will be created.</param>
+    /// <returns>A view containing the chat interface.</returns>
     [HttpGet]
     public async Task<IActionResult> Index(int? chatThreadId = null)
     {
@@ -103,6 +90,11 @@ public sealed class AiraUnifiedController : Controller
         return View("~/Chat/Chat.cshtml", chatModel);
     }
 
+
+    /// <summary>
+    /// Retrieves all chat threads for the current user.
+    /// </summary>
+    /// <returns>A list of chat threads wrapped in <see cref="AiraUnifiedChatThreadsViewModel"/>.</returns>
     [HttpGet]
     public async Task<IActionResult> GetChatThreads()
     {
@@ -116,6 +108,11 @@ public sealed class AiraUnifiedController : Controller
         });
     }
 
+
+    /// <summary>
+    /// Retrieves the chat thread selector view with navigation and thread management URLs.
+    /// </summary>
+    /// <returns>A view containing the chat thread selector interface.</returns>
     [HttpGet]
     public async Task<IActionResult> ChatThreadSelector()
     {
@@ -150,9 +147,11 @@ public sealed class AiraUnifiedController : Controller
         return View("~/Chat/ChatThreadSelector.cshtml", model);
     }
 
+
     /// <summary>
-    /// Creates new chat thread and redirects to the newly created chat thread.
+    /// Creates a new chat thread and redirects to the chat interface.
     /// </summary>
+    /// <returns>A redirect to the chat interface with the newly created thread.</returns>
     [HttpGet]
     public async Task<IActionResult> NewChatThread()
     {
@@ -173,9 +172,12 @@ public sealed class AiraUnifiedController : Controller
         return Redirect(chatRedirectUrl.ToString());
     }
 
+
     /// <summary>
     /// Retrieves the navigation view model.
     /// </summary>
+    /// <param name="request">The <see cref="NavBarRequestModel"/> containing the page identifier.</param>
+    /// <returns>A <see cref="NavBarViewModel"/> containing the navigation view model.</returns>
     [HttpPost]
     public async Task<IActionResult> Navigation([FromBody] NavBarRequestModel request)
     {
@@ -199,18 +201,25 @@ public sealed class AiraUnifiedController : Controller
         return Ok(model);
     }
 
+
     /// <summary>
     /// Endpoint exposing the user's chat history.
-    /// <param name="chatThreadId">The chat thread id.</param>
     /// </summary>
+    /// <param name="chatThreadId">The chat thread id to retrieve history for.</param>
+    /// <returns>A list of chat messages wrapped in <see cref="AiraUnifiedChatMessageViewModel"/>. If no history exists, initial AI messages will be added.</returns>
     [HttpGet]
-    public async Task<IActionResult> GetChatHistory(int chatThreadId)
+    public async Task<IActionResult> GetOrCreateChatHistory(int chatThreadId)
     {
         var user = await adminUserManager.GetUserAsync(User);
 
         // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
         var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID, chatThreadId);
         var chatThreadState = history.Count == 0 ? ChatStateType.initial : ChatStateType.returning;
+
+        if (chatThreadState == ChatStateType.returning && history[^1].CreatedWhen.AddDays(1) > DateTime.UtcNow)
+        {
+            return Ok(history);
+        }
 
         var initialMessages = await airaUnifiedChatService.GetInitialAIMessage(chatThreadState);
 
@@ -224,20 +233,29 @@ public sealed class AiraUnifiedController : Controller
             return Ok(history);
         }
 
-        foreach (var message in initialMessages.Responses)
+        var thread = await airaUnifiedChatService.GetAiraUnifiedThreadInfoOrNull(user.UserID, chatThreadId);
+
+        var messages = initialMessages.Responses.Select(message => new AiraUnifiedChatMessageViewModel
         {
-            history.Add(new AiraUnifiedChatMessageViewModel
+            Message = message.Content,
+            Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
+        });
+
+        history.AddRange(messages);
+
+        if (thread is not null)
+        {
+            foreach (var message in initialMessages.Responses)
             {
-                Message = message.Content,
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
-            });
+                await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AI, thread);
+            }
         }
 
         var lastMessage = history[^1];
 
-        if (initialMessages.SuggestedQuestions is not null)
+        if (initialMessages.QuickOptions is not null && chatThreadState != ChatStateType.returning)
         {
-            var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.SuggestedQuestions, chatThreadId);
+            var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.QuickOptions, chatThreadId);
             lastMessage.QuickPrompts = promptGroup.QuickPrompts;
             lastMessage.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
         }
@@ -245,11 +263,13 @@ public sealed class AiraUnifiedController : Controller
         return Ok(history);
     }
 
+
     /// <summary>
     /// Endpoint allowing chat communication via the chat interface.
-    /// <param name = "chatThreadId" > The chat thread id.</param>
     /// </summary>
-    /// <param name="request">The <see cref="IFormCollection"/> including the chat message.</param>
+    /// <param name="request">The <see cref="IFormCollection"/> containing the chat message.</param>
+    /// <param name="chatThreadId">The chat thread id to post the message to.</param>
+    /// <returns>A chat message response wrapped in <see cref="AiraUnifiedChatMessageViewModel"/>. If the service is unavailable, an error message will be returned.</returns>
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request, int chatThreadId)
     {
@@ -286,7 +306,7 @@ public sealed class AiraUnifiedController : Controller
             return BadRequest($"The specified chat does not belong to user {user.UserName}.");
         }
 
-        await airaUnifiedChatService.SaveMessage(message, userId, AiraUnifiedConstants.UserChatRoleName, thread);
+        await airaUnifiedChatService.SaveMessage(message, userId, ChatRoleType.User, thread);
 
         try
         {
@@ -302,19 +322,20 @@ public sealed class AiraUnifiedController : Controller
                 return Ok(result);
             }
 
-            await airaUnifiedChatService.SaveMessage(aiResponse.Responses[0].Content, user.UserID, AiraUnifiedConstants.AiraUnifiedChatRoleName, thread);
+            await SaveMessages(aiResponse, user, thread);
 
             await airaUnifiedChatService.UpdateChatSummary(userId, message);
 
             result = new AiraUnifiedChatMessageViewModel
             {
                 Role = AiraUnifiedConstants.AiraUnifiedChatRoleName,
-                Message = aiResponse.Responses[0].Content
+                Message = aiResponse.Responses[0].Content,
+                Insights = aiResponse.Insights
             };
 
-            if (aiResponse.SuggestedQuestions is not null)
+            if (aiResponse.QuickOptions is not null)
             {
-                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.SuggestedQuestions, chatThreadId);
+                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.QuickOptions, chatThreadId);
                 result.QuickPrompts = promptGroup.QuickPrompts;
                 result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
             }
@@ -332,10 +353,12 @@ public sealed class AiraUnifiedController : Controller
         return Ok(result);
     }
 
+
     /// <summary>
     /// Endpoint allowing removal of a used suggested prompt group.
     /// </summary>
     /// <param name="model">The <see cref="AiraUnifiedUsedPromptGroupModel"/> with the information about the prompt group.</param>
+    /// <returns>An empty response.</returns>
     [HttpPost]
     public IActionResult RemoveUsedPromptGroup([FromBody] AiraUnifiedUsedPromptGroupModel model)
     {
@@ -344,10 +367,12 @@ public sealed class AiraUnifiedController : Controller
         return Ok();
     }
 
+
     /// <summary>
-    /// Endpoint allowing upload of the files via smart upload.
+    /// Endpoint allowing upload of files via smart upload.
     /// </summary>
-    /// <param name="request">The <see cref="IFormCollection"/> request containing the uploaded files.</param>
+    /// <param name="request">The <see cref="IFormCollection"/> containing the uploaded files.</param>
+    /// <returns>An empty response on success, or a BadRequest response if the file format is not allowed.</returns>
     [HttpPost]
     public async Task<IActionResult> PostImages(IFormCollection request)
     {
@@ -364,9 +389,11 @@ public sealed class AiraUnifiedController : Controller
         return BadRequest("Attempted to upload file with forbidden format.");
     }
 
+
     /// <summary>
     /// Endpoint allowing accessing the smart upload page.
     /// </summary>
+    /// <returns>A view containing the smart upload interface.</returns>
     [HttpGet]
     public async Task<IActionResult> Assets()
     {
@@ -400,9 +427,11 @@ public sealed class AiraUnifiedController : Controller
         return View("~/AssetUploader/Assets.cshtml", model);
     }
 
+
     /// <summary>
     /// Endpoint retrieving the allowed smart upload file extensions.
     /// </summary>
+    /// <returns>A list of allowed file extensions.</returns>
     [HttpGet]
     public async Task<IActionResult> GetAllowedFileExtensions()
     {
@@ -411,49 +440,11 @@ public sealed class AiraUnifiedController : Controller
         return Ok(allowedExtensions);
     }
 
-    /// <summary>
-    /// Endpoint exposing the manifest file for the PWA.
-    /// </summary>
-    [HttpGet($"/{AiraUnifiedConstants.RCLUrlPrefix}/manifest.json")]
-    [Produces("application/json")]
-    public async Task<IActionResult> GetPwaManifest()
-    {
-        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
-
-        var libraryBasePath = '/' + AiraUnifiedConstants.RCLUrlPrefix;
-
-        var manifest = new
-        {
-            name = "AiraUnified",
-            short_name = "AiraUnified",
-            start_url = $"{configuration.AiraUnifiedConfigurationItemAiraPathBase}/{AiraUnifiedConstants.ChatRelativeUrl}",
-            display = "standalone",
-            background_color = "#ffffff",
-            theme_color = "#ffffff",
-            scope = "/",
-            icons = new[]
-            {
-                new
-                {
-                    src = $"{libraryBasePath}/img/favicon/android-chrome-192x192.png",
-                    sizes = "192x192",
-                    type = "image/png"
-                },
-                new
-                {
-                    src = $"{libraryBasePath}/img/favicon/android-chrome-512x512.png",
-                    sizes = "512x512",
-                    type = "image/png"
-                }
-            }
-        };
-
-        return Json(manifest);
-    }
 
     /// <summary>
     /// Endpoint retrieving the SignIn page.
     /// </summary>
+    /// <returns>A view containing the SignIn page.</returns>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> SignIn()
@@ -493,7 +484,9 @@ public sealed class AiraUnifiedController : Controller
         return View("~/Authentication/SignIn.cshtml", model);
     }
 
+
     private sealed record ConfigurationModel(string BaseUrl, string AiraUnifiedPathBase);
+
 
     private async Task<ConfigurationModel> GetConfiguration()
     {
@@ -501,5 +494,30 @@ public sealed class AiraUnifiedController : Controller
         var baseUrl = HttpContext.Request.GetBaseUrl();
 
         return new ConfigurationModel(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase);
+    }
+
+    private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, AdminApplicationUser user,
+        AiraUnifiedChatThreadInfo thread)
+    {
+        if (!aiResponse.Insights?.IsInsightsQuery ?? true)
+        {
+            foreach (var response in aiResponse.Responses)
+            {
+                await airaUnifiedChatService.SaveMessage(response.Content, user.UserID,
+                    ChatRoleType.AI, thread);
+            }
+        }
+        else
+        {
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights, options);
+
+            await airaUnifiedChatService.SaveMessage(insightsJson, user.UserID,
+                ChatRoleType.System, thread);
+        }
     }
 }
