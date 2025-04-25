@@ -571,7 +571,7 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         context.Response.Redirect(signInRedirectUrl);
-        
+
         return false;
     }
 
@@ -594,7 +594,7 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         context.Response.Redirect(fullRedirectUrl);
-        
+
         return true;
     }
 }

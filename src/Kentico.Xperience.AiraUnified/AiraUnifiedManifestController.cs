@@ -8,7 +8,7 @@ namespace Kentico.Xperience.AiraUnified;
 /// The main controller exposing the manifest.
 /// </summary>
 [ApiController]
-[Route("[controller]/[action]")]
+[Route(AiraUnifiedConstants.RCLUrlPrefix)]
 public sealed class AiraUnifiedManifestController(IAiraUnifiedConfigurationService airaUnifiedConfigurationService)
     : Controller
 {
@@ -16,7 +16,7 @@ public sealed class AiraUnifiedManifestController(IAiraUnifiedConfigurationServi
     /// Endpoint exposing the manifest file for the PWA.
     /// </summary>
     /// <returns>The manifest file for the PWA.</returns>
-    [HttpGet($"/{AiraUnifiedConstants.RCLUrlPrefix}/manifest.json")]
+    [HttpGet("manifest.json")]
     [Produces("application/json")]
     public async Task<IActionResult> GetPwaManifest()
     {

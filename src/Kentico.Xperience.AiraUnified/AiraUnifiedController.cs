@@ -235,15 +235,17 @@ internal sealed class AiraUnifiedController(
 
         var thread = await airaUnifiedChatService.GetAiraUnifiedThreadInfoOrNull(user.UserID, chatThreadId);
 
-        foreach (var message in initialMessages.Responses)
+        var messages = initialMessages.Responses.Select(message => new AiraUnifiedChatMessageViewModel
         {
-            history.Add(new AiraUnifiedChatMessageViewModel
-            {
-                Message = message.Content,
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
-            });
+            Message = message.Content,
+            Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
+        });
 
-            if (thread is not null)
+        history.AddRange(messages);
+
+        if (thread is not null)
+        {
+            foreach (var message in initialMessages.Responses)
             {
                 await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AI, thread);
             }
