@@ -6,7 +6,7 @@
 
 ## Description
 
-Aira Unified integration provides an alternative administration UI and chatbot that can be easily added to an Xperience by Kentico project. It is designed for content editors and marketers who need essential functionality on mobile devices.
+The Aira Unified integration provides an alternative administration UI and a chatbot that can be easily added to an Xperience by Kentico project. It is designed for content editors and marketers who need essential functionality on mobile devices.
 
 ## Screenshots
 
@@ -16,10 +16,10 @@ Aira Unified integration provides an alternative administration UI and chatbot t
 
 ## Library Version Matrix
 
-| Xperience Version |    Library Version   |
-| ----------------- | -------------------- |
+| Xperience Version |    Library Version    |
+| ----------------- | --------------------- |
 | >= 30.2.0         | >= 0.3.0-prerelease-3 |
-| >= 30.0.0         | >= 0.1.0-prerelase-1 |
+| >= 30.0.0         | >= 0.1.0-prerelease-1 |
 
 ## Dependencies
 
@@ -43,7 +43,7 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 ### Quick Start
 
-1. Add the Aira Unified configuration to your `appsettings.json`. The minimal required configuration is:
+1. To activate the communication of the Aira Unified app add the Aira Unified configuration to your `appsettings.json`. The minimal required configuration is:
 
 ```json
 "AiraUnifiedOptions": {
@@ -135,6 +135,6 @@ This project has **Kentico Labs limited support**.
 
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
-This feature is currently in a Preview mode, do not use for production instances.
+This feature is currently in Preview mode. Do not use it for production instances.
 
-For any security issues see [`SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
+For any security issues, see [`SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).

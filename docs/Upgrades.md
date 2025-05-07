@@ -50,9 +50,9 @@ The following core custom module table has been changed:
    The new custom module classes will be automatically installed on startup.
 
 5. **Verify the Upgrade**
-   - Check that the Aira Unified application is accessible
-   - Verify that chat functionality works
-   - Confirm that smart uploader is operational
+   - Check that the Aira Unified application is accessible.
+   - Verify that chat functionality works.
+   - Confirm that the smart uploader is operational.
 
 ## Data Migration
 
@@ -61,13 +61,13 @@ Currently, there is no automated migration path for chat history and configurati
 ### Manual Migration Options
 
 1. **Export/Import Data**
-   - Export relevant data from backup tables
-   - Transform the data to match the new schema
-   - Import into the new tables
+   - Export relevant data from backup tables.
+   - Transform the data to match the new schema.
+   - Import into the new tables.
 
 2. **Start Fresh**
-   - If the data is not critical, you can start with a fresh installation
-   - Users will need to reconfigure their settings
+   - If the data is not critical, you can start with a fresh installation.
+   - Users will need to reconfigure their settings.
 
 ## Uninstall
 
@@ -98,23 +98,23 @@ To completely remove the Aira Unified integration:
    ```
 
 3. Clean up any remaining files:
-   - Remove the Aira Unified configuration from `appsettings.json`
-   - Remove any custom routes or middleware from `Program.cs`
-   - Delete any custom assets from the `wwwroot` directory
+   - Remove the Aira Unified configuration from `appsettings.json`.
+   - Remove any custom routes or middleware from `Program.cs`.
+   - Delete any custom assets from the `wwwroot` directory.
 
 ## Troubleshooting
 
 If you encounter issues during the upgrade:
 
 1. **Check the Logs**
-   - Review the application logs for any errors
-   - Check the database logs for SQL errors
+   - Review the application logs for any errors.
+   - Check the database logs for SQL errors.
 
 2. **Verify Permissions**
-   - Ensure the application has proper database permissions
-   - Check that all required roles are assigned
+   - Ensure the application has proper database permissions.
+   - Check that all required roles are assigned.
 
 3. **Rollback Plan**
-   - If the upgrade fails, restore from your backup
-   - Reinstall the previous version of the package
-   - Contact support if issues persist
+   - If the upgrade fails, restore from your backup.
+   - Reinstall the previous version of the package.
+   - Contact support if issues persist.

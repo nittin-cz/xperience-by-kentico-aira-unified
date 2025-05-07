@@ -70,16 +70,16 @@ This will recompile the JavaScript and CSS, and update the files in the wwwroot 
 
 1. **Branch Creation**
    - Create a new branch with one of the following prefixes:
-     - `feat/` - for new functionality
-     - `refactor/` - for restructuring of existing features
-     - `fix/` - for bugfixes
-     - `docs/` - for documentation changes
-     - `test/` - for test-related changes
+     - `feat/` - for new functionality.
+     - `refactor/` - for restructuring of existing features.
+     - `fix/` - for bugfixes.
+     - `docs/` - for documentation changes.
+     - `test/` - for test-related changes.
 
 2. **Code Formatting**
-   - Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution
-   - Use `dotnet: format` VS Code task
-   - Ensure consistent code style across the project
+   - Run `dotnet format` against the `Kentico.Xperience.RepoTemplate` solution.
+   - Use `dotnet: format` VS Code task.
+   - Ensure consistent code style across the project.
 
    > use `dotnet: format` VS Code task.
 
@@ -88,8 +88,8 @@ This will recompile the JavaScript and CSS, and update the files in the wwwroot 
 1. Once ready, create a PR on GitHub. The PR will need to have all comments resolved and all tests passing before it will be merged.
 
    - The PR should have a helpful description of the scope of changes being contributed.
-   - Include screenshots or video to reflect UX or UI updates
-   - Indicate if new settings need to be applied when the changes are merged - locally or in other environments
+   - Include screenshots or video to reflect UX or UI updates.
+   - Indicate if new settings need to be applied when the changes are merged - locally or in other environments.
 
 ## Asset Management
 
@@ -97,8 +97,8 @@ This will recompile the JavaScript and CSS, and update the files in the wwwroot 
 
 When updating JavaScript files, it's important to update the version in the following locations:
 
-1. In the `FrontEnd/package.json` file - update the `version` field
-2. In the `Admin/AiraUnifiedConstants.cs` file - update the `AssetVersion` constant
+1. In the `FrontEnd/package.json` file - update the `version` field.
+2. In the `Admin/AiraUnifiedConstants.cs` file - update the `AssetVersion` constant.
 
 These two values should always be synchronized to ensure proper loading of new file versions in browsers.
 

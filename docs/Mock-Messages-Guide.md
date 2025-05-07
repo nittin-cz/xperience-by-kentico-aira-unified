@@ -6,9 +6,9 @@ This document describes how to work with mock messages in `MockAiHttpClient.cs` 
 
 `MockAiHttpClient` distinguishes between three conversation states:
 
-1. **Initial** - first message when starting the chat
-2. **Returning** - message when returning to an existing conversation
-3. **Ongoing** - regular messages during conversation
+1. **Initial** - first message when starting the chat.
+2. **Returning** - message when returning to an existing conversation.
+3. **Ongoing** - regular messages during conversation.
 
 ## Modifying Messages
 
@@ -148,9 +148,9 @@ new ResponseMessageModel
 
 To add a new response type:
 
-1. Define the response model
-2. Add a new case to the switch expression in `GetOngoingMessageResponse()`
-3. Update the response handling in the frontend
+1. Define the response model.
+2. Add a new case to the switch expression in `GetOngoingMessageResponse()`.
+3. Update the response handling in the frontend.
 
 Example of adding a new response type:
 
@@ -186,29 +186,31 @@ public class CustomResponseModel
 To test different scenarios:
 
 1. **Initial State**
-   - Start a new conversation
-   - Verify welcome message
-   - Check suggested questions
+   - Start a new conversation.
+   - Verify welcome message.
+   - Check suggested questions.
 
 2. **Returning State**
-   - Return to an existing conversation
-   - Verify returning message
-   - Check conversation history
+   - Return to an existing conversation.
+   - Verify returning message.
+   - Check conversation history.
 
 3. **Ongoing State**
-   - Regular messages: Type any text
-   - Insights: Use keywords like "content", "marketing", "email"
-   - Errors: Use invalid input or trigger error conditions
+   - Regular messages: Type any text.
+   - Insights: Use keywords like "content", "marketing", "email".
+   - Errors: Use invalid input or trigger error conditions.
 
 ## Development Tips
 
-1. Always include the "MOCK:" prefix in text messages
-2. Use collection expressions (`[ ... ]`) for arrays
-3. Include timestamps in metadata
-4. Use consistent versioning
-5. Add appropriate error handling
-6. Test all response types
-7. Document new response types
+1. Always keep the "MOCK:" prefix in text messages for easy identification of mock responses.
+2. Use collection expressions (`[ ... ]`) instead of `new List<T> { ... }`.
+3. Include timestamps in metadata.
+4. Use consistent versioning.
+5. Add appropriate error handling.
+6. Test all response types.
+7. Document new response types.
+8. Always use the 'M' suffix for decimal values (e.g., `45.5M`).
+9. Use explicit cast for decimal to double conversion: `(double)45.5M`.
 
 ## Insights Data Structure
 
@@ -245,20 +247,3 @@ new EmailInsightsDataModel
     Campaigns = [ ... ]
 }
 ```
-
-## Testing
-
-To test different states:
-
-1. **Initial**: Start a new conversation
-2. **Returning**: Return to an existing conversation
-3. **Ongoing**: 
-   - For regular messages: Type any message
-   - For insights: Use the keyword "insights" and the appropriate category (e.g., "content insights", "email insights", "marketing insights")
-
-## Development Tips
-
-1. Always keep the "MOCK:" prefix in text messages for easy identification of mock responses
-2. Use collection expressions (`[ ... ]`) instead of `new List<T> { ... }`
-3. Always use the 'M' suffix for decimal values (e.g., `45.5M`)
-4. Use explicit cast for decimal to double conversion: `(double)45.5M` 
