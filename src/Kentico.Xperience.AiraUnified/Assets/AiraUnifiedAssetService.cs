@@ -33,15 +33,15 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
     private readonly IEventLogService eventLogService;
     private readonly ISettingsService settingsService;
 
-    private const string AssetFieldName = "AssetFieldName";
+    private const string ASSET_FIELD_NAME = "AssetFieldName";
     private const string INHERITED = "_INHERITED_";
-    private const string ContentTypeGuid = "ContentTypeGuid";
-    private const string AllowedExtensions = "allowedExtensions";
-    private const string CMSMediaFileAllowedExtensions = "CMSMediaFileAllowedExtensions";
-    private const string AIRAUnifiedLogoImagePurpose = "AIRA Unified Logo";
-    private const string NoFileFormatConfiguredWarning = "No file format is configured for Smart Upload.";
-    private const string ConfiguredUrlEmptyWarning = "Configured URL is empty, using default";
-    private const string NoContentTypeConfiguredError = "No content type is configured for mass upload.";
+    private const string CONTENT_TYPE_GUID = "ContentTypeGuid";
+    private const string ALLOWED_EXTENSIONS = "allowedExtensions";
+    private const string CMS_MEDIA_FILE_EXTENSIONS = "CMSMediaFileAllowedExtensions";
+    private const string AIRA_UNIFIED_LOGO_IMAGE_PURPOSE = "AIRA Unified Logo";
+    private const string NO_FILE_FORMAT_CONFIGURED_WARNING = "No file format is configured for Smart Upload.";
+    private const string CONFIGURED_URL_EMPTY_WARNING = "Configured URL is empty, using default";
+    private const string NO_CONTENT_TYPE_CONFIGURED_ERROR = "No content type is configured for mass upload.";
 
 
     public AiraUnifiedAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
@@ -93,8 +93,8 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
     public async Task<string> GetAllowedFileExtensions()
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
-        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[AssetFieldName];
-        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[ContentTypeGuid]);
+        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[ASSET_FIELD_NAME];
+        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[CONTENT_TYPE_GUID]);
 
         var contentType = (await DataClassInfoProvider.ProviderObject
            .Get()
@@ -105,11 +105,11 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         var contentTypeFormInfo = new FormInfo(contentType.ClassFormDefinition);
         var fields = contentTypeFormInfo.GetFormField(contentItemAssetColumnCodeName);
 
-        var allowedExtensions = fields.Settings[AllowedExtensions];
+        var allowedExtensions = fields.Settings[ALLOWED_EXTENSIONS];
 
         if (allowedExtensions is not string settings)
         {
-            eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), NoFileFormatConfiguredWarning);
+            eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), NO_FILE_FORMAT_CONFIGURED_WARNING);
 
             return string.Empty;
         }
@@ -122,7 +122,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
 
-        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[ContentTypeGuid]);
+        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[CONTENT_TYPE_GUID]);
 
         var contentType = (await DataClassInfoProvider.ProviderObject
             .Get()
@@ -137,7 +137,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
             .First()
             .ContentLanguageName;
 
-        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[AssetFieldName];
+        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[ASSET_FIELD_NAME];
 
         var workspaceName = (await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration()).AiraUnifiedConfigurationWorkspaceName;
 
@@ -162,7 +162,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
 
         var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRAUnifiedLogoImagePurpose).TrimStart('~');
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRA_UNIFIED_LOGO_IMAGE_PURPOSE).TrimStart('~');
     }
 
     /// <inheritdoc />
@@ -173,7 +173,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
         var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
 
         var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRAUnifiedLogoImagePurpose).TrimStart('~');
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRA_UNIFIED_LOGO_IMAGE_PURPOSE).TrimStart('~');
     }
 
     /// <inheritdoc />
@@ -206,11 +206,11 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
             return configuredUrl;
         }
 
-        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, ConfiguredUrlEmptyWarning);
+        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, CONFIGURED_URL_EMPTY_WARNING);
         return defaultUrl;
     }
 
-    private string GetGlobalAllowedFileExtensions() => settingsService[CMSMediaFileAllowedExtensions];
+    private string GetGlobalAllowedFileExtensions() => settingsService[CMS_MEDIA_FILE_EXTENSIONS];
 
 
     private async Task<Dictionary<string, string>> GetMassAssetUploadConfiguration()
@@ -222,7 +222,7 @@ internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
            .First();
 
         var contentTypeInfo = JsonSerializer.Deserialize<Dictionary<string, string>>(massAssetUploadConfiguration.KeyValue) ??
-            throw new InvalidOperationException(NoContentTypeConfiguredError);
+            throw new InvalidOperationException(NO_CONTENT_TYPE_CONFIGURED_ERROR);
 
         return contentTypeInfo;
     }

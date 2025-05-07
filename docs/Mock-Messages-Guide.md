@@ -1,4 +1,4 @@
-# Mock Messages Guide for MockAiHttpClient
+# Mock Messages Guide for `MockAiHttpClient`
 
 This document describes how to work with mock messages in `MockAiHttpClient.cs` for local development.
 
@@ -205,7 +205,6 @@ To test different scenarios:
 1. Always keep the "MOCK:" prefix in text messages for easy identification of mock responses.
 2. Use collection expressions (`[ ... ]`) instead of `new List<T> { ... }`.
 3. Include timestamps in metadata.
-4. Use consistent versioning.
 5. Add appropriate error handling.
 6. Test all response types.
 7. Document new response types.

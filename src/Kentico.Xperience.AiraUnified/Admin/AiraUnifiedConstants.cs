@@ -92,9 +92,9 @@ internal static class AiraUnifiedConstants
 
 
     /// <summary>
-    /// Aira Unified chat role name.
+    /// The name if the AI assistant role used for Aira Unified chat component identifier.
     /// </summary>
-    public const string AiraUnifiedChatRoleName = "ai";
+    public const string AiraUnifiedFrontEndChatComponentAIAssistantRoleName = "ai";
 
 
     /// <summary>
@@ -106,7 +106,7 @@ internal static class AiraUnifiedConstants
     /// <summary>
     /// The name of the AI role used for AI endpoint identifier.
     /// </summary>
-    public const string AIRequestAssistantRoleName = "assistant";
+    public const string AIRequestAIAssistantRoleName = "assistant";
 
 
     /// <summary>

@@ -57,14 +57,14 @@ Changes made to the client-side code in the `FrontEnd` folder will **not** be re
 
 ### Rebuilding Client Assets
 
-After making changes, navigate to the `FrontEnd` folder and run the following commands:
+After making changes, navigate to the `src/Kentico.Xperience.AiraUnified/FrontEnd/` folder and run the following commands:
 
 ```bash
 npm run build
 npm run build-css
 ```
 
-This will recompile the JavaScript and CSS, and update the files in the wwwroot directory accordingly.
+This will recompile the JavaScript and CSS, and update the files in the `wwwroot` directory accordingly.
 
 ## Development Workflow
 

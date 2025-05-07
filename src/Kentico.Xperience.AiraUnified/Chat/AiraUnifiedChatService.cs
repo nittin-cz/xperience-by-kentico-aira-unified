@@ -98,7 +98,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             return new AiraUnifiedChatMessageViewModel
             {
                 QuickPrompts = prompts.Select(x => (string)x[nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptText)]).ToList(),
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName,
+                Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName,
                 QuickPromptsGroupId = x.Key.PromptGroupId!.ToString()!,
                 CreatedWhen = (DateTime)prompts.First()[nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen)]
             };
@@ -271,7 +271,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             textMessageHistory.Add(new AiraUnifiedChatMessageModel
             {
-                Role = AiraUnifiedConstants.AIRequestAssistantRoleName,
+                Role = AiraUnifiedConstants.AIRequestAIAssistantRoleName,
                 Content = conversationSummary.AiraUnifiedChatSummaryContent
             });
         }
@@ -280,7 +280,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             ChatMessage = message,
             ConversationHistory = textMessageHistory,
-            ChatState = nameof(ChatStateType.ongoing)
+            ChatState = nameof(ChatStateType.Ongoing)
         };
 
         var aiResponse = await aiHttpClient.SendRequestAsync(request);
@@ -298,9 +298,9 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         {
             ChatState = chatState switch
             {
-                ChatStateType.initial => nameof(ChatStateType.initial),
-                ChatStateType.returning => nameof(ChatStateType.returning),
-                ChatStateType.ongoing => nameof(ChatStateType.ongoing),
+                ChatStateType.Initial => nameof(ChatStateType.Initial),
+                ChatStateType.Returning => nameof(ChatStateType.Returning),
+                ChatStateType.Ongoing => nameof(ChatStateType.Ongoing),
                 _ => throw new NotImplementedException($"The {chatState} is missing implementation in {nameof(GetAIResponseOrNull)}")
             }
         };
@@ -531,7 +531,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     private static string GetChatRole(AiraUnifiedChatMessageInfo chatMessage) =>
         (ChatRoleType)chatMessage.AiraUnifiedChatMessageRole switch
         {
-            ChatRoleType.AI => AiraUnifiedConstants.AIRequestAssistantRoleName,
+            ChatRoleType.AIAssistant => AiraUnifiedConstants.AIRequestAIAssistantRoleName,
             ChatRoleType.User => AiraUnifiedConstants.AIRequestUserRoleName,
             ChatRoleType.System => AiraUnifiedConstants.AiraUnifiedSystemRoleName,
             _ => AiraUnifiedConstants.AIRequestUserRoleName

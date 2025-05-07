@@ -8,10 +8,10 @@ internal enum ContentType
     /// <summary>
     /// Represents reusable content items that can be used across multiple pages or components.
     /// </summary>
-    Reusable,
+    Reusable = 0,
 
     /// <summary>
     /// Represents website content items that are specific to individual pages.
     /// </summary>
-    Website
+    Website = 1
 }

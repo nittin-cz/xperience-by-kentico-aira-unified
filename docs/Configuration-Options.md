@@ -8,7 +8,7 @@ The `AiraUnifiedOptions` class contains several configuration properties that ca
 
 ## Core Configuration Options
 
-### AiraUnifiedApiSubscriptionKey
+### `AiraUnifiedApiSubscriptionKey`
 
 ```json
 "AiraUnifiedApiSubscriptionKey": "your-api-key-here"
@@ -16,7 +16,7 @@ The `AiraUnifiedOptions` class contains several configuration properties that ca
 
 Required API key for authenticating with the Aira Unified service.
 
-### AiraUnifiedAIEndpoint
+### `AiraUnifiedAIEndpoint`
 
 ```json
 "AiraUnifiedAIEndpoint": "https://your-custom-endpoint.com/api"
@@ -26,7 +26,7 @@ Optional custom endpoint for the AI service. If not specified, the default endpo
 
 ## Development Options
 
-### AiraUnifiedUseMockClient
+### `AiraUnifiedUseMockClient`
 
 ```json
 "AiraUnifiedUseMockClient": true
@@ -40,7 +40,7 @@ When set to `true`, enables a mock implementation of the AI client that returns 
 - Work offline without internet connectivity.
 - Avoid rate limiting issues during development.
 
-### AiraUnifiedUseMockInsights
+### `AiraUnifiedUseMockInsights`
 
 ```json
 "AiraUnifiedUseMockInsights": true

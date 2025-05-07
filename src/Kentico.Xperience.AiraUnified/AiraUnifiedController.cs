@@ -214,9 +214,9 @@ internal sealed class AiraUnifiedController(
 
         // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
         var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID, chatThreadId);
-        var chatThreadState = history.Count == 0 ? ChatStateType.initial : ChatStateType.returning;
+        var chatThreadState = history.Count == 0 ? ChatStateType.Initial : ChatStateType.Returning;
 
-        if (chatThreadState == ChatStateType.returning && history[^1].CreatedWhen.AddDays(1) > DateTime.UtcNow)
+        if (chatThreadState == ChatStateType.Returning && history[^1].CreatedWhen.AddDays(1) > DateTime.UtcNow)
         {
             return Ok(history);
         }
@@ -238,7 +238,7 @@ internal sealed class AiraUnifiedController(
         var messages = initialMessages.Responses.Select(message => new AiraUnifiedChatMessageViewModel
         {
             Message = message.Content,
-            Role = AiraUnifiedConstants.AiraUnifiedChatRoleName
+            Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName
         });
 
         history.AddRange(messages);
@@ -247,13 +247,13 @@ internal sealed class AiraUnifiedController(
         {
             foreach (var message in initialMessages.Responses)
             {
-                await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AI, thread);
+                await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AIAssistant, thread);
             }
         }
 
         var lastMessage = history[^1];
 
-        if (initialMessages.QuickOptions is not null && chatThreadState != ChatStateType.returning)
+        if (initialMessages.QuickOptions is not null && chatThreadState != ChatStateType.Returning)
         {
             var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.QuickOptions, chatThreadId);
             lastMessage.QuickPrompts = promptGroup.QuickPrompts;
@@ -328,7 +328,7 @@ internal sealed class AiraUnifiedController(
 
             result = new AiraUnifiedChatMessageViewModel
             {
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName,
+                Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName,
                 Message = aiResponse.Responses[0].Content,
                 Insights = aiResponse.Insights
             };
@@ -344,7 +344,7 @@ internal sealed class AiraUnifiedController(
         {
             result = new AiraUnifiedChatMessageViewModel
             {
-                Role = AiraUnifiedConstants.AiraUnifiedChatRoleName,
+                Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName,
                 ServiceUnavailable = true,
                 Message = $"Error: {ex.Message}"
             };
@@ -504,7 +504,7 @@ internal sealed class AiraUnifiedController(
             foreach (var response in aiResponse.Responses)
             {
                 await airaUnifiedChatService.SaveMessage(response.Content, user.UserID,
-                    ChatRoleType.AI, thread);
+                    ChatRoleType.AIAssistant, thread);
             }
         }
         else

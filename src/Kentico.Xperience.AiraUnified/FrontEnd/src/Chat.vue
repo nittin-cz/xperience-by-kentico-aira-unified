@@ -330,11 +330,11 @@ export default {
     },
     typeIntoInput(inputElement, text) {
       inputElement.focus();
-      inputElement.innerHTML = "";
+      inputElement.value = "";
 
       for (let char of text) {
         inputElement.style.color = "#231f20";
-        inputElement.innerHTML += char;
+        inputElement.value += char;
         inputElement.dispatchEvent(new Event("input", { bubbles: true }));
       }
     },

@@ -43,6 +43,9 @@ Aira Unified remembers the signed-in user, and the PWA will not require repeatin
 - The session expires.
 - The browser cache is cleared.
 
+**Note:**
+Session duration and expiration behavior follows the authentication settings configured by Xbyk in the application startup. Aira Unified reuses this existing session, so its validity and any automatic refresh behavior are determined by those settings. Typically, the user will stay signed in unless they explicitly sign out or the session expires due to inactivity.
+
 ### Chat Features
 
 After signing in, users will be redirected to the chat page where they can:

@@ -18,9 +18,9 @@ internal sealed class MockAiHttpClient : IAiHttpClient
 
         return request.ChatState switch
         {
-            nameof(initial) => GetInitialMessageResponse(),
-            nameof(returning) => GetReturningMessageResponse(),
-            nameof(ongoing) => GetOngoingMessageResponse(request),
+            nameof(Initial) => GetInitialMessageResponse(),
+            nameof(Returning) => GetReturningMessageResponse(),
+            nameof(Ongoing) => GetOngoingMessageResponse(request),
             _ => Task.FromResult<AiraUnifiedAIResponse?>(null)
         };
     }

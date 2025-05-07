@@ -8,7 +8,7 @@ internal enum ChatRoleType
     /// <summary>
     /// AI assistant role.
     /// </summary>
-    AI = 0,
+    AIAssistant = 0,
 
     /// <summary>
     /// User role.

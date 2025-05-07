@@ -23,8 +23,8 @@ internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifi
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
 
-    private const string AiraUnifiedConfigurationUpdated = "Aira unified configuration updated.";
-    private const string AiraUnifiedConfigurationNotUpdated = "Could not update aira unified configuration.";
+    private const string AIRA_UNIFIED_CONFIGURATION_UPDATED = "Aira unified configuration updated.";
+    private const string AIRA_UNIFIED_CONFIGURATION_NOT_UPDATED = "Could not update aira unified configuration.";
 
     public AiraUnifiedConfigurationEditPage(Xperience.Admin.Base.Forms.Internal.IFormItemCollectionProvider formItemCollectionProvider,
         IFormDataBinder formDataBinder,
@@ -69,11 +69,11 @@ internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifi
 
         if (result)
         {
-            response.AddSuccessMessage(AiraUnifiedConfigurationUpdated);
+            response.AddSuccessMessage(AIRA_UNIFIED_CONFIGURATION_UPDATED);
         }
         else
         {
-            response.AddErrorMessage(AiraUnifiedConfigurationNotUpdated);
+            response.AddErrorMessage(AIRA_UNIFIED_CONFIGURATION_NOT_UPDATED);
         }
 
         return response;

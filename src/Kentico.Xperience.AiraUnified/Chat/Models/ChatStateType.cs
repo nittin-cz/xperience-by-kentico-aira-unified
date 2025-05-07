@@ -8,15 +8,15 @@ internal enum ChatStateType
     /// <summary>
     /// First time opening a new chat thread.
     /// </summary>
-    initial,
+    Initial = 0,
 
     /// <summary>
     /// Reopening a chat thread.
     /// </summary>
-    returning,
+    Returning = 1,
 
     /// <summary>
     /// Standard message.
     /// </summary>
-    ongoing
+    Ongoing = 2
 }
