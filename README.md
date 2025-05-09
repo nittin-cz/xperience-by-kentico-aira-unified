@@ -29,7 +29,7 @@ The Aira Unified integration provides an alternative administration UI and a cha
 
 ## Full Instructions
 
-To activate the communication of Aira Unified app with the Aira service, you need to request an activation key. Please contact us at productmanagement@xperience.io for more information.
+To activate the communication of the Aira Unified app with the Aira service, you need to request an activation key. Please contact us at productmanagement@xperience.io for more information.
 
 Follow the steps below to add the Aira Unified app to your Xperience project.
 
@@ -43,7 +43,7 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 ### Quick Start
 
-1. To activate the communication of the Aira Unified app add the Aira Unified configuration to your `appsettings.json`. The minimal required configuration is:
+1. Add the Aira Unified configuration to your `appsettings.json`. The minimal required configuration is:
 
 ```json
 "AiraUnifiedOptions": {
