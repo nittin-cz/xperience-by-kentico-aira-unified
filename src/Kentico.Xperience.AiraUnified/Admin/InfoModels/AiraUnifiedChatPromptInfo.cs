@@ -12,9 +12,9 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 /// <summary>
-/// Data conainer class for <see cref="AiraUnifiedChatPromptInfo"/>.
+/// Data container class for <see cref="AiraUnifiedChatPromptInfo"/>.
 /// </summary>
-public partial class AiraUnifiedChatPromptInfo : AbstractInfo<AiraUnifiedChatPromptInfo, IInfoProvider<AiraUnifiedChatPromptInfo>>
+internal class AiraUnifiedChatPromptInfo : AbstractInfo<AiraUnifiedChatPromptInfo, IInfoProvider<AiraUnifiedChatPromptInfo>>
 {
     /// <summary>
     /// Object type.

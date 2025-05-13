@@ -7,12 +7,8 @@
     var baseUrl = Context.Request.GetBaseUrl();
 }
 
-@section styles {
-    <link href="@baseUrl/_content/Kentico.Xperience.AiraUnified/css/style.css" rel="stylesheet" type="text/css">
-}
-
 <div id="chat-app"
-     data-aira-unified-base-url="@Model.PathBase"
+     data-aira-unified-base-url="@Model.AiraUnifiedPathBase"
      data-ai-icon-url="@Model.AIIconImagePath"
      data-base-url="@baseUrl"
      data-use-prompt-url='@Model.RemovePromptUrl'
@@ -21,7 +17,9 @@
      data-navigation-url="@Model.NavigationUrl"
      data-navigation-page-identifier="@Model.NavigationPageIdentifier"
      data-chat-url="@Model.ChatUrl"
-     data-logo-img-relative-path="@Model">
+     data-logo-img-relative-path="@Model.LogoImgRelativePath"
+     data-thread-id="@Model.ThreadId"
+     data-thread-name="@Model.ThreadName">
 </div>
 
 <script>

@@ -9,7 +9,7 @@ using Kentico.Xperience.AiraUnified.Admin.UIPages;
     identifier: AiraUnifiedApplicationPage.IDENTIFIER,
     type: typeof(AiraUnifiedApplicationPage),
     slug: "aira-unified",
-    name: "AIRA Unified",
+    name: "{$AiraUnifiedApplicationPage.Name$}",
     category: BaseApplicationCategories.CONFIGURATION,
     icon: Icons.RectangleAInverted,
     templateName: TemplateNames.SECTION_LAYOUT
@@ -21,7 +21,7 @@ namespace Kentico.Xperience.AiraUnified.Admin.UIPages;
 [UIPermission(SystemPermissions.CREATE)]
 [UIPermission(SystemPermissions.UPDATE)]
 [UIPermission(SystemPermissions.DELETE)]
-internal class AiraUnifiedApplicationPage : ApplicationPage
+internal sealed class AiraUnifiedApplicationPage : ApplicationPage
 {
     public const string IDENTIFIER = "Kentico.Xperience.Integrations.AiraUnified";
 }

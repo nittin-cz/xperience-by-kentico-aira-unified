@@ -8,7 +8,7 @@ using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.Chat.Models;
-using Kentico.Xperience.AiraUnified.NavBar;
+using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -21,17 +21,45 @@ using Microsoft.Extensions.Primitives;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
-internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
+/// <summary>
+/// Represents a data source for Aira Unified endpoints.
+/// </summary>
+internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 {
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
 
+
+    private const string ApplicationJsonIdentifier = "application/json";
+    private const string MultipartFormDataIdentifier = "multipart/form-data";
+    private const string InvalidOrMissingRequestBodyMessage = "Invalid or missing request body.";
+    private const string MissingContentTypeMessage = "Missing Content-Type header.";
+    private const string ExpectedApplicationJsonOrMultipartFormData = "Unsupported content type. Expected 'application/json' or 'multipart/form-data'.";
+    private const string EmptyRequestBody = "Empty request body.";
+    private const string HttpRequired = "HTTPS is required.";
+    private const string ExpectedApplicationJsonMessage = "Unsupported content type. Expected 'application/json'.";
+
+
+
+    /// <summary>
+    /// Initializes a new instance of the AiraUnifiedEndpointDataSource class.
+    /// </summary>
+    /// <param name="airaUnifiedConfigurationProvider">The provider for Aira Unified configuration items.</param>
     public AiraUnifiedEndpointDataSource(IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider)
-        : base(new CancellationTokenSource(), new CancellationChangeToken(new CancellationToken()))
+        : base(new CancellationTokenSource(), new CancellationChangeToken(CancellationToken.None))
         => this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
 
+
+    /// <summary>
+    /// Updates the endpoints.
+    /// </summary>
     public void UpdateEndpoints()
         => SetEndpoints(MakeEndpoints());
 
+
+    /// <summary>
+    /// Creates the endpoints.
+    /// </summary>
+    /// <returns>The endpoints.</returns>
     private IReadOnlyList<Endpoint> MakeEndpoints()
     {
         var configuration = airaUnifiedConfigurationProvider.Get().GetEnumerableTypedResult().SingleOrDefault();
@@ -48,16 +76,36 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         return
         [
-            CreateAiraEndpoint(configuration,
+            CreateAiraEndpointWithQueryParams(configuration,
                 AiraUnifiedConstants.ChatRelativeUrl,
                 nameof(AiraUnifiedController.Index),
-                controller => controller.Index(),
+                AiraUnifiedConstants.ChatThreadIdParameterName,
+                (controller, threadId) => controller.Index(threadId),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpointWithRouteValue(configuration,
+                $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}/{{{AiraUnifiedConstants.ChatThreadIdParameterName}:int}}",
+                nameof(AiraUnifiedController.GetOrCreateChatHistory),
+                AiraUnifiedConstants.ChatThreadIdParameterName,
+                (controller, threadId) => controller.GetOrCreateChatHistory(threadId),
                 requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraEndpoint(configuration,
-                $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}",
-                nameof(AiraUnifiedController.GetChatHistory),
-                controller => controller.GetChatHistory(),
+                AiraUnifiedConstants.NewChatThreadRelativeUrl,
+                nameof(AiraUnifiedController.NewChatThread),
+                controller => controller.NewChatThread(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpoint(configuration,
+                $"{AiraUnifiedConstants.ChatThreadSelectorRelativeUrl}/{AiraUnifiedConstants.AllChatThreadsRelativeUrl}",
+                nameof(AiraUnifiedController.GetChatThreads),
+                controller => controller.GetChatThreads(),
+                requiredPermission: SystemPermissions.VIEW
+            ),
+            CreateAiraEndpoint(configuration,
+                AiraUnifiedConstants.ChatThreadSelectorRelativeUrl,
+                nameof(AiraUnifiedController.ChatThreadSelector),
+                controller => controller.ChatThreadSelector(),
                 requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraEndpointFromBody<NavBarRequestModel>(configuration,
@@ -66,10 +114,11 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 (controller, model) => controller.Navigation(model),
                 requiredPermission: SystemPermissions.VIEW
             ),
-            CreateAiraIFormCollectionEndpoint(configuration,
-                $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatMessageUrl}",
+            CreateAiraEndpointFromIFormCollectionWithRouteValue(configuration,
+                $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatMessageUrl}/{{{AiraUnifiedConstants.ChatThreadIdParameterName}:int}}",
                 nameof(AiraUnifiedController.PostChatMessage),
-                (controller, request) => controller.PostChatMessage(request),
+                AiraUnifiedConstants.ChatThreadIdParameterName,
+                (controller, request, threadId) => controller.PostChatMessage(request, threadId),
                 requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraIFormCollectionEndpoint(configuration,
@@ -91,10 +140,12 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 permissionToRedirectedEndpoint: SystemPermissions.VIEW,
                 redirectUrl: AiraUnifiedConstants.ChatRelativeUrl
             ),
-            CreateAiraEndpoint(configuration,
+            CreateAiraEndpointWithConditionalRedirect(configuration,
                 subPath: string.Empty,
                 nameof(AiraUnifiedController.SignIn),
-                controller => controller.SignIn()
+                (controller) => controller.SignIn(),
+                permissionToRedirectedEndpoint: SystemPermissions.VIEW,
+                redirectUrl: AiraUnifiedConstants.ChatRelativeUrl
             ),
             CreateAiraEndpointFromBody<AiraUnifiedUsedPromptGroupModel>(configuration,
                 AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl,
@@ -110,16 +161,115 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             )
         ];
     }
-    private static async Task<bool> ValidateRequestXorSetRedirect(HttpContext context, AiraUnifiedConfigurationItemInfo configurationInfo, string? requiredPermission = null)
-    => await CheckHttps(context)
-        && (requiredPermission is null || await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission));
+
+
+    private static Endpoint CreateAiraEndpointWithQueryParams(AiraUnifiedConfigurationItemInfo configurationInfo, string subPath, string actionName, string actionParameterName, Func<AiraUnifiedController, int?, Task<IActionResult>> action, string? requiredPermission = null)
+    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
+    {
+        var airaController = await GetAiraUnifiedControllerInContext(context, actionName);
+
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
+        {
+            return;
+        }
+
+        IActionResult? result;
+
+        if (!context.Request.Query.ContainsKey(actionParameterName) || !int.TryParse(context.Request.Query[actionParameterName], out var val1))
+        {
+            result = await action.Invoke(airaController, null);
+            await result.ExecuteResultAsync(airaController.ControllerContext);
+
+            return;
+        }
+
+        result = await action.Invoke(airaController, val1);
+
+        await result.ExecuteResultAsync(airaController.ControllerContext);
+    });
+
+
+    private static Endpoint CreateAiraEndpointWithRouteValue(AiraUnifiedConfigurationItemInfo configurationInfo, string subPath, string actionName, string actionParameterName, Func<AiraUnifiedController, int, Task<IActionResult>> action, string? requiredPermission = null)
+    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
+    {
+        var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
+
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
+        {
+            return;
+        }
+
+        if (!context.Request.RouteValues.TryGetValue(actionParameterName, out var actionParameterStringValue) ||
+            !int.TryParse(actionParameterStringValue?.ToString(), out var actionParameterIntValue))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsync($"Missing {actionParameterName}");
+            return;
+        }
+
+        if (!await CheckHttps(context) ||
+            (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
+        )
+        {
+            return;
+        }
+
+        var result = await action.Invoke(airaUnifiedController, actionParameterIntValue);
+        await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+    });
+
+
+    private static Endpoint CreateAiraEndpointFromIFormCollectionWithRouteValue(AiraUnifiedConfigurationItemInfo configurationInfo, string subPath, string actionName, string actionParameterName, Func<AiraUnifiedController, IFormCollection, int, Task<IActionResult>> action, string? requiredPermission = null)
+    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
+    {
+        var airaController = await GetAiraUnifiedControllerInContext(context, actionName);
+
+        if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
+        {
+            return;
+        }
+
+        if (!context.Request.RouteValues.TryGetValue(actionParameterName, out var actionParameterStringValue) ||
+            !int.TryParse(actionParameterStringValue?.ToString(), out var actionParameterIntValue))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsync($"Missing {actionParameterName}");
+            return;
+        }
+
+        if (context.Request.ContentType is null)
+        {
+            return;
+        }
+
+        if (context.Request.ContentType.Contains(MultipartFormDataIdentifier))
+        {
+            var requestObject = await context.Request.ReadFormAsync();
+            var result = await action.Invoke(airaController, requestObject, actionParameterIntValue);
+            await result.ExecuteResultAsync(airaController.ControllerContext);
+        }
+        else if (string.Equals(context.Request.ContentType, ApplicationJsonIdentifier, StringComparison.OrdinalIgnoreCase))
+        {
+            using var reader = new StreamReader(context.Request.Body);
+            var body = await reader.ReadToEndAsync();
+
+            var formCollection = new FormCollection(new Dictionary<string, StringValues>
+            {
+                { "message", body }
+            });
+
+            var result = await action.Invoke(airaController, formCollection, actionParameterIntValue);
+            await result.ExecuteResultAsync(airaController.ControllerContext);
+        }
+    });
+
 
     private static Endpoint CreateAiraEndpointFromBody<T>(
-        AiraUnifiedConfigurationItemInfo configurationInfo,
-        string subPath,
-        string actionName,
-        Func<AiraUnifiedController, T, IActionResult> actionWithModel,
-        string? requiredPermission = null
+       AiraUnifiedConfigurationItemInfo configurationInfo,
+       string subPath,
+       string actionName,
+       Func<AiraUnifiedController, T, IActionResult> actionWithModel,
+       string? requiredPermission = null
     ) where T : class, new()
     => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {
@@ -131,7 +281,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         if (context.Request.ContentType is not null &&
-            string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            string.Equals(context.Request.ContentType, ApplicationJsonIdentifier, StringComparison.OrdinalIgnoreCase))
         {
             using var reader = new StreamReader(context.Request.Body);
             var body = await reader.ReadToEndAsync();
@@ -151,7 +301,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
                 else
                 {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await context.Response.WriteAsync("Invalid or missing request body.");
+                    await context.Response.WriteAsync(InvalidOrMissingRequestBodyMessage);
                 }
             }
             catch (JsonException ex)
@@ -165,9 +315,10 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         {
             // Handle unsupported content types
             context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-            await context.Response.WriteAsync("Unsupported content type. Expected 'application/json'.");
+            await context.Response.WriteAsync(ExpectedApplicationJsonMessage);
         }
     });
+
 
     private static Endpoint CreateAiraEndpointFromBody<T>(
         AiraUnifiedConfigurationItemInfo configurationInfo,
@@ -186,11 +337,11 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         if (context.Request.ContentType is null ||
-            !string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            !string.Equals(context.Request.ContentType, ApplicationJsonIdentifier, StringComparison.OrdinalIgnoreCase))
         {
             // Handle unsupported content types
             context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-            await context.Response.WriteAsync("Unsupported content type. Expected 'application/json'.");
+            await context.Response.WriteAsync(ExpectedApplicationJsonMessage);
             return;
         }
 
@@ -212,7 +363,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             else
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync("Invalid or missing request body.");
+                await context.Response.WriteAsync(InvalidOrMissingRequestBodyMessage);
             }
         }
         catch (JsonException ex)
@@ -222,6 +373,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             await context.Response.WriteAsync($"Invalid JSON format: {ex.Message}");
         }
     });
+
 
     private static Endpoint CreateAiraEndpoint(AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
@@ -241,25 +393,32 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
     });
 
+
     private static Endpoint CreateAiraEndpointWithConditionalRedirect(AiraUnifiedConfigurationItemInfo configurationInfo,
         string subPath,
         string actionName,
         Func<AiraUnifiedController, Task<IActionResult>> action,
         string permissionToRedirectedEndpoint,
         string redirectUrl)
-    => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
     {
-        var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
+        var path = string.Equals(subPath, string.Empty) ? $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}"
+            : $"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}";
 
-        if (!await CheckHttps(context) ||
-            await SetRedirectIfAuthorized(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, permissionToRedirectedEndpoint, redirectUrl))
+        return CreateEndpoint(path, async context =>
         {
-            return;
-        }
+            var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
 
-        var result = await action.Invoke(airaUnifiedController);
-        await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-    });
+            if (!await CheckHttps(context) ||
+                await SetRedirectIfAuthorized(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, permissionToRedirectedEndpoint, redirectUrl))
+            {
+                return;
+            }
+
+            var result = await action.Invoke(airaUnifiedController);
+            await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
+        });
+    }
+
 
     private static Endpoint CreateAiraIFormCollectionEndpoint(AiraUnifiedConfigurationItemInfo configurationItemInfo,
         string subPath,
@@ -278,17 +437,17 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         if (context.Request.ContentType is null)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsync("Missing Content-Type header.");
+            await context.Response.WriteAsync(MissingContentTypeMessage);
             return;
         }
 
-        if (context.Request.ContentType.Contains("multipart/form-data"))
+        if (context.Request.ContentType.Contains(MultipartFormDataIdentifier))
         {
             var requestObject = await context.Request.ReadFormAsync();
             var result = await action.Invoke(airaUnifiedController, requestObject);
             await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
         }
-        else if (string.Equals(context.Request.ContentType, "application/json"))
+        else if (string.Equals(context.Request.ContentType, ApplicationJsonIdentifier))
         {
             using var reader = new StreamReader(context.Request.Body);
             var body = await reader.ReadToEndAsync();
@@ -296,7 +455,7 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
             if (string.IsNullOrWhiteSpace(body))
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync("Empty request body.");
+                await context.Response.WriteAsync(EmptyRequestBody);
                 return;
             }
 
@@ -311,17 +470,16 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         else
         {
             context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-            await context.Response.WriteAsync("Unsupported content type. Expected 'application/json' or 'multipart/form-data'.");
+            await context.Response.WriteAsync(ExpectedApplicationJsonOrMultipartFormData);
         }
     });
+
 
     private static async Task<AiraUnifiedController> GetAiraUnifiedControllerInContext(HttpContext context, string actionName)
     {
         var controllerShortName = nameof(AiraUnifiedController).Replace("Controller", string.Empty);
 
-        var routeData = new RouteData();
-        routeData.Values["controller"] = controllerShortName;
-        routeData.Values["action"] = actionName;
+        var routeData = new RouteData { Values = { ["controller"] = controllerShortName, ["action"] = actionName } };
 
         var actionDescriptor = new ControllerActionDescriptor
         {
@@ -343,27 +501,29 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         return airaUnifiedController;
     }
 
+
     private static async Task AuthenticateAiraEndpoint(HttpContext context)
     {
-        if (context.User?.Identity is null || !context.User.Identity.IsAuthenticated)
+        if (context.User.Identity is null || !context.User.Identity.IsAuthenticated)
         {
             var authenticateResult = await context.RequestServices
                 .GetRequiredService<IAuthenticationService>()
                 .AuthenticateAsync(context, AiraUnifiedConstants.XperienceAdminSchemeName);
 
-            if (authenticateResult.Succeeded && authenticateResult.Principal is not null)
+            if (authenticateResult is { Succeeded: true, Principal: not null })
             {
                 context.User = authenticateResult.Principal;
             }
         }
     }
 
+
     private static async Task<bool> CheckHttps(HttpContext context)
     {
         if (!context.Request.IsHttps)
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsync("HTTPS is required.");
+            await context.Response.WriteAsync(HttpRequired);
             return false;
         }
 
@@ -374,12 +534,19 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         return true;
     }
 
+
+    private static async Task<bool> ValidateRequestXorSetRedirect(HttpContext context, AiraUnifiedConfigurationItemInfo configurationInfo, string? requiredPermission = null)
+    => await CheckHttps(context)
+      && (requiredPermission is null || await AuthorizeOrSetRedirectToSignIn(context, configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission));
+
+
     private static Endpoint CreateEndpoint(string pattern, RequestDelegate requestDelegate) =>
         new RouteEndpointBuilder(
             requestDelegate: requestDelegate,
             routePattern: RoutePatternFactory.Parse(pattern),
             order: 0)
         .Build();
+
 
     private static async Task<bool> AuthorizeOrSetRedirectToSignIn(HttpContext context, string airaUnifiedPathBase, string permission)
     {
@@ -404,8 +571,10 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         }
 
         context.Response.Redirect(signInRedirectUrl);
+
         return false;
     }
+
 
     private static async Task<bool> SetRedirectIfAuthorized(HttpContext context, string airaUnifiedPathBase, string permission, string redirectSubPath)
     {
@@ -419,12 +588,13 @@ internal class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         if (user is null
             || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any()
-            || !await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID))
+            || !(await airaUnifiedAssetService.DoesUserHaveAiraUnifiedPermission(permission, user.UserID) || user.IsAdministrator()))
         {
             return false;
         }
 
         context.Response.Redirect(fullRedirectUrl);
+
         return true;
     }
 }

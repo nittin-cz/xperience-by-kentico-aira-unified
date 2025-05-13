@@ -12,7 +12,10 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 namespace Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
-public class AiraUnifiedChatMessageInfo : AbstractInfo<AiraUnifiedChatMessageInfo, IInfoProvider<AiraUnifiedChatMessageInfo>>
+/// <summary>
+/// Data container for <see cref="AiraUnifiedChatMessageInfo"/>.
+/// </summary>
+internal class AiraUnifiedChatMessageInfo : AbstractInfo<AiraUnifiedChatMessageInfo, IInfoProvider<AiraUnifiedChatMessageInfo>>
 {
     /// <summary>
     /// Object type.
@@ -28,7 +31,8 @@ public class AiraUnifiedChatMessageInfo : AbstractInfo<AiraUnifiedChatMessageInf
         TouchCacheDependencies = true,
         DependsOn =
         [
-            new(nameof(AiraUnifiedChatMessageUserId), UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required)
+            new(nameof(AiraUnifiedChatMessageUserId), UserInfo.OBJECT_TYPE, ObjectDependencyEnum.Required),
+            new(nameof(AiraUnifiedChatMessageThreadId), AiraUnifiedChatThreadInfo.OBJECT_TYPE, ObjectDependencyEnum.Required)
         ],
         ContinuousIntegrationSettings =
         {
@@ -69,6 +73,18 @@ public class AiraUnifiedChatMessageInfo : AbstractInfo<AiraUnifiedChatMessageInf
     {
         get => ValidationHelper.GetDateTime(GetValue(nameof(AiraUnifiedChatMessageCreatedWhen)), DateTimeHelper.ZERO_TIME);
         set => SetValue(nameof(AiraUnifiedChatMessageCreatedWhen), value);
+    }
+
+
+    /// <summary>
+    /// The chat thread id.
+    /// </summary>
+    [DatabaseField]
+    [Required]
+    public virtual int AiraUnifiedChatMessageThreadId
+    {
+        get => ValidationHelper.GetInteger(GetValue(nameof(AiraUnifiedChatMessageThreadId)), 0);
+        set => SetValue(nameof(AiraUnifiedChatMessageThreadId), value);
     }
 
 

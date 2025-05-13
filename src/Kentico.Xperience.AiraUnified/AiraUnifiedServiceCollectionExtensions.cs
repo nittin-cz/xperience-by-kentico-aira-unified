@@ -8,6 +8,7 @@ using Kentico.Xperience.AiraUnified.NavBar;
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -25,24 +26,6 @@ public static class AiraUnifiedServiceCollectionExtensions
     public static IServiceCollection AddKenticoAiraUnified(this IServiceCollection services, IConfiguration configuration)
         => services.AddKenticoAiraUnifiedInternal(configuration);
 
-    private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddControllersWithViews();
-
-        services
-            .AddSingleton<IAiraUnifiedModuleInstaller, AiraUnifiedModuleInstaller>()
-            .AddSingleton<AiraUnifiedEndpointDataSource>()
-            .AddScoped<ContentItemAssetUploaderComponent>()
-            .AddScoped<AiraUnifiedConfigurationService>()
-            .AddScoped<IAiraUnifiedConfigurationService, AiraUnifiedConfigurationService>()
-            .AddScoped<IAiraUnifiedInsightsService, AiraUnifiedInsightsService>()
-            .AddScoped<IAiraUnifiedAssetService, AiraUnifiedAssetService>()
-            .AddScoped<IAiraUnifiedChatService, AiraUnifiedChatService>()
-            .AddScoped<INavigationService, NavigationService>()
-            .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
-
-        return services;
-    }
 
     /// <summary>
     /// Allows using the Aira Unified dynamic endpoint creation.
@@ -54,5 +37,32 @@ public static class AiraUnifiedServiceCollectionExtensions
         var dataSource = endpoints.ServiceProvider.GetService<AiraUnifiedEndpointDataSource>()
             ?? throw new InvalidOperationException("Did you forget to call Services.AddKenticoAiraUnified()?");
         endpoints.DataSources.Add(dataSource);
+    }
+
+
+    private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddControllersWithViews();
+        services.AddHttpClient();
+
+        var options = configuration.GetSection(nameof(AiraUnifiedOptions)).Get<AiraUnifiedOptions>();
+
+        services
+            .AddSingleton<IAiraUnifiedModuleInstaller, AiraUnifiedModuleInstaller>()
+            .AddSingleton<AiraUnifiedEndpointDataSource>()
+            .AddScoped<ContentItemAssetUploaderComponent>()
+            .AddScoped<AiraUnifiedConfigurationService>()
+            .AddScoped<IAiraUnifiedConfigurationService, AiraUnifiedConfigurationService>()
+            .AddScoped<IAiraUnifiedInsightsService>(sp => options?.AiraUnifiedUseMockInsights == true
+                ? new MockAiraUnifiedInsightsService()
+                : sp.GetRequiredService<AiraUnifiedInsightsService>())
+            .AddScoped<AiraUnifiedInsightsService>()
+            .AddScoped<IAiraUnifiedAssetService, AiraUnifiedAssetService>()
+            .AddScoped<IAiraUnifiedChatService, AiraUnifiedChatService>()
+            .AddScoped<INavigationService, NavigationService>()
+            .AddScoped<IAiHttpClient>(sp => options?.AiraUnifiedUseMockClient == true ? new MockAiHttpClient() : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
+            .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
+
+        return services;
     }
 }

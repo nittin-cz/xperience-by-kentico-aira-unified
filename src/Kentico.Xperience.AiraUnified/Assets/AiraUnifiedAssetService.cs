@@ -21,7 +21,8 @@ using Path = CMS.IO.Path;
 
 namespace Kentico.Xperience.AiraUnified.Assets;
 
-internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
+/// <inheritdoc />
+internal sealed class AiraUnifiedAssetService : IAiraUnifiedAssetService
 {
     private readonly IInfoProvider<ContentLanguageInfo> contentLanguageProvider;
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
@@ -31,6 +32,17 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
     private readonly IInfoProvider<RoleInfo> roleProvider;
     private readonly IEventLogService eventLogService;
     private readonly ISettingsService settingsService;
+
+    private const string ASSET_FIELD_NAME = "AssetFieldName";
+    private const string INHERITED = "_INHERITED_";
+    private const string CONTENT_TYPE_GUID = "ContentTypeGuid";
+    private const string ALLOWED_EXTENSIONS = "allowedExtensions";
+    private const string CMS_MEDIA_FILE_EXTENSIONS = "CMSMediaFileAllowedExtensions";
+    private const string AIRA_UNIFIED_LOGO_IMAGE_PURPOSE = "AIRA Unified Logo";
+    private const string NO_FILE_FORMAT_CONFIGURED_WARNING = "No file format is configured for Smart Upload.";
+    private const string CONFIGURED_URL_EMPTY_WARNING = "Configured URL is empty, using default";
+    private const string NO_CONTENT_TYPE_CONFIGURED_ERROR = "No content type is configured for mass upload.";
+
 
     public AiraUnifiedAssetService(IInfoProvider<ContentLanguageInfo> contentLanguageProvider,
         IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
@@ -52,6 +64,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
     }
 
+    /// <inheritdoc />
     public async Task<bool> DoesUserHaveAiraUnifiedPermission(string permission, int userId)
     {
         var countOfRolesWithTheRightWhereUserIsContained = await roleProvider
@@ -76,25 +89,12 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return countOfRolesWithTheRightWhereUserIsContained > 0;
     }
 
-    private async Task<Dictionary<string, string>> GetMassAssetUploadConfiguration()
-    {
-        var massAssetUploadConfiguration = (await settingsKeyProvider
-           .Get()
-           .WhereEquals(nameof(SettingsKeyInfo.KeyName), AiraUnifiedConstants.MassAssetUploadConfigurationKey)
-           .GetEnumerableTypedResultAsync())
-           .First();
-
-        var contentTypeInfo = JsonSerializer.Deserialize<Dictionary<string, string>>(massAssetUploadConfiguration.KeyValue) ??
-            throw new InvalidOperationException("No content type is configured for mass upload.");
-
-        return contentTypeInfo;
-    }
-
+    /// <inheritdoc />
     public async Task<string> GetAllowedFileExtensions()
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
-        var contentItemAssetColumnCodeName = massAssetConfigurationInfo["AssetFieldName"];
-        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo["ContentTypeGuid"]);
+        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[ASSET_FIELD_NAME];
+        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[CONTENT_TYPE_GUID]);
 
         var contentType = (await DataClassInfoProvider.ProviderObject
            .Get()
@@ -105,30 +105,24 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         var contentTypeFormInfo = new FormInfo(contentType.ClassFormDefinition);
         var fields = contentTypeFormInfo.GetFormField(contentItemAssetColumnCodeName);
 
-        var allowedExtensions = fields.Settings["AllowedExtensions"];
+        var allowedExtensions = fields.Settings[ALLOWED_EXTENSIONS];
 
-        if (allowedExtensions is not string)
+        if (allowedExtensions is not string settings)
         {
-            eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), "No file format is configured for Smart Upload.");
+            eventLogService.LogWarning(nameof(IAiraUnifiedAssetService), nameof(GetAllowedFileExtensions), NO_FILE_FORMAT_CONFIGURED_WARNING);
 
             return string.Empty;
         }
 
-        var settings = (string)allowedExtensions;
-
-        if (string.Equals(settings, "_INHERITED_"))
-        {
-            return GetGlobalAllowedFileExtensions();
-        }
-
-        return settings;
+        return string.Equals(settings, INHERITED) ? GetGlobalAllowedFileExtensions() : settings;
     }
 
+    /// <inheritdoc />
     public async Task<bool> HandleFileUpload(IFormFileCollection files, int userId)
     {
         var massAssetConfigurationInfo = await GetMassAssetUploadConfiguration();
 
-        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo["ContentTypeGuid"]);
+        var contentTypeGuid = Guid.Parse(massAssetConfigurationInfo[CONTENT_TYPE_GUID]);
 
         var contentType = (await DataClassInfoProvider.ProviderObject
             .Get()
@@ -143,7 +137,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
             .First()
             .ContentLanguageName;
 
-        var contentItemAssetColumnCodeName = massAssetConfigurationInfo["AssetFieldName"];
+        var contentItemAssetColumnCodeName = massAssetConfigurationInfo[ASSET_FIELD_NAME];
 
         var workspaceName = (await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration()).AiraUnifiedConfigurationWorkspaceName;
 
@@ -161,6 +155,78 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
         return true;
     }
+
+    /// <inheritdoc />
+    public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
+    {
+        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
+
+        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRA_UNIFIED_LOGO_IMAGE_PURPOSE).TrimStart('~');
+    }
+
+    /// <inheritdoc />
+    public async Task<string> GetSanitizedLogoUrl()
+    {
+        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
+
+        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
+
+        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
+        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, AIRA_UNIFIED_LOGO_IMAGE_PURPOSE).TrimStart('~');
+    }
+
+    /// <inheritdoc />
+    public IMediaFileUrl? GetMediaFileUrl(string identifier)
+    {
+        if (!Guid.TryParse(identifier, out var identifierGuid))
+        {
+            return null;
+        }
+
+        var mediaLibraryFiles = mediaFileInfoProvider
+            .Get()
+            .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
+
+        if (!mediaLibraryFiles.Any())
+        {
+            return null;
+        }
+
+        var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
+
+        return media;
+    }
+
+    /// <inheritdoc />
+    public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
+    {
+        if (!string.IsNullOrEmpty(configuredUrl))
+        {
+            return configuredUrl;
+        }
+
+        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, CONFIGURED_URL_EMPTY_WARNING);
+        return defaultUrl;
+    }
+
+    private string GetGlobalAllowedFileExtensions() => settingsService[CMS_MEDIA_FILE_EXTENSIONS];
+
+
+    private async Task<Dictionary<string, string>> GetMassAssetUploadConfiguration()
+    {
+        var massAssetUploadConfiguration = (await settingsKeyProvider
+           .Get()
+           .WhereEquals(nameof(SettingsKeyInfo.KeyName), AiraUnifiedConstants.MassAssetUploadConfigurationKey)
+           .GetEnumerableTypedResultAsync())
+           .First();
+
+        var contentTypeInfo = JsonSerializer.Deserialize<Dictionary<string, string>>(massAssetUploadConfiguration.KeyValue) ??
+            throw new InvalidOperationException(NO_CONTENT_TYPE_CONFIGURED_ERROR);
+
+        return contentTypeInfo;
+    }
+
 
     private async Task<bool> IsFileExtensionAllowed(string fileExtension)
     {
@@ -183,6 +249,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         return allowedExtensions.Contains(string.Format(";{0};", fileExtension)) || allowedExtensions.Contains(";." + fileExtension + ";");
     }
 
+
     private async Task<bool> CreateContentAssetItem(CreateContentItemParameters createContentItemParameters, IFormFile file, int userId, string contentItemAssetColumnCodeName)
     {
         var contentItemManager = Service.Resolve<IContentItemManagerFactory>().Create(userId);
@@ -200,7 +267,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
             return false;
         }
 
-        using var fileStream = File.Create(tempFilePath);
+        await using var fileStream = File.Create(tempFilePath);
         await file.CopyToAsync(fileStream);
 
         fileStream.Seek(0, SeekOrigin.Begin);
@@ -209,7 +276,7 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
         {
             Extension = extension,
             Identifier = Guid.NewGuid(),
-            LastModified = DateTime.Now,
+            LastModified = DateTime.UtcNow,
             Name = Path.GetFileName(tempFilePath),
             Size = fileStream.Length
         };
@@ -228,56 +295,4 @@ internal class AiraUnifiedAssetService : IAiraUnifiedAssetService
 
         return true;
     }
-
-    public string GetSanitizedLogoUrl(AiraUnifiedConfigurationItemInfo configuration)
-    {
-        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
-
-        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA unified Logo").TrimStart('~');
-    }
-
-    public async Task<string> GetSanitizedLogoUrl()
-    {
-        var configuration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
-
-        var defaultImageUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}";
-
-        var logoUrl = GetMediaFileUrl(configuration.AiraUnifiedConfigurationItemAiraRelativeLogoId)?.RelativePath;
-        return GetSanitizedImageUrl(logoUrl, defaultImageUrl, "AIRA unified Logo").TrimStart('~');
-    }
-
-    public IMediaFileUrl? GetMediaFileUrl(string identifier)
-    {
-        if (!Guid.TryParse(identifier, out var identifierGuid))
-        {
-            return null;
-        }
-
-        var mediaLibraryFiles = mediaFileInfoProvider
-            .Get()
-            .WhereEquals(nameof(MediaFileInfo.FileGUID), identifierGuid);
-
-        if (!mediaLibraryFiles.Any())
-        {
-            return null;
-        }
-
-        var media = mediaFileUrlRetriever.Retrieve(mediaLibraryFiles.First());
-
-        return media;
-    }
-
-    public string GetSanitizedImageUrl(string? configuredUrl, string defaultUrl, string imagePurpose)
-    {
-        if (!string.IsNullOrEmpty(configuredUrl))
-        {
-            return configuredUrl;
-        }
-
-        eventLogService.LogWarning(nameof(INavigationService), imagePurpose, "Configured URL is empty, using default");
-        return defaultUrl;
-    }
-
-    public string GetGlobalAllowedFileExtensions() => settingsService["CMSMediaFileAllowedExtensions"];
 }

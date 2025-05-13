@@ -27,23 +27,86 @@ After visiting that URL on a smartphone, users will see an installation dialog e
 
 ## Using the Chatbot
 
-After opening the PWA, if a user is not signed in yet, the admin application users with a role that includes **View** permission for the Aira Unified application can sign in by clicking the **Continue with XbyK** button, which redirects them to the Xperience native administration sign-in page within the PWA.
+### Sign-in Process
 
-Users are expected to sign in and close the administration interface, as explained at the top of the screen.  
+After opening the PWA, if a user is not signed in yet, they will see the sign-in screen. Users with appropriate permissions can sign in by:
+
+1. Clicking the **Continue with XbyK** button.
+2. Entering their Xperience admin credentials.
+3. Completing any required authentication steps (e.g., 2FA if enabled).
+4. Closing the administration interface after successful sign-in.
+
 ![Sign in](/images/AiraUnifiedSignIn.jpg)
 
-Aira Unified remembers the signed in user and the PWA will not require to repeat the sign in process.
+Aira Unified remembers the signed-in user, and the PWA will not require repeating the sign-in process unless:
+- The user explicitly signs out.
+- The session expires.
+- The browser cache is cleared.
 
-After returning to the application, users will be redirected to the chat page.
-They can interact with Aira, which is configured with knowledge about Xperience, allowing it to answer questions about the product and explain various functionalities.
+**Note:**
+Session duration and expiration behavior follows the authentication settings configured by Xbyk in the application startup. Aira Unified reuses this existing session, so its validity and any automatic refresh behavior are determined by those settings. Typically, the user will stay signed in unless they explicitly sign out or the session expires due to inactivity.
 
-Users can inquire about content from the admin site, and the AI will provide real-time responses.
+### Chat Features
+
+After signing in, users will be redirected to the chat page where they can:
+
+1. **Ask Questions**: Type any question about Xperience functionality.
+2. **Get Insights**: Ask about content, marketing, or email insights.
+3. **View History**: Access previous conversations.
+4. **Use Quick Prompts**: Select from suggested questions.
+
+Example queries:
+- "How do I create a new page?"
+- "Show me content insights"
+- "What are my recent marketing activities?"
+- "Help me with email campaigns"
+
 ![Chat](/images/AiraUnifiedChat.jpg)
 
 ## Using the Smart Uploader
 
-Admin application users with a role that includes **Create** permission for the Aira Unified application can access the Smart Uploader.
+Admin application users with a role that includes the **Create** permission for the Aira Unified application can access the Smart Uploader.
 
-It can be opened by tapping the menu button and navigating to the **Smart Upload** page.  
+It can be opened by:
+1. Tapping the menu button.
+2. Navigating to the **Smart Upload** page.
+
 ![Menu](/images/AiraUnifiedNavigation.jpg)  
 ![Smart uploader](/images/SmartAssetUploader.jpg)
+
+The Smart Uploader allows you to:
+- Upload multiple files at once.
+- Automatically categorize content.
+- Add metadata to uploaded files.
+- Preview content before publishing.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Sign-in Problems**
+   - Ensure you have the correct permissions.
+   - Check your internet connection.
+   - Verify that your credentials are correct.
+
+2. **Chat Not Responding**
+   - Check your internet connection.
+   - Verify that the API key is correctly configured.
+   - Ensure the service is running.
+
+3. **Upload Issues**
+   - Check file size limits.
+   - Verify that the uploaded file types are supported.
+   - Ensure you have sufficient permissions.
+
+## Upgrades and Uninstalling
+
+See [Upgrades](Upgrades.md).
+
+## Configuration options
+
+See [Configuration options](Configuration-Options.md).
+
+## Mock Messages Guide
+
+See [Mock messages guide](Mock-Messages-Guide.md).

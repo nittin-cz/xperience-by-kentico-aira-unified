@@ -10,18 +10,29 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 
 namespace Kentico.Xperience.AiraUnified.Admin;
 
-internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
+/// <summary>
+/// Represents a module installer for Aira Unified.
+/// </summary>
+internal sealed class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
 {
     private readonly IInfoProvider<ResourceInfo> resourceInfoProvider;
 
+
+    /// <summary>
+    /// Initializes a new instance of the AiraUnifiedModuleInstaller class.
+    /// </summary>
+    /// <param name="resourceInfoProvider">The provider for ResourceInfo objects.</param>
     public AiraUnifiedModuleInstaller(IInfoProvider<ResourceInfo> resourceInfoProvider)
         => this.resourceInfoProvider = resourceInfoProvider;
 
+
+    /// <inheritdoc />
     public void Install()
     {
         var resourceInfo = InstallModule();
         InstallModuleClasses(resourceInfo);
     }
+
 
     private ResourceInfo InstallModule()
     {
@@ -39,6 +50,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
 
         return resourceInfo;
     }
+
 
     private static void InstallModuleClasses(ResourceInfo resourceInfo)
     {
@@ -71,7 +83,13 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                 {
                     ReferenceType = ObjectDependencyEnum.Required,
                     ReferenceToObjectType = UserInfo.OBJECT_TYPE,
-                    FormFieldName = nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptUserId)
+                    FormFieldName = nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupUserId)
+                },
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = AiraUnifiedChatThreadInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupThreadId)
                 }
             ]
         );
@@ -116,6 +134,35 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                 {
                     FormFieldName = nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageText),
                     FormFieldType = FieldDataType.LongText
+                },
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = AiraUnifiedChatThreadInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageThreadId)
+                }
+            ]
+        );
+
+        InstallAiraUnifiedClass(
+            resourceInfo,
+            AiraUnifiedChatThreadInfo.TYPEINFO.ObjectClassName,
+            AiraUnifiedChatThreadInfo.OBJECT_TYPE,
+            classDisplayName: "Aira Unified Chat Thread",
+            typeof(AiraUnifiedChatThreadInfo),
+            nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId),
+            [
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.Required,
+                    ReferenceToObjectType = UserInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadUserId)
+                },
+                new FormFieldModel
+                {
+                    ReferenceType = ObjectDependencyEnum.NotRequired,
+                    ReferenceToObjectType = AiraUnifiedChatMessageInfo.OBJECT_TYPE,
+                    FormFieldName = nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadLastMessageId)
                 }
             ]
         );
@@ -143,6 +190,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
         );
     }
 
+
     private static void InstallAiraUnifiedClass(ResourceInfo resourceInfo,
         string objectClassName,
         string objectType,
@@ -163,6 +211,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
         SetFormDefinition(info, infoType, idPropertyName, dependencies);
     }
 
+
     private sealed class FormFieldModel
     {
         public ObjectDependencyEnum ReferenceType { get; set; }
@@ -170,6 +219,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
         public string? ReferenceToObjectType { get; set; }
         public string? FormFieldType { get; set; }
     }
+
 
     private static void SetFormDefinition(DataClassInfo info, Type infoType, string idPropertyName, List<FormFieldModel>? dependencies = null)
     {
@@ -193,6 +243,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
             DataClassInfoProvider.SetDataClassInfo(info);
         }
     }
+
 
     private static FormInfo AddFormItems(FormInfo formInfo, Type infoType, string idPropertyName, List<FormFieldModel>? formFieldModels = null)
     {
@@ -223,6 +274,7 @@ internal class AiraUnifiedModuleInstaller : IAiraUnifiedModuleInstaller
                     Type t when t == typeof(int) => FieldDataType.Integer,
                     Type t when t == typeof(DateTime) => FieldDataType.DateTime,
                     Type t when t == typeof(Guid) => FieldDataType.Guid,
+                    Type t when t == typeof(bool) => FieldDataType.Boolean,
                     _ => formItem.DataType // Default case if no match is found
                 };
 

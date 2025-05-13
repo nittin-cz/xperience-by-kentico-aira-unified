@@ -6,7 +6,7 @@
 
 ## Description
 
-Aira Unified integration provides an alternative administration UI and chatbot that can be easily added to an Xperience by Kentico project. It is designed for content editors and marketers who need essential functionality on mobile devices.
+The Aira Unified integration provides an alternative administration UI and a chatbot that can be easily added to an Xperience by Kentico project. It is designed for content editors and marketers who need essential functionality on mobile devices.
 
 ## Screenshots
 
@@ -16,19 +16,20 @@ Aira Unified integration provides an alternative administration UI and chatbot t
 
 ## Library Version Matrix
 
-| Xperience Version |    Library Version   |
-| ----------------- | -------------------- |
-| >= 30.2.0         | >= 0.2.0-prerelase-2 |
-| >= 30.0.0         | >= 0.1.0-prerelase-1 |
+| Xperience Version |    Library Version    |
+| ----------------- | --------------------- |
+| >= 30.2.0         | >= 0.3.0-prerelease-3 |
+| >= 30.0.0         | >= 0.1.0-prerelease-1 |
 
 ## Dependencies
 
 - [ASP.NET Core 8.0](https://dotnet.microsoft.com/en-us/download)
 - [Xperience by Kentico](https://docs.xperience.io/xp/changelog)
+- [Node.js](https://nodejs.org/en/download) 20.10.0 or newer (for development)
 
 ## Full Instructions
 
-To activate the communication of Aira Unified app with the Aira service, you need to request an activation key. Please contact us at productmanagement@xperience.io for more information.
+To activate the communication of the Aira Unified app with the Aira service, you need to request an activation key. Please contact us at productmanagement@xperience.io for more information.
 
 Follow the steps below to add the Aira Unified app to your Xperience project.
 
@@ -42,13 +43,27 @@ dotnet add package Kentico.Xperience.AiraUnified
 
 ### Quick Start
 
-1. Add the Aira Unified API subscription key to your `appsettings.json`.:
+1. Add the Aira Unified configuration to your `appsettings.json`. The minimal required configuration is:
 
 ```json
 "AiraUnifiedOptions": {
   "AiraUnifiedApiSubscriptionKey": "<your Aira Unified API key>"
 }
 ```
+
+For development and testing purposes, you can override default settings:
+
+```json
+"AiraUnifiedOptions": {
+  "AiraUnifiedApiSubscriptionKey": "<your Aira Unified API key>",
+  "AiraUnifiedAIEndpoint": "https://your-custom-endpoint.com/api",
+  "AiraUnifiedUseMockClient": true,
+  "AiraUnifiedUseMockInsights": true
+}
+```
+
+For detailed configuration options, see [Configuration Options](docs/configuration-options.md).
+
 2. Configure your project for [HTTPS](https://learn.microsoft.com/en-us/aspnet/core/security/enforcing-ssl).
 
 3. Include the `Kentico.Xperience.AiraUnified` package in your project:
@@ -84,6 +99,7 @@ dotnet add package Kentico.Xperience.AiraUnified
    - **Logo**: Select an asset from the Media Library.
    - **Chat Title**: Title for the chat page.
    - **Smart Upload Title**: Title for the smart upload page.
+   - **Workspace**: The workspace used by the smart uploader.
    
    ![Admin Configuration](/images/AiraUnifiedAdminConfiguration.png)
 
@@ -95,17 +111,17 @@ dotnet add package Kentico.Xperience.AiraUnified
 
    ![Role Configuration](/images/ConfigureAiraUnifiedPermissions.png)
 
-8. Aira Unified expects a workspace named "Kentico Default" (code name 'KenticoDefault'). When using this library in a project with Xperience versions > 30.2.0, add a workspace with the code name `KenticoDefault`.
+8. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
 
-9. Users can now sign in to the Aira Unified app - `<your-path-base>/signin`.
+For usage instructions, see [Usage Guide](docs/Usage-Guide.md).
 
-View the [Usage Guide](docs/Usage-Guide.md) for more instructions.
+For upgrade instructions, see [Upgrades](docs/Upgrades.md).
 
 ## Contributing
 
 To see the guidelines for Contributing to Kentico open source software, please see [Kentico's `CONTRIBUTING.md`](https://github.com/Kentico/.github/blob/main/CONTRIBUTING.md) for more information and follow the [Kentico's `CODE_OF_CONDUCT`](https://github.com/Kentico/.github/blob/main/CODE_OF_CONDUCT.md).
 
-Find project-specific contribution details in [Contributing Setup](./docs/Contributing-Setup.md).
+Instructions and technical details for contributing to **this** project can be found in [Contributing Setup](./docs/Contributing-Setup.md).
 
 ## License
 
@@ -119,6 +135,6 @@ This project has **Kentico Labs limited support**.
 
 See [`SUPPORT.md`](https://github.com/Kentico/.github/blob/main/SUPPORT.md#full-support) for more information.
 
-This feature is currently in a Preview mode, do not use for production instances.
+This feature is currently in Preview mode. Do not use it for production instances.
 
-For any security issues see [`SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).
+For any security issues, see [`SECURITY.md`](https://github.com/Kentico/.github/blob/main/SECURITY.md).

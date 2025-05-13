@@ -1,0 +1,26 @@
+﻿@using Kentico.Xperience.AiraUnified;
+
+@model Kentico.Xperience.AiraUnified.Chat.Models.ChatThreadSelectorViewModel
+
+@{
+    Layout = "_AiraLayout";
+    var baseUrl = Context.Request.GetBaseUrl();
+}
+
+@section styles {
+}
+
+<div id="thread-selector"
+     data-aira-unified-base-url="@Model.AiraUnifiedBaseUrl"
+     data-base-url="@baseUrl"
+     data-navigation-url="@Model.NavigationUrl"
+     data-navigation-page-identifier="@Model.NavigationPageIdentifier"
+     data-user-thread-collection-url="@Model.UserThreadCollectionUrl"
+     data-chat-url="@Model.ChatUrl"
+     data-chat-query-parameter-name="@Model.ChatQueryParameterName"
+     data-new-chat-thread-url="@Model.NewChatThreadUrl">
+</div>
+
+<script>
+    navigator.serviceWorker.register('/_content/Kentico.Xperience.AiraUnified/sw.js')
+</script>

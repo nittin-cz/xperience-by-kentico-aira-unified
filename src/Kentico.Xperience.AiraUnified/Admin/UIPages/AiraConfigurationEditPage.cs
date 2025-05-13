@@ -8,20 +8,23 @@ using Kentico.Xperience.AiraUnified.Admin.UIPages;
 
 [assembly: UIPage(
     parentType: typeof(AiraUnifiedApplicationPage),
-    slug: "configuration",
     uiPageType: typeof(AiraUnifiedConfigurationEditPage),
-    name: "Edit configuration",
+    slug: "configuration",
+    name: "{$AiraUnifiedConfigurationEditPage.Name$}",
     templateName: TemplateNames.EDIT,
     order: UIPageOrder.NoOrder)]
 
 namespace Kentico.Xperience.AiraUnified.Admin.UIPages;
 
 [UIEvaluatePermission(SystemPermissions.UPDATE)]
-internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfigurationModel>
+internal sealed class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfigurationModel>
 {
     private AiraUnifiedConfigurationModel? model = null;
     private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
     private readonly IInfoProvider<AiraUnifiedConfigurationItemInfo> airaUnifiedConfigurationProvider;
+
+    private const string AIRA_UNIFIED_CONFIGURATION_UPDATED = "Aira unified configuration updated.";
+    private const string AIRA_UNIFIED_CONFIGURATION_NOT_UPDATED = "Could not update aira unified configuration.";
 
     public AiraUnifiedConfigurationEditPage(Xperience.Admin.Base.Forms.Internal.IFormItemCollectionProvider formItemCollectionProvider,
         IFormDataBinder formDataBinder,
@@ -32,6 +35,7 @@ internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfi
         this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
         this.airaUnifiedConfigurationProvider = airaUnifiedConfigurationProvider;
     }
+
 
     protected override AiraUnifiedConfigurationModel Model
     {
@@ -45,9 +49,10 @@ internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfi
         }
     }
 
+
     protected override async Task<ICommandResponse> ProcessFormData(AiraUnifiedConfigurationModel model, ICollection<IFormItem> formItems)
     {
-        if (!model.RelativePathBase.IsValidSubpath())
+        if (!model.RelativePathBase.IsValidSubPath())
         {
             return ResponseFrom(new FormSubmissionResult(
                 FormSubmissionStatus.ValidationFailure
@@ -64,11 +69,11 @@ internal class AiraUnifiedConfigurationEditPage : ModelEditPage<AiraUnifiedConfi
 
         if (result)
         {
-            response.AddSuccessMessage("Aira unified configuration updated.");
+            response.AddSuccessMessage(AIRA_UNIFIED_CONFIGURATION_UPDATED);
         }
         else
         {
-            response.AddErrorMessage("Could not update aira unified configuration.");
+            response.AddErrorMessage(AIRA_UNIFIED_CONFIGURATION_NOT_UPDATED);
         }
 
         return response;

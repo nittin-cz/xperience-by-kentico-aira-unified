@@ -1,26 +1,22 @@
 ﻿using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Assets;
+using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 namespace Kentico.Xperience.AiraUnified.NavBar;
 
-internal class NavigationService : INavigationService
+/// <inheritdoc />
+internal sealed class NavigationService(
+    IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
+    IAiraUnifiedAssetService airaUnifiedAssetService)
+    : INavigationService
 {
-    private readonly IAiraUnifiedConfigurationService airaUnifiedConfigurationService;
-    private readonly IAiraUnifiedAssetService airaUnifiedAssetService;
-
-    public NavigationService(IAiraUnifiedConfigurationService airaUnifiedConfigurationService,
-        IAiraUnifiedAssetService airaUnifiedAssetService)
-    {
-        this.airaUnifiedConfigurationService = airaUnifiedConfigurationService;
-        this.airaUnifiedAssetService = airaUnifiedAssetService;
-    }
-
+    /// <inheritdoc />
     public async Task<NavBarViewModel> GetNavBarViewModel(string activePage, string baseUrl)
     {
         var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
         var sanitizedLogoUrl = airaUnifiedAssetService.GetSanitizedLogoUrl(airaUnifiedConfiguration);
 
-        var chatItemUrl = BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatRelativeUrl);
+        var chatItemUrl = BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatThreadSelectorRelativeUrl);
 
         var smartUploadUrl = BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl);
 
@@ -52,6 +48,8 @@ internal class NavigationService : INavigationService
         };
     }
 
+
+    /// <inheritdoc />  
     public Uri? BuildUriOrNull(string baseUrl, string airaPathBase, params string[] relativePathParts)
         => Uri.TryCreate($"{baseUrl}{airaPathBase}/{string.Join('/', relativePathParts)}", UriKind.Absolute, out var uri) ? uri : null;
 }
