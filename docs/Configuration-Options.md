@@ -55,6 +55,20 @@ When enabled, uses a mock implementation of the insights service.
 
 For more details on working with mock messages and insights, see [Mock messages guide](Mock-Messages-Guide.md).
 
+## Admin Path Configuration
+
+### XbyKAdminPath
+
+```json
+"XbyKAdminPath": "/custom-admin-path"
+```
+
+This property allows you to override the default admin UI path in case your administration uses a different domain or custom path.
+
+**Use case:**
+Use this when your Xperience by Kentico administration interface is hosted on a different domain or uses a custom path.
+
+
 ## Complete Configuration Examples
 
 ### Development Configuration
@@ -65,7 +79,8 @@ For more details on working with mock messages and insights, see [Mock messages 
     "AiraUnifiedApiSubscriptionKey": "dev-key-here",
     "AiraUnifiedAIEndpoint": "https://dev-endpoint.com/api",
     "AiraUnifiedUseMockClient": true,
-    "AiraUnifiedUseMockInsights": true
+    "AiraUnifiedUseMockInsights": true,
+    "XbyKAdminPath": "/custom-admin-path"
   }
 }
 ```
@@ -78,7 +93,8 @@ For more details on working with mock messages and insights, see [Mock messages 
     "AiraUnifiedApiSubscriptionKey": "your-api-key-here",
     "AiraUnifiedAIEndpoint": "https://your-custom-endpoint.com/api",
     "AiraUnifiedUseMockClient": true,
-    "AiraUnifiedUseMockInsights": true
+    "AiraUnifiedUseMockInsights": true,
+    "XbyKAdminPath": "/custom-admin-path"
   }
 }
 ```
