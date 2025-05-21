@@ -10,21 +10,23 @@ internal sealed class SignInViewModel
     /// </summary>
     public string ChatUrl { get; set; } = string.Empty;
 
-
     /// <summary>
     /// Aira Unified base URL.
     /// </summary>
     public string PathBase { get; set; } = string.Empty;
-
 
     /// <summary>
     /// Path of the logo displayed in the PWA.
     /// </summary>
     public string LogoImageRelativePath { get; set; } = string.Empty;
 
-
     /// <summary>
     /// Error message displayed if the user misses a permission.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Xperience by Kentico admin path.
+    /// </summary>
+    public string AdminPath { get; set; } = string.Empty;
 }
