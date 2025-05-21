@@ -133,7 +133,6 @@ function openModalLogin(signinElement) {
 
   const iframe = document.createElement("iframe");
   iframe.src = adminUrl;
-  console.log(adminUrl);
   iframe.style = `
         width: 100%;
         height: 100%;
