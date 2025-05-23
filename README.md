@@ -16,9 +16,9 @@ The Aira Unified integration provides an alternative administration UI and a cha
 
 ## Library Version Matrix
 
-| Xperience Version |    Library Version    |
+| Xperience Version | Library Version       |
 | ----------------- | --------------------- |
-| >= 30.2.0         | >= 0.3.0-prerelease-3 |
+| >= 30.2.0         | >= 0.3.1-prerelease-3 |
 | >= 30.0.0         | >= 0.1.0-prerelease-1 |
 
 ## Dependencies
