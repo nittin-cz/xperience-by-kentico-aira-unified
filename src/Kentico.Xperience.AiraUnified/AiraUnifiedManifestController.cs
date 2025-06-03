@@ -24,11 +24,13 @@ public sealed class AiraUnifiedManifestController(IAiraUnifiedConfigurationServi
 
         var libraryBasePath = '/' + AiraUnifiedConstants.RCLUrlPrefix;
 
+        var baseUrl = HttpContext.Request.GetBaseUrl();
+
         var manifest = new
         {
             name = "AiraUnified",
             short_name = "AiraUnified",
-            start_url = $"{configuration.AiraUnifiedConfigurationItemAiraPathBase}/{AiraUnifiedConstants.ChatRelativeUrl}",
+            start_url = $"{baseUrl}{configuration.AiraUnifiedConfigurationItemAiraPathBase}/{AiraUnifiedConstants.ChatRelativeUrl}",
             display = "standalone",
             background_color = "#ffffff",
             theme_color = "#ffffff",
@@ -37,13 +39,13 @@ public sealed class AiraUnifiedManifestController(IAiraUnifiedConfigurationServi
             {
                 new
                 {
-                    src = $"{libraryBasePath}/img/favicon/android-chrome-192x192.png",
+                    src = $"{baseUrl}{libraryBasePath}/img/favicon/android-chrome-192x192.png",
                     sizes = "192x192",
                     type = "image/png"
                 },
                 new
                 {
-                    src = $"{libraryBasePath}/img/favicon/android-chrome-512x512.png",
+                    src = $"{baseUrl}{libraryBasePath}/img/favicon/android-chrome-512x512.png",
                     sizes = "512x512",
                     type = "image/png"
                 }
