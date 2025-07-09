@@ -1,8 +1,3 @@
-@using Kentico.Xperience.AiraUnified.NavBar
-@using Kentico.Xperience.AiraUnified.NavBar.Models
-@using Kentico.Xperience.AiraUnified.Admin
-@inject INavigationService NavigationService
-
 <nav class="navbar">
     <div class="container">
         <div class="navbar-brand">
@@ -62,31 +57,4 @@
 @if (hasError)
 {
     <div style="color: red; padding: 10px;">Error loading navigation: @errorMessage</div>
-}
-
-@code {
-    [Parameter] public string PageIdentifier { get; set; } = AiraUnifiedConstants.ChatRelativeUrl;
-    [Parameter] public string BaseUrl { get; set; } = string.Empty;
-    
-    private NavBarViewModel? navBarModel;
-    private bool isLoading = true;
-    private bool hasError = false;
-    private string errorMessage = string.Empty;
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            navBarModel = await NavigationService.GetNavBarViewModel(PageIdentifier, BaseUrl);
-            isLoading = false;
-        }
-        catch (Exception ex)
-        {
-            hasError = true;
-            errorMessage = ex.Message;
-            isLoading = false;
-        }
-        
-        StateHasChanged();
-    }
 }

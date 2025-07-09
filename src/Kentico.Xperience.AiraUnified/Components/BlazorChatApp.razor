@@ -1,7 +1,4 @@
-@using Kentico.Xperience.AiraUnified.Chat
-@using Kentico.Xperience.AiraUnified.Chat.Models
 @using Kentico.Xperience.AiraUnified.Admin
-
 <div class="page-wrapper">
     <div class="content-wrapper">
         <section class="c-section app">
@@ -22,11 +19,3 @@
         </section>
     </div>
 </div>
-
-@code {
-    [Parameter] public int ThreadId { get; set; }
-    [Parameter] public string ThreadName { get; set; } = string.Empty;
-    [Parameter] public int UserId { get; set; }
-    [Parameter] public string LogoImgRelativePath { get; set; } = string.Empty;
-    [Parameter] public string BaseUrl { get; set; } = string.Empty;
-}
