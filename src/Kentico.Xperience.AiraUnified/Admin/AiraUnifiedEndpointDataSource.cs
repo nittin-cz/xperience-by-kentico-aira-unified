@@ -77,19 +77,19 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         return
         [
             CreateAiraEndpointWithQueryParams(configuration,
-                "blazor-chat",
+                AiraUnifiedConstants.ChatRelativeUrl,
                 nameof(AiraUnifiedController.BlazorChat),
                 AiraUnifiedConstants.ChatThreadIdParameterName,
                 (controller, threadId) => controller.BlazorChat(threadId),
                 requiredPermission: SystemPermissions.VIEW
             ),
-            CreateAiraEndpointWithQueryParams(configuration,
-                AiraUnifiedConstants.ChatRelativeUrl,
-                nameof(AiraUnifiedController.Index),
-                AiraUnifiedConstants.ChatThreadIdParameterName,
-                (controller, threadId) => controller.Index(threadId),
-                requiredPermission: SystemPermissions.VIEW
-            ),
+            // CreateAiraEndpointWithQueryParams(configuration,
+            //     AiraUnifiedConstants.ChatRelativeUrl,
+            //     nameof(AiraUnifiedController.Index),
+            //     AiraUnifiedConstants.ChatThreadIdParameterName,
+            //     (controller, threadId) => controller.Index(threadId),
+            //     requiredPermission: SystemPermissions.VIEW
+            // ),
             CreateAiraEndpointWithRouteValue(configuration,
                 $"{AiraUnifiedConstants.ChatRelativeUrl}/{AiraUnifiedConstants.ChatHistoryUrl}/{{{AiraUnifiedConstants.ChatThreadIdParameterName}:int}}",
                 nameof(AiraUnifiedController.GetOrCreateChatHistory),
