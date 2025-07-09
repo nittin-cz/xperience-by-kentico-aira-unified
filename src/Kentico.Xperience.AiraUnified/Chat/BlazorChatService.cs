@@ -1,6 +1,8 @@
 ﻿using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
+using Kentico.Xperience.AiraUnified.Chat.Services;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -27,7 +29,20 @@ internal sealed class BlazorChatService : IBlazorChatService
 
     public async Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId)
     {
-        return await airaUnifiedChatService.GetUserChatHistory(userId, threadId);
+        var historyMessages = await airaUnifiedChatService.GetUserChatHistory(userId, threadId);
+        
+        foreach (var message in historyMessages)
+        {
+            if (message.IsInsightsMessage)
+            {
+                var (category, data, timestamp) = InsightsParser.ParseSystemMessage(message.Message!);
+                message.InsightsCategory = category;
+                message.InsightsData = data;
+                message.InsightsTimestamp = timestamp;
+            }
+        }
+        
+        return historyMessages;
     }
 
     public async Task<AiraUnifiedChatMessageViewModel?> SendMessageAsync(string message, int userId, int threadId)
@@ -52,8 +67,8 @@ internal sealed class BlazorChatService : IBlazorChatService
             };
         }
 
-        // Save AI response
-        await airaUnifiedChatService.SaveMessage(aiResponse.Responses[0].Content, userId, ChatRoleType.AIAssistant, thread);
+        // Save AI response (včetně insights, pokud existují)
+        await SaveMessages(aiResponse, userId, thread);
 
         // Update chat summary
         await airaUnifiedChatService.UpdateChatSummary(userId, message);
@@ -64,6 +79,14 @@ internal sealed class BlazorChatService : IBlazorChatService
             Message = aiResponse.Responses[0].Content,
             Insights = aiResponse.Insights
         };
+
+        // === NOVÁ LOGIKA: Nastavení insights dat pro okamžité renderování ===
+        if (aiResponse.Insights?.IsInsightsQuery == true)
+        {
+            result.InsightsCategory = aiResponse.Insights.Category;
+            result.InsightsData = aiResponse.Insights.InsightsData;
+            result.InsightsTimestamp = aiResponse.Insights.Metadata?.Timestamp;
+        }
 
         // Handle quick prompts if available
         if (aiResponse.QuickOptions != null)
@@ -102,5 +125,29 @@ internal sealed class BlazorChatService : IBlazorChatService
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         var user = await adminUserManager.GetUserAsync(authState.User);
         return user?.UserID ?? 0;
+    }
+    
+    private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, int userId, AiraUnifiedChatThreadInfo thread)
+    {
+        if (!aiResponse.Insights?.IsInsightsQuery ?? true)
+        {
+            foreach (var response in aiResponse.Responses)
+            {
+                await airaUnifiedChatService.SaveMessage(response.Content, userId,
+                    ChatRoleType.AIAssistant, thread);
+            }
+        }
+        else
+        {
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+
+            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights, options);
+
+            await airaUnifiedChatService.SaveMessage(insightsJson, userId,
+                ChatRoleType.System, thread);
+        }
     }
 }

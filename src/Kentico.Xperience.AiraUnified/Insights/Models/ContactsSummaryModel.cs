@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a summary of contact statistics including total, active, and inactive contact counts.
 /// </summary>
-internal sealed class ContactsSummaryModel
+public sealed class ContactsSummaryModel
 {
     /// <summary>
     /// Gets or sets the total number of contacts in the system.

@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the complete content insights data including summary statistics and categorized content.
 /// </summary>
-internal sealed class ContentInsightsDataModel
+public sealed class ContentInsightsDataModel
 {
     /// <summary>
     /// Gets or sets the summary statistics for all content.

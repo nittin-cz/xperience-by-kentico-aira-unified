@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a category of content items with their status counts and the list of items.
 /// </summary>
-internal sealed class ContentCategoryModel
+public sealed class ContentCategoryModel
 {
     /// <summary>
     /// Gets or sets the number of content items in draft status.

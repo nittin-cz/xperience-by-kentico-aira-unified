@@ -1,0 +1,27 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+@if (Category != null && Data != null)
+{
+    <div class="insights-container">
+        @switch (Category.ToLowerInvariant())
+        {
+            case "content":
+                <ContentInsightsComponent Data="@((ContentInsightsDataModel)Data)" 
+                                          Timestamp="@(Timestamp ?? DateTime.Now)" />
+                break;
+            case "email":
+                <EmailInsightsComponent Data="@((EmailInsightsDataModel)Data)" 
+                                        Timestamp="@(Timestamp ?? DateTime.Now)" />
+                break;
+            case "marketing":
+                <MarketingInsightsComponent Data="@((MarketingInsightsDataModel)Data)" 
+                                            Timestamp="@(Timestamp ?? DateTime.Now)" />
+                break;
+            default:
+                <div class="alert alert-warning">
+                    <strong>Unknown insights type:</strong> @Category
+                </div>
+                break;
+        }
+    </div>
+}

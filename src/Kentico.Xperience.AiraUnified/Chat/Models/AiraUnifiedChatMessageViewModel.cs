@@ -53,4 +53,24 @@ internal sealed class AiraUnifiedChatMessageViewModel
     /// Application insights for current message.
     /// </summary>
     public InsightsResponseModel? Insights { get; set; }
+    
+    /// <summary>
+    /// Indicates if this is a system message containing insights data.
+    /// </summary>
+    public bool IsInsightsMessage => Role == "system" && !string.IsNullOrEmpty(Message);
+
+    /// <summary>
+    /// Category of insights (content, email, marketing).
+    /// </summary>
+    public string? InsightsCategory { get; set; }
+
+    /// <summary>
+    /// Typed insights data ready for rendering.
+    /// </summary>
+    public object? InsightsData { get; set; }
+
+    /// <summary>
+    /// Timestamp when insights were generated.
+    /// </summary>
+    public DateTime? InsightsTimestamp { get; set; }
 }

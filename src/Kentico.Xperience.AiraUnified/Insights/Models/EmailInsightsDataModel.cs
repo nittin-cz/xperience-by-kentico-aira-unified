@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the complete email insights data including summary statistics and individual campaign details.
 /// </summary>
-internal sealed class EmailInsightsDataModel
+public sealed class EmailInsightsDataModel
 {
     /// <summary>
     /// Gets or sets the summary statistics for all email campaigns.

@@ -1,4 +1,6 @@
 @using Microsoft.AspNetCore.Components.Web
+@using Kentico.Xperience.AiraUnified.Components.Insights
+
 <div class="container">
     <div class="row">
         <div class="col-12">
@@ -6,7 +8,7 @@
                 <div class="chat-header">
                     <h2>@ThreadName</h2>
                 </div>
-                
+
                 <div class="chat-messages" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;" @ref="messagesContainer">
                     @foreach (var message in messages.ToArray())
                     {
@@ -19,12 +21,18 @@
                                         <p>Sorry, the chat service is currently unavailable. Please try again later.</p>
                                     </div>
                                 }
+                                else if ((message.IsInsightsMessage && message.InsightsData != null) || (message.Insights?.IsInsightsQuery == true && message.Insights.InsightsData != null))
+                                {
+                                    <InsightsComponent Category="@message.InsightsCategory"
+                                                       Data="@message.InsightsData"
+                                                       Timestamp="@message.InsightsTimestamp" />
+                                }
                                 else
                                 {
                                     @message.Message
                                 }
                             </div>
-                            
+
                             @if (message.QuickPrompts?.Any() == true)
                             {
                                 <div class="quick-prompts" style="margin-top: 8px;">
@@ -38,7 +46,7 @@
                             }
                         </div>
                     }
-                    
+
                     @if (isLoading)
                     {
                         <div class="loading-indicator">
@@ -52,12 +60,12 @@
 
                 <div class="chat-input">
                     <div class="input-group">
-                        <input @ref="messageInput" 
+                        <input @ref="messageInput"
                                value="@currentMessage"
                                @oninput="@(OnInputChange)"
-                               @onkeydown="@(HandleKeyDown)" 
-                               placeholder="Type your message..." 
-                               class="form-control" 
+                               @onkeydown="@(HandleKeyDown)"
+                               placeholder="Type your message..."
+                               class="form-control"
                                disabled="@isLoading" />
                         <button @onclick="@(SendMessage)" class="btn btn-primary" disabled="@(isLoading || string.IsNullOrWhiteSpace(currentMessage))">
                             @if (isLoading)
