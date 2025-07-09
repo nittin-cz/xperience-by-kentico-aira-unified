@@ -109,6 +109,16 @@ app.MapControllerRoute(
     }
 );
 
+app.MapBlazorHub();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "ChatRoute",
+        pattern: "/blazor",
+        defaults: new { controller = "Chat", action = "Index" }
+    );
+});
+
 app.Run();
 
 
