@@ -66,4 +66,7 @@
 	  <Folder Include="Components\Chat\" />
 	  <Folder Include="Components\Shared\" />
 	</ItemGroup>
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Views\Shared\Components\Layout\BlazorLayout.razor" />
+	</ItemGroup>
 </Project>

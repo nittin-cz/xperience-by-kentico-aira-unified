@@ -33,7 +33,31 @@ internal sealed class AiraUnifiedController(
 {
     private const string InvalidPathBaseErrorMessage = "Invalid aira unified path base.";
 
+    /// <summary>
+    /// Endpoint exposing access to the Blazor Chat page.
+    /// </summary>
+    /// <param name="chatThreadId">The chat thread id. If not specified, a new thread will be created.</param>
+    /// <returns>A Blazor component view.</returns>
+    [HttpGet]
+    public async Task<IActionResult> BlazorChat(int? chatThreadId = null)
+    {
+        var configuration = await GetConfiguration();
+        var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
+        var user = await adminUserManager.GetUserAsync(User);
 
+        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
+
+        // Vrátit Blazor komponentu s parametry
+        return View("~/Views/Chat/BlazorChatHost.cshtml", new BlazorChatViewModel
+        {
+            ThreadId = chatThread.ThreadId,
+            ThreadName = chatThread.ThreadName,
+            UserId = user.UserID,
+            LogoImgRelativePath = logoUrl,
+            BaseUrl = HttpContext.Request.GetBaseUrl()
+        });
+    }
+    
     /// <summary>
     /// Endpoint exposing access to the Chat page.
     /// </summary>

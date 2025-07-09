@@ -5,7 +5,6 @@ using Kentico.Xperience.AiraUnified.Chat;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Insights;
 using Kentico.Xperience.AiraUnified.NavBar;
-using Kentico.Xperience.AiraUnified.Services;
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -66,20 +65,14 @@ public static class AiraUnifiedServiceCollectionExtensions
 
         services.AddServerSideBlazor(circuitOptions =>
         {
-            circuitOptions.DetailedErrors = true; // Pro development
+            circuitOptions.DetailedErrors = true;
+            circuitOptions.DisconnectedCircuitMaxRetained = 100;
+            circuitOptions.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+            circuitOptions.MaxBufferedUnacknowledgedRenderBatches = 10;
         });
         
-        services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<IBlazorChatService, BlazorChatService>();
 
-        // Session pro chat
-        // services.AddSession(sessionOptions =>
-        // {
-        //     sessionOptions.IdleTimeout = TimeSpan.FromMinutes(30);
-        //     sessionOptions.Cookie.HttpOnly = true;
-        //     sessionOptions.Cookie.IsEssential = true;
-        //     sessionOptions.Cookie.Name = ".AspNetCore.Session";
-        // });
-        
         return services;
     }
 }

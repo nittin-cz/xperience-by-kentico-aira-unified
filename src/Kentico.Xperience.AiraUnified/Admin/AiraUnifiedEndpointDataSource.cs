@@ -8,7 +8,6 @@ using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.Chat.Models;
-using Kentico.Xperience.AiraUnified.Controllers;
 using Kentico.Xperience.AiraUnified.NavBar.Models;
 
 using Microsoft.AspNetCore.Authentication;
@@ -77,16 +76,13 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         return
         [
-            // CreateAiraEndpointWithQueryParams(configuration,
-            //     "blazor",
-            //     nameof(ChatController.Index),
-            //     AiraUnifiedConstants.ChatThreadIdParameterName,
-            //     (controller, threadId) => controller.Index(threadId),
-            //     requiredPermission: SystemPermissions.VIEW
-            // ),
-            //
-            
-            
+            CreateAiraEndpointWithQueryParams(configuration,
+                "blazor-chat",
+                nameof(AiraUnifiedController.BlazorChat),
+                AiraUnifiedConstants.ChatThreadIdParameterName,
+                (controller, threadId) => controller.BlazorChat(threadId),
+                requiredPermission: SystemPermissions.VIEW
+            ),
             CreateAiraEndpointWithQueryParams(configuration,
                 AiraUnifiedConstants.ChatRelativeUrl,
                 nameof(AiraUnifiedController.Index),
