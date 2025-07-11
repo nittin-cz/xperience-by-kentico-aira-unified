@@ -1,85 +1,131 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Kentico.Xperience.AiraUnified.Components.Insights
 
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <h2>@ThreadName</h2>
-                </div>
-
-                <div class="chat-messages" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;" @ref="messagesContainer">
-                    @foreach (var message in messages.ToArray())
-                    {
-                        <div class="message @(message.Role == "user" ? "user-message" : "ai-message")" style="margin-bottom: 10px;">
-                            <div class="message-content" style="padding: 8px; border-radius: 8px; @(message.Role == "user" ? "background-color: #007bff; color: white; text-align: right;" : "background-color: #f8f9fa;")">
-                                @if (message.ServiceUnavailable)
-                                {
-                                    <div class="alert alert-warning">
-                                        <strong>Service Unavailable</strong>
-                                        <p>Sorry, the chat service is currently unavailable. Please try again later.</p>
-                                    </div>
-                                }
-                                else if ((message.IsInsightsMessage && message.InsightsData != null) || (message.Insights?.IsInsightsQuery == true && message.Insights.InsightsData != null))
-                                {
-                                    <InsightsComponent Category="@message.InsightsCategory"
-                                                       Data="@message.InsightsData"
-                                                       Timestamp="@message.InsightsTimestamp" />
-                                }
-                                else
-                                {
-                                    @message.Message
-                                }
-                            </div>
-
-                            @if (message.QuickPrompts?.Any() == true)
+<div class="deep-chat-container">
+    <div class="chat-messages" @ref="messagesContainer">
+        @foreach (var message in messages.ToArray())
+        {
+            <div class="message @(message.Role == "user" ? "user-message" : "ai-message")">
+                @if (message.Role == "user")
+                {
+                    <div class="message-with-avatar">
+                        <div class="message-content user-message-content">
+                            @if (message.ServiceUnavailable)
                             {
-                                <div class="quick-prompts" style="margin-top: 8px;">
-                                    @foreach (var prompt in message.QuickPrompts)
-                                    {
-                                        <button class="btn btn-outline-primary btn-sm me-2 mb-2" @onclick="() => UseQuickPrompt(prompt, message.QuickPromptsGroupId)">
-                                            @prompt
-                                        </button>
-                                    }
+                                <div class="alert alert-warning">
+                                    <strong>Service Unavailable</strong>
+                                    <p>Sorry, the chat service is currently unavailable. Please try again later.</p>
                                 </div>
                             }
+                            else if ((message.IsInsightsMessage && message.InsightsData != null) || (message.Insights?.IsInsightsQuery == true && message.Insights.InsightsData != null))
+                            {
+                                <InsightsComponent Category="@message.InsightsCategory"
+                                                   Data="@message.InsightsData"
+                                                   Timestamp="@message.InsightsTimestamp" />
+                            }
+                            else
+                            {
+                                @message.Message
+                            }
                         </div>
-                    }
+                        <div class="message-avatar">
+                            <div class="avatar user-avatar">U</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="message-with-avatar">
+                        <div class="message-avatar">
+                            <div class="avatar ai-avatar">
+                                @if (!string.IsNullOrEmpty(LogoImgRelativePath))
+                                {
+                                    <img src="@($"{BaseUrl}{LogoImgRelativePath}")" alt="AI Avatar" />
+                                }
+                            </div>
+                        </div>
+                        <div class="message-content ai-message-content">
+                            @if (message.ServiceUnavailable)
+                            {
+                                <div class="alert alert-warning">
+                                    <strong>Service Unavailable</strong>
+                                    <p>Sorry, the chat service is currently unavailable. Please try again later.</p>
+                                </div>
+                            }
+                            else if ((message.IsInsightsMessage && message.InsightsData != null) || (message.Insights?.IsInsightsQuery == true && message.Insights.InsightsData != null))
+                            {
+                                <InsightsComponent Category="@message.InsightsCategory"
+                                                   Data="@message.InsightsData"
+                                                   Timestamp="@message.InsightsTimestamp" />
+                            }
+                            else
+                            {
+                                @message.Message
+                            }
+                        </div>
+                    </div>
+                }
 
-                    @if (isLoading)
-                    {
+                @if (message.QuickPrompts?.Any() == true)
+                {
+                    <div class="quick-prompts">
+                        @foreach (var prompt in message.QuickPrompts)
+                        {
+                            <button class="c-prompt-btn" @onclick="() => UseQuickPrompt(prompt, message.QuickPromptsGroupId)">
+                                @prompt
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (isLoading)
+        {
+            <div class="message ai-message">
+                <div class="message-with-avatar">
+                    <div class="message-avatar">
+                        <div class="avatar ai-avatar">
+                            @if (!string.IsNullOrEmpty(LogoImgRelativePath))
+                            {
+                                <img src="@($"{BaseUrl}{LogoImgRelativePath}")" alt="AI Avatar" />
+                            }
+                        </div>
+                    </div>
+                    <div class="message-content ai-message-content">
                         <div class="loading-indicator">
                             <div class="spinner-border spinner-border-sm" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                             <span class="ms-2">AI is thinking...</span>
                         </div>
-                    }
-                </div>
-
-                <div class="chat-input">
-                    <div class="input-group">
-                        <input @ref="messageInput"
-                               value="@currentMessage"
-                               @oninput="@(OnInputChange)"
-                               @onkeydown="@(HandleKeyDown)"
-                               placeholder="Type your message..."
-                               class="form-control"
-                               disabled="@isLoading" />
-                        <button @onclick="@(SendMessage)" class="btn btn-primary" disabled="@(isLoading || string.IsNullOrWhiteSpace(currentMessage))">
-                            @if (isLoading)
-                            {
-                                <span class="spinner-border spinner-border-sm" role="status"></span>
-                            }
-                            else
-                            {
-                                <span>Send</span>
-                            }
-                        </button>
                     </div>
                 </div>
             </div>
+        }
+    </div>
+
+    <div class="chat-input">
+        <div class="input-container">
+            <input @ref="messageInput"
+                   value="@currentMessage"
+                   @oninput="@(OnInputChange)"
+                   @onkeydown="@(HandleKeyDown)"
+                   placeholder="Message AIRA"
+                   class="chat-input-field"
+                   disabled="@isLoading" />
+            <button @onclick="@(SendMessage)" class="chat-submit-btn" disabled="@(isLoading || string.IsNullOrWhiteSpace(currentMessage))">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                }
+                else
+                {
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 11L20 11M20 11L13 4M20 11L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                }
+            </button>
         </div>
     </div>
 </div>
