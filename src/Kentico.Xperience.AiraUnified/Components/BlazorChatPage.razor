@@ -29,7 +29,16 @@
                             }
                         </div>
                         <div class="message-avatar">
-                            <div class="avatar user-avatar">U</div>
+                            <div class="avatar user-avatar">
+                                @if (!string.IsNullOrEmpty(LogoImgRelativePath))
+                                {
+                                    <img src="@($"{BaseUrl}{LogoImgRelativePath}")" alt="User Avatar" />
+                                }
+                                else
+                                {
+                                    <span>U</span>
+                                }
+                            </div>
                         </div>
                     </div>
                 }
@@ -37,12 +46,7 @@
                 {
                     <div class="message-with-avatar">
                         <div class="message-avatar">
-                            <div class="avatar ai-avatar">
-                                @if (!string.IsNullOrEmpty(LogoImgRelativePath))
-                                {
-                                    <img src="@($"{BaseUrl}{LogoImgRelativePath}")" alt="AI Avatar" />
-                                }
-                            </div>
+                            <div class="avatar ai-avatar">A</div>
                         </div>
                         <div class="message-content ai-message-content">
                             @if (message.ServiceUnavailable)
@@ -85,12 +89,7 @@
             <div class="message ai-message">
                 <div class="message-with-avatar">
                     <div class="message-avatar">
-                        <div class="avatar ai-avatar">
-                            @if (!string.IsNullOrEmpty(LogoImgRelativePath))
-                            {
-                                <img src="@($"{BaseUrl}{LogoImgRelativePath}")" alt="AI Avatar" />
-                            }
-                        </div>
+                        <div class="avatar ai-avatar">A</div>
                     </div>
                     <div class="message-content ai-message-content">
                         <div class="loading-indicator">
