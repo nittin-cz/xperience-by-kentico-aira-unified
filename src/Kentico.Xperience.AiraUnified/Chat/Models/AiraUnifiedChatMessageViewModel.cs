@@ -73,4 +73,9 @@ internal sealed class AiraUnifiedChatMessageViewModel
     /// Timestamp when insights were generated.
     /// </summary>
     public DateTime? InsightsTimestamp { get; set; }
+
+    /// <summary>
+    /// Component type for rendering specific UI components.
+    /// </summary>
+    public Type? ComponentType { get; set; }
 }

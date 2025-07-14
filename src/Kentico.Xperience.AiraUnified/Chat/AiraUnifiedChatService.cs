@@ -8,6 +8,7 @@ using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Insights;
 using Kentico.Xperience.AiraUnified.Insights.Models;
+using Kentico.Xperience.AiraUnified.Insights.Abstractions;
 
 namespace Kentico.Xperience.AiraUnified.Chat;
 
@@ -23,6 +24,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     private readonly IInfoProvider<AiraUnifiedChatThreadInfo> airaUnifiedChatThreadProvider;
     private readonly IInfoProvider<ContactGroupInfo> contactGroupProvider;
     private readonly IAiraUnifiedInsightsService airaUnifiedInsightsService;
+    private readonly IInsightsOrchestrator insightsOrchestrator;
     private readonly IAiHttpClient aiHttpClient;
 
 
@@ -36,6 +38,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <param name="airaUnifiedChatMessageProvider">Provider for chat messages.</param>
     /// <param name="airaUnifiedChatSummaryProvider">Provider for chat summaries.</param>
     /// <param name="airaUnifiedInsightsService">Service for insights data.</param>
+    /// <param name="insightsOrchestrator">Orchestrator for insights processing.</param>
     /// <param name="aiHttpClient">Client for AI service communication.</param>
     public AiraUnifiedChatService(IInfoProvider<AiraUnifiedChatPromptGroupInfo> airaUnifiedChatPromptGroupProvider,
         IInfoProvider<AiraUnifiedChatPromptInfo> airaUnifiedChatPromptProvider,
@@ -44,6 +47,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         IInfoProvider<AiraUnifiedChatMessageInfo> airaUnifiedChatMessageProvider,
         IInfoProvider<AiraUnifiedChatSummaryInfo> airaUnifiedChatSummaryProvider,
         IAiraUnifiedInsightsService airaUnifiedInsightsService,
+        IInsightsOrchestrator insightsOrchestrator,
         IAiHttpClient aiHttpClient)
     {
         this.airaUnifiedChatPromptGroupProvider = airaUnifiedChatPromptGroupProvider;
@@ -52,6 +56,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         this.airaUnifiedChatMessageProvider = airaUnifiedChatMessageProvider;
         this.airaUnifiedChatThreadProvider = airaUnifiedChatThreadProvider;
         this.airaUnifiedInsightsService = airaUnifiedInsightsService;
+        this.insightsOrchestrator = insightsOrchestrator;
         this.airaUnifiedChatSummaryProvider = airaUnifiedChatSummaryProvider;
         this.aiHttpClient = aiHttpClient;
     }
@@ -400,39 +405,47 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
 
     /// <summary>
-    /// Adds insights data to the AI response based on the category.
+    /// Adds insights data to AI response based on category.
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="aiResponse">The AI response to enrich with insights.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task AddInsightsData(int userId, AiraUnifiedAIResponse? aiResponse)
     {
-        if (aiResponse?.Insights is { IsInsightsQuery: true })
+        if (aiResponse?.Insights?.IsInsightsQuery != true || 
+            string.IsNullOrWhiteSpace(aiResponse.Insights.Category))
         {
-            var category = aiResponse.Insights.Category ?? string.Empty;
-
-            switch (category.ToLowerInvariant())
+            return;
+        }
+        
+        try
+        {
+            var request = new InsightsRequest(userId, aiResponse.Insights.Category);
+            var result = await insightsOrchestrator.ProcessInsightsAsync(request);
+            
+            if (result.Success)
             {
-                case "content":
-                    aiResponse.Insights.InsightsData = await GetContentInsights(userId);
-                    break;
-                case "email":
-                    aiResponse.Insights.InsightsData = await GetEmailInsights();
-                    break;
-                case "marketing":
-                    aiResponse.Insights.InsightsData = await GetMarketingInsights();
-                    break;
-                default:
-                    break;
-            }
-
-            if (aiResponse.Insights.InsightsData != null)
-            {
-                aiResponse.Insights.Metadata = new InsightsMetadataModel()
+                aiResponse.Insights.InsightsData = result.Data;
+                if (result.Metadata != null)
                 {
-                    Timestamp = DateTime.UtcNow
-                };
+                    aiResponse.Insights.Metadata = new InsightsMetadataModel
+                    {
+                        Timestamp = result.Metadata.Timestamp
+                    };
+                }
             }
+            else
+            {
+                // Log warning but don't fail the request
+                // logger.LogWarning("Failed to load insights for category '{Category}': {Error}", 
+                //     aiResponse.Insights.Category, result.ErrorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail the request
+            // logger.LogError(ex, "Unexpected error while loading insights for category '{Category}'", 
+            //     aiResponse.Insights.Category);
         }
     }
 

@@ -1,27 +1,24 @@
 @using Kentico.Xperience.AiraUnified.Insights.Models
 
-@if (Category != null && Data != null)
+@if (Category != null && Data != null && ComponentType != null)
 {
     <div class="insights-container">
-        @switch (Category.ToLowerInvariant())
-        {
-            case "content":
-                <ContentInsightsComponent Data="@((ContentInsightsDataModel)Data)" 
-                                          Timestamp="@(Timestamp ?? DateTime.Now)" />
-                break;
-            case "email":
-                <EmailInsightsComponent Data="@((EmailInsightsDataModel)Data)" 
-                                        Timestamp="@(Timestamp ?? DateTime.Now)" />
-                break;
-            case "marketing":
-                <MarketingInsightsComponent Data="@((MarketingInsightsDataModel)Data)" 
-                                            Timestamp="@(Timestamp ?? DateTime.Now)" />
-                break;
-            default:
-                <div class="alert alert-warning">
-                    <strong>Unknown insights type:</strong> @Category
-                </div>
-                break;
-        }
+        @RenderDynamicComponent()
+    </div>
+}
+else if (Data is FallbackInsightsData fallbackData)
+{
+    <FallbackInsightsComponent Data="@fallbackData" Timestamp="@(Timestamp ?? DateTime.Now)" />
+}
+else if (Data != null)
+{
+    <div class="insights-fallback">
+        <div class="alert alert-warning">
+            <strong>Unknown insights type:</strong> @(Category ?? "Unknown")
+        </div>
+        <details>
+            <summary>Raw data</summary>
+            <pre><code>@System.Text.Json.JsonSerializer.Serialize(Data, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</code></pre>
+        </details>
     </div>
 }

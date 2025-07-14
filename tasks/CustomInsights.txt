@@ -1,0 +1,1454 @@
+Custom Insights Provider Architecture - Implementation Specification
+Table of Contents
+
+Overview
+Current State Analysis
+Target Architecture
+Core Abstractions
+Factory and Orchestrator
+Base Classes
+Built-in Strategy Refactoring
+Dynamic Component Rendering
+Chat Service Integration
+DI Registration
+Example Implementation
+Configuration
+Testing Strategy
+Migration Guide
+
+
+Overview
+This specification outlines a comprehensive refactoring of the insights system in Kentico.Xperience.AiraUnified to support custom insights providers. The goal is to replace the current hardcoded switch statement implementation with a flexible, extensible architecture based on the Strategy Pattern.
+Goals
+
+Extensibility: Enable developers to add custom insights without modifying core code
+Clean Architecture: Implement SOLID principles and proper separation of concerns
+Developer Experience: Provide simple APIs for creating custom insights providers
+Testability: Enable isolated testing of individual strategies
+Performance: Maintain or improve current performance characteristics
+Backward Compatibility: Ensure existing functionality continues to work
+
+Key Features
+
+Strategy Pattern-based architecture
+Auto-discovery and registration of providers
+Mock data support for development
+Dynamic Blazor component rendering
+Centralized error handling and logging
+Configuration-driven behavior
+
+
+Current State Analysis
+Existing Implementation Problems
+Code Location: AiraUnifiedChatService.AddInsightsData()
+csharpprivate async Task AddInsightsData(int userId, AiraUnifiedAIResponse? aiResponse)
+{
+    if (aiResponse?.Insights is { IsInsightsQuery: true })
+    {
+        var category = aiResponse.Insights.Category ?? string.Empty;
+
+        switch (category.ToLowerInvariant())  // ❌ Violates Open/Closed Principle
+        {
+            case "content":
+                aiResponse.Insights.InsightsData = await GetContentInsights(userId);
+                break;
+            case "email":
+                aiResponse.Insights.InsightsData = await GetEmailInsights();
+                break;
+            case "marketing":
+                aiResponse.Insights.InsightsData = await GetMarketingInsights();
+                break;
+            default:
+                break;  // ❌ Silent ignore of unknown categories
+        }
+    }
+}
+Critical Issues
+
+Open/Closed Principle Violation: Adding new categories requires modifying existing code
+Tight Coupling: ChatService knows about all insights implementations
+Mixed Responsibilities: Chat logic mixed with insights loading
+Poor Testability: Difficult to mock individual insights
+Error Handling: No centralized error handling
+Extensibility: Impossible to add custom insights without core modifications
+
+
+Target Architecture
+Architecture Overview
+┌─────────────────────────────────────────────────────────────────┐
+│                    AiraUnifiedChatService                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │             IInsightsOrchestrator                       │   │
+│  │                                                         │   │
+│  │  ┌─────────────────────────────────────────────────┐   │   │
+│  │  │          IInsightsStrategyFactory               │   │   │
+│  │  │                                                 │   │   │
+│  │  │  ┌───────────────┐ ┌───────────────┐ ┌──────┐  │   │   │
+│  │  │  │ContentStrategy│ │ EmailStrategy │ │Custom│  │   │   │
+│  │  │  └───────────────┘ └───────────────┘ └──────┘  │   │   │
+│  │  └─────────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+Key Components
+
+IInsightsStrategy: Core abstraction for insights providers
+IInsightsStrategyFactory: Factory for retrieving strategies by category
+IInsightsOrchestrator: Orchestrates the insights loading process
+InsightsStrategyBase: Base class with mock support
+Dynamic Component Renderer: Renders Blazor components dynamically
+
+
+Core Abstractions
+1.1 IInsightsStrategy Interface
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Defines a strategy for loading insights data for a specific category.
+/// </summary>
+public interface IInsightsStrategy
+{
+    /// <summary>
+    /// Unique category identifier (e.g., "content", "email", "users").
+    /// Must be unique across all strategies.
+    /// </summary>
+    string Category { get; }
+    
+    /// <summary>
+    /// Type of Blazor component for rendering the data.
+    /// Component must have parameters: Data (object) and Timestamp (DateTime?).
+    /// </summary>
+    Type ComponentType { get; }
+    
+    /// <summary>
+    /// Loads insights data for the given context.
+    /// </summary>
+    /// <param name="context">Context containing UserId and additional parameters</param>
+    /// <returns>Object data for insights</returns>
+    Task<object> LoadDataAsync(InsightsContext context);
+    
+    /// <summary>
+    /// Determines whether to use mock data instead of real data.
+    /// Default implementation reads from configuration.
+    /// </summary>
+    bool UseMockData { get; }
+    
+    /// <summary>
+    /// Provides mock data for development/testing purposes.
+    /// Called only when UseMockData = true.
+    /// </summary>
+    /// <param name="context">Context for mock data</param>
+    /// <returns>Mock object data</returns>
+    Task<object> LoadMockDataAsync(InsightsContext context);
+}
+1.2 InsightsContext
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Context for loading insights data.
+/// </summary>
+public class InsightsContext
+{
+    /// <summary>
+    /// ID of the user for whom data is being loaded
+    /// </summary>
+    public int UserId { get; set; }
+    
+    /// <summary>
+    /// Insights category
+    /// </summary>
+    public string Category { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Additional parameters for the strategy
+    /// </summary>
+    public Dictionary<string, object> Parameters { get; set; } = new();
+    
+    /// <summary>
+    /// Adds a parameter to the context
+    /// </summary>
+    public InsightsContext WithParameter(string key, object value)
+    {
+        Parameters[key] = value;
+        return this;
+    }
+    
+    /// <summary>
+    /// Gets a typed parameter from the context
+    /// </summary>
+    public T? GetParameter<T>(string key)
+    {
+        return Parameters.TryGetValue(key, out var value) && value is T typedValue 
+            ? typedValue 
+            : default;
+    }
+}
+1.3 InsightsResult
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Result of insights data loading operation.
+/// </summary>
+public class InsightsResult
+{
+    /// <summary>
+    /// Indicates successful data loading
+    /// </summary>
+    public bool Success { get; init; }
+    
+    /// <summary>
+    /// Loaded data (null if Success = false)
+    /// </summary>
+    public object? Data { get; init; }
+    
+    /// <summary>
+    /// Error message (null if Success = true)
+    /// </summary>
+    public string? ErrorMessage { get; init; }
+    
+    /// <summary>
+    /// Metadata about the loaded data
+    /// </summary>
+    public InsightsMetadata Metadata { get; init; } = new();
+    
+    /// <summary>
+    /// Component type for rendering
+    /// </summary>
+    public Type? ComponentType { get; init; }
+    
+    /// <summary>
+    /// Creates a successful result
+    /// </summary>
+    public static InsightsResult Success(object data, InsightsMetadata metadata, Type componentType)
+        => new() { Success = true, Data = data, Metadata = metadata, ComponentType = componentType };
+    
+    /// <summary>
+    /// Creates an error result
+    /// </summary>
+    public static InsightsResult Error(string errorMessage)
+        => new() { Success = false, ErrorMessage = errorMessage };
+    
+    /// <summary>
+    /// Creates a result for strategy not found
+    /// </summary>
+    public static InsightsResult NotFound(string category)
+        => new() { Success = false, ErrorMessage = $"No insights strategy found for category: {category}" };
+}
+1.4 InsightsRequest
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Request for loading insights data.
+/// </summary>
+public record InsightsRequest(int UserId, string Category)
+{
+    /// <summary>
+    /// Additional parameters for the strategy
+    /// </summary>
+    public Dictionary<string, object> Parameters { get; init; } = new();
+    
+    /// <summary>
+    /// Creates context from request
+    /// </summary>
+    public InsightsContext ToContext() => new()
+    {
+        UserId = UserId,
+        Category = Category,
+        Parameters = Parameters
+    };
+}
+1.5 InsightsMetadata
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Metadata information about insights data.
+/// </summary>
+public class InsightsMetadata
+{
+    /// <summary>
+    /// UTC timestamp when insights data was generated
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    
+    /// <summary>
+    /// Category of the insights
+    /// </summary>
+    public string? Category { get; set; }
+    
+    /// <summary>
+    /// Whether mock data was used
+    /// </summary>
+    public bool UseMockData { get; set; }
+    
+    /// <summary>
+    /// Version of the system that generated the data
+    /// </summary>
+    public string? Version { get; set; }
+    
+    /// <summary>
+    /// Additional metadata properties
+    /// </summary>
+    public Dictionary<string, object> Properties { get; set; } = new();
+}
+
+Factory and Orchestrator
+2.1 IInsightsStrategyFactory
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Factory for retrieving insights strategies.
+/// </summary>
+public interface IInsightsStrategyFactory
+{
+    /// <summary>
+    /// Gets strategy for the given category
+    /// </summary>
+    /// <param name="category">Insights category</param>
+    /// <returns>Strategy or null if not found</returns>
+    IInsightsStrategy? GetStrategy(string category);
+    
+    /// <summary>
+    /// Returns all available categories
+    /// </summary>
+    /// <returns>List of categories</returns>
+    IEnumerable<string> GetAvailableCategories();
+    
+    /// <summary>
+    /// Checks if strategy exists for category
+    /// </summary>
+    /// <param name="category">Insights category</param>
+    /// <returns>True if strategy exists</returns>
+    bool HasStrategy(string category);
+}
+2.2 InsightsStrategyFactory Implementation
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Implementation;
+
+/// <summary>
+/// Implementation of factory for insights strategies.
+/// </summary>
+internal sealed class InsightsStrategyFactory : IInsightsStrategyFactory
+{
+    private readonly IEnumerable<IInsightsStrategy> strategies;
+    private readonly ILogger<InsightsStrategyFactory> logger;
+    private readonly Dictionary<string, IInsightsStrategy> strategyLookup;
+    
+    public InsightsStrategyFactory(
+        IEnumerable<IInsightsStrategy> strategies, 
+        ILogger<InsightsStrategyFactory> logger)
+    {
+        this.strategies = strategies;
+        this.logger = logger;
+        this.strategyLookup = BuildStrategyLookup();
+    }
+    
+    public IInsightsStrategy? GetStrategy(string category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+            return null;
+            
+        return strategyLookup.TryGetValue(category.ToLowerInvariant(), out var strategy) 
+            ? strategy 
+            : null;
+    }
+    
+    public IEnumerable<string> GetAvailableCategories()
+        => strategyLookup.Keys;
+    
+    public bool HasStrategy(string category)
+        => !string.IsNullOrWhiteSpace(category) && 
+           strategyLookup.ContainsKey(category.ToLowerInvariant());
+    
+    private Dictionary<string, IInsightsStrategy> BuildStrategyLookup()
+    {
+        var lookup = new Dictionary<string, IInsightsStrategy>();
+        
+        foreach (var strategy in strategies)
+        {
+            var category = strategy.Category.ToLowerInvariant();
+            
+            if (lookup.ContainsKey(category))
+            {
+                logger.LogError(
+                    "Duplicate insights strategy found for category '{Category}'. " +
+                    "Existing: {ExistingType}, New: {NewType}", 
+                    category, lookup[category].GetType().Name, strategy.GetType().Name);
+                continue;
+            }
+            
+            lookup[category] = strategy;
+            logger.LogDebug("Registered insights strategy '{StrategyType}' for category '{Category}'", 
+                strategy.GetType().Name, category);
+        }
+        
+        return lookup;
+    }
+}
+2.3 IInsightsOrchestrator
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Orchestrates the process of loading insights data.
+/// </summary>
+public interface IInsightsOrchestrator
+{
+    /// <summary>
+    /// Processes insights data request
+    /// </summary>
+    /// <param name="request">Insights request</param>
+    /// <returns>Result with data or error</returns>
+    Task<InsightsResult> ProcessInsightsAsync(InsightsRequest request);
+}
+2.4 InsightsOrchestrator Implementation
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Implementation;
+
+/// <summary>
+/// Implementation of orchestrator for insights.
+/// </summary>
+internal sealed class InsightsOrchestrator : IInsightsOrchestrator
+{
+    private readonly IInsightsStrategyFactory strategyFactory;
+    private readonly ILogger<InsightsOrchestrator> logger;
+    
+    public InsightsOrchestrator(
+        IInsightsStrategyFactory strategyFactory,
+        ILogger<InsightsOrchestrator> logger)
+    {
+        this.strategyFactory = strategyFactory;
+        this.logger = logger;
+    }
+    
+    public async Task<InsightsResult> ProcessInsightsAsync(InsightsRequest request)
+    {
+        try
+        {
+            logger.LogDebug("Processing insights request for category '{Category}', UserId: {UserId}", 
+                request.Category, request.UserId);
+            
+            var strategy = strategyFactory.GetStrategy(request.Category);
+            if (strategy == null)
+            {
+                logger.LogWarning("No strategy found for category: {Category}", request.Category);
+                return InsightsResult.NotFound(request.Category);
+            }
+            
+            var context = request.ToContext();
+            var data = await strategy.LoadDataAsync(context);
+            
+            var metadata = new InsightsMetadata
+            {
+                Timestamp = DateTime.UtcNow,
+                Category = request.Category,
+                UseMockData = strategy.UseMockData,
+                Version = GetType().Assembly.GetName().Version?.ToString()
+            };
+            
+            logger.LogDebug("Successfully processed insights for category '{Category}'", request.Category);
+            
+            return InsightsResult.Success(data, metadata, strategy.ComponentType);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to process insights for category: {Category}", request.Category);
+            return InsightsResult.Error($"Internal error: {ex.Message}");
+        }
+    }
+}
+
+Base Classes
+3.1 InsightsStrategyBase
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+/// <summary>
+/// Base class for insights strategies with mock data support.
+/// </summary>
+public abstract class InsightsStrategyBase : IInsightsStrategy
+{
+    protected readonly IConfiguration configuration;
+    protected readonly ILogger logger;
+    
+    protected InsightsStrategyBase(IConfiguration configuration, ILogger logger)
+    {
+        this.configuration = configuration;
+        this.logger = logger;
+    }
+    
+    public abstract string Category { get; }
+    public abstract Type ComponentType { get; }
+    
+    /// <summary>
+    /// Determines mock data usage based on configuration.
+    /// Checks category-specific setting first, then global setting.
+    /// </summary>
+    public virtual bool UseMockData => 
+        configuration.GetValue<bool>($"AiraUnified:MockInsights:{Category}") ||
+        configuration.GetValue<bool>("AiraUnified:MockInsights:All", false);
+    
+    /// <summary>
+    /// Main method for loading data - decides between real and mock data.
+    /// </summary>
+    public async Task<object> LoadDataAsync(InsightsContext context)
+    {
+        try
+        {
+            if (UseMockData)
+            {
+                logger.LogDebug("Using mock data for category '{Category}'", Category);
+                return await LoadMockDataAsync(context);
+            }
+            
+            logger.LogDebug("Loading real data for category '{Category}'", Category);
+            return await LoadRealDataAsync(context);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error loading data for category '{Category}'", Category);
+            throw;
+        }
+    }
+    
+    /// <summary>
+    /// Loads real data - must be implemented in derived class.
+    /// </summary>
+    protected abstract Task<object> LoadRealDataAsync(InsightsContext context);
+    
+    /// <summary>
+    /// Loads mock data - must be implemented in derived class.
+    /// </summary>
+    public abstract Task<object> LoadMockDataAsync(InsightsContext context);
+}
+
+Built-in Strategy Refactoring
+4.1 ContentInsightsStrategy
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Strategies;
+
+/// <summary>
+/// Strategy for loading content insights.
+/// </summary>
+internal sealed class ContentInsightsStrategy : InsightsStrategyBase
+{
+    private readonly IAiraUnifiedInsightsService insightsService;
+    
+    public ContentInsightsStrategy(
+        IAiraUnifiedInsightsService insightsService,
+        IConfiguration configuration,
+        ILogger<ContentInsightsStrategy> logger) 
+        : base(configuration, logger)
+    {
+        this.insightsService = insightsService;
+    }
+    
+    public override string Category => "content";
+    public override Type ComponentType => typeof(ContentInsightsComponent);
+    
+    protected override async Task<object> LoadRealDataAsync(InsightsContext context)
+    {
+        var reusableDraftContent = await insightsService.GetContentInsights(
+            ContentType.Reusable, context.UserId, AiraUnifiedConstants.InsightsDraftIdentifier);
+        var reusableScheduledContent = await insightsService.GetContentInsights(
+            ContentType.Reusable, context.UserId, AiraUnifiedConstants.InsightsScheduledIdentifier);
+        var websiteDraftContent = await insightsService.GetContentInsights(
+            ContentType.Website, context.UserId, AiraUnifiedConstants.InsightsDraftIdentifier);
+        var websiteScheduledContent = await insightsService.GetContentInsights(
+            ContentType.Website, context.UserId, AiraUnifiedConstants.InsightsScheduledIdentifier);
+
+        return new ContentInsightsDataModel
+        {
+            Summary = new ContentSummaryModel
+            {
+                DraftCount = reusableDraftContent.Count + websiteDraftContent.Count,
+                ScheduledCount = reusableScheduledContent.Count + websiteScheduledContent.Count
+            },
+            ReusableContent = new ContentCategoryModel
+            {
+                DraftCount = reusableDraftContent.Count,
+                ScheduledCount = reusableScheduledContent.Count,
+                Items = reusableDraftContent.Concat(reusableScheduledContent).ToList()
+            },
+            WebsiteContent = new ContentCategoryModel
+            {
+                DraftCount = websiteDraftContent.Count,
+                ScheduledCount = websiteScheduledContent.Count,
+                Items = websiteScheduledContent.Concat(websiteDraftContent).ToList()
+            }
+        };
+    }
+    
+    public override Task<object> LoadMockDataAsync(InsightsContext context)
+    {
+        return Task.FromResult<object>(new ContentInsightsDataModel
+        {
+            Summary = new ContentSummaryModel
+            {
+                DraftCount = 15,
+                ScheduledCount = 5
+            },
+            ReusableContent = new ContentCategoryModel
+            {
+                DraftCount = 8,
+                ScheduledCount = 3,
+                Items = new List<ContentItemModel>
+                {
+                    new() { Id = 1, DisplayName = "Mock Newsletter Template", ContentTypeName = "Email", VersionStatus = VersionStatus.Draft },
+                    new() { Id = 2, DisplayName = "Mock Product Catalog", ContentTypeName = "Catalog", VersionStatus = VersionStatus.Published }
+                }
+            },
+            WebsiteContent = new ContentCategoryModel
+            {
+                DraftCount = 7,
+                ScheduledCount = 2,
+                Items = new List<ContentItemModel>
+                {
+                    new() { Id = 3, DisplayName = "Mock Home Page", ContentTypeName = "Page", VersionStatus = VersionStatus.Draft },
+                    new() { Id = 4, DisplayName = "Mock About Us", ContentTypeName = "Page", VersionStatus = VersionStatus.Published }
+                }
+            }
+        });
+    }
+}
+4.2 EmailInsightsStrategy
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Strategies;
+
+/// <summary>
+/// Strategy for loading email insights.
+/// </summary>
+internal sealed class EmailInsightsStrategy : InsightsStrategyBase
+{
+    private readonly IAiraUnifiedInsightsService insightsService;
+    
+    public EmailInsightsStrategy(
+        IAiraUnifiedInsightsService insightsService,
+        IConfiguration configuration,
+        ILogger<EmailInsightsStrategy> logger) 
+        : base(configuration, logger)
+    {
+        this.insightsService = insightsService;
+    }
+    
+    public override string Category => "email";
+    public override Type ComponentType => typeof(EmailInsightsComponent);
+    
+    protected override async Task<object> LoadRealDataAsync(InsightsContext context)
+    {
+        var emailInsights = await insightsService.GetEmailInsights();
+        
+        return new EmailInsightsDataModel
+        {
+            Summary = new EmailSummaryModel
+            {
+                SentCount = emailInsights.Select(i => i.Metrics).Sum(i => i?.TotalSent ?? 0)
+            },
+            Campaigns = emailInsights
+        };
+    }
+    
+    public override Task<object> LoadMockDataAsync(InsightsContext context)
+    {
+        return Task.FromResult<object>(new EmailInsightsDataModel
+        {
+            Summary = new EmailSummaryModel
+            {
+                DraftCount = 5,
+                ScheduledCount = 2,
+                SentCount = 10,
+                TotalCount = 17,
+                AverageOpenRate = 24.5,
+                AverageClickRate = 3.2
+            },
+            Campaigns = new List<EmailCampaignModel>
+            {
+                new()
+                {
+                    Id = "1",
+                    Name = "Mock Monthly Newsletter",
+                    Type = "regular",
+                    Status = "sent",
+                    LastModified = DateTime.UtcNow.AddDays(-5),
+                    SentDate = DateTime.UtcNow.AddDays(-4),
+                    Metrics = new EmailMetricsModel
+                    {
+                        TotalSent = 10000,
+                        Delivered = 9850,
+                        Opened = 4500,
+                        OpenRate = 45.7M,
+                        Clicks = 1200M,
+                        UniqueClicks = 1000M
+                    }
+                }
+            }
+        });
+    }
+}
+4.3 MarketingInsightsStrategy
+csharpnamespace Kentico.Xperience.AiraUnified.Insights.Strategies;
+
+/// <summary>
+/// Strategy for loading marketing insights.
+/// </summary>
+internal sealed class MarketingInsightsStrategy : InsightsStrategyBase
+{
+    private readonly IAiraUnifiedInsightsService insightsService;
+    private readonly IInfoProvider<ContactGroupInfo> contactGroupProvider;
+    
+    public MarketingInsightsStrategy(
+        IAiraUnifiedInsightsService insightsService,
+        IInfoProvider<ContactGroupInfo> contactGroupProvider,
+        IConfiguration configuration,
+        ILogger<MarketingInsightsStrategy> logger) 
+        : base(configuration, logger)
+    {
+        this.insightsService = insightsService;
+        this.contactGroupProvider = contactGroupProvider;
+    }
+    
+    public override string Category => "marketing";
+    public override Type ComponentType => typeof(MarketingInsightsComponent);
+    
+    protected override async Task<object> LoadRealDataAsync(InsightsContext context)
+    {
+        var groups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
+        var contactGroupNames = groups.Where(x => !x.ContactGroupIsRecipientList)
+            .Select(x => x.ContactGroupDisplayName).ToArray();
+        var recipientListGroupNames = groups.Where(x => x.ContactGroupIsRecipientList)
+            .Select(x => x.ContactGroupDisplayName).ToArray();
+
+        var contactGroupInsights = insightsService.GetContactGroupInsights(contactGroupNames);
+        var recipientListGroupInsights = insightsService.GetContactGroupInsights(recipientListGroupNames);
+
+        return new MarketingInsightsDataModel
+        {
+            Contacts = new ContactsSummaryModel { TotalCount = contactGroupInsights.AllCount },
+            ContactGroups = contactGroupInsights.Groups.Select(item => new ContactGroupModel
+            {
+                Name = item.Name,
+                ContactCount = item.Count,
+                RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
+            }).ToList(),
+            RecipientLists = recipientListGroupInsights.Groups.Select(item => new ContactGroupModel
+            {
+                Name = item.Name,
+                ContactCount = item.Count,
+                RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
+            }).ToList()
+        };
+    }
+    
+    public override Task<object> LoadMockDataAsync(InsightsContext context)
+    {
+        return Task.FromResult<object>(new MarketingInsightsDataModel
+        {
+            Contacts = new ContactsSummaryModel 
+            { 
+                TotalCount = 1500,
+                ActiveCount = 1200,
+                InactiveCount = 300
+            },
+            ContactGroups = new List<ContactGroupModel>
+            {
+                new() { Name = "Newsletter Subscribers", ContactCount = 800, RatioPercentage = 53.3M },
+                new() { Name = "Active Customers", ContactCount = 450, RatioPercentage = 30.0M }
+            },
+            RecipientLists = new List<ContactGroupModel>
+            {
+                new() { Name = "VIP Customers", ContactCount = 150, RatioPercentage = 10.0M },
+                new() { Name = "Trial Users", ContactCount = 100, RatioPercentage = 6.7M }
+            }
+        });
+    }
+}
+
+Dynamic Component Rendering
+5.1 Updated InsightsComponent.razor
+razor@using Kentico.Xperience.AiraUnified.Insights.Models
+@using Microsoft.AspNetCore.Components.Rendering
+
+@if (Category != null && Data != null && ComponentType != null)
+{
+    <div class="insights-container">
+        @RenderDynamicComponent()
+    </div>
+}
+else if (Data != null)
+{
+    <div class="insights-fallback">
+        <div class="alert alert-warning">
+            <strong>Unknown insights type:</strong> @(Category ?? "Unknown")
+        </div>
+        <details>
+            <summary>Raw data</summary>
+            <pre><code>@System.Text.Json.JsonSerializer.Serialize(Data, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</code></pre>
+        </details>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Category { get; set; }
+    [Parameter] public object? Data { get; set; }
+    [Parameter] public DateTime? Timestamp { get; set; }
+    [Parameter] public Type? ComponentType { get; set; }
+
+    /// <summary>
+    /// Renders the component dynamically based on ComponentType
+    /// </summary>
+    private RenderFragment RenderDynamicComponent() => builder =>
+    {
+        if (ComponentType == null || Data == null) return;
+        
+        try
+        {
+            builder.OpenComponent(0, ComponentType);
+            builder.AddAttribute(1, "Data", Data);
+            builder.AddAttribute(2, "Timestamp", Timestamp ?? DateTime.Now);
+            builder.CloseComponent();
+        }
+        catch (Exception ex)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "alert alert-danger");
+            builder.AddContent(2, $"Error rendering component {ComponentType.Name}: {ex.Message}");
+            builder.CloseElement();
+        }
+    };
+}
+5.2 Component Parameter Requirements
+All custom insights components must follow this pattern:
+csharppublic partial class CustomInsightsComponent : ComponentBase
+{
+    [Parameter] public CustomInsightsDataModel Data { get; set; } = new();
+    [Parameter] public DateTime Timestamp { get; set; }
+}
+
+Chat Service Integration
+6.1 Updated AiraUnifiedChatService
+csharp// In AiraUnifiedChatService.cs
+
+public class AiraUnifiedChatService : IAiraUnifiedChatService
+{
+    // Add to constructor parameters
+    private readonly IInsightsOrchestrator insightsOrchestrator;
+    
+    // Updated method
+    /// <summary>
+    /// Adds insights data to AI response based on category.
+    /// </summary>
+    private async Task AddInsightsData(int userId, AiraUnifiedAIResponse? aiResponse)
+    {
+        if (aiResponse?.Insights?.IsInsightsQuery != true || 
+            string.IsNullOrWhiteSpace(aiResponse.Insights.Category))
+        {
+            return;
+        }
+        
+        try
+        {
+            var request = new InsightsRequest(userId, aiResponse.Insights.Category);
+            var result = await insightsOrchestrator.ProcessInsightsAsync(request);
+            
+            if (result.Success)
+            {
+                aiResponse.Insights.InsightsData = result.Data;
+                if (result.Metadata != null)
+                {
+                    aiResponse.Insights.Metadata = result.Metadata;
+                }
+            }
+            else
+            {
+                logger.LogWarning("Failed to load insights for category '{Category}': {Error}", 
+                    aiResponse.Insights.Category, result.ErrorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error while loading insights for category '{Category}'", 
+                aiResponse.Insights.Category);
+        }
+    }
+}
+6.2 Updated BlazorChatService
+csharp// In BlazorChatService.cs
+
+public class BlazorChatService : IBlazorChatService
+{
+    private readonly IInsightsStrategyFactory strategyFactory;
+    
+    // Add strategyFactory to constructor
+    
+    /// <summary>
+    /// Enhanced parsing of system messages with component type support
+    /// </summary>
+    public async Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId)
+    {
+        var historyMessages = await airaUnifiedChatService.GetUserChatHistory(userId, threadId);
+        
+        foreach (var message in historyMessages)
+        {
+            if (message.IsInsightsMessage)
+            {
+                var (category, data, timestamp) = InsightsParser.ParseSystemMessage(message.Message!);
+                message.InsightsCategory = category;
+                message.InsightsData = data;
+                message.InsightsTimestamp = timestamp;
+                
+                // Get component type from strategy
+                if (!string.IsNullOrEmpty(category))
+                {
+                    var strategy = strategyFactory.GetStrategy(category);
+                    message.ComponentType = strategy?.ComponentType;
+                }
+            }
+        }
+        
+        return historyMessages;
+    }
+    
+    /// <summary>
+    /// Enhanced message sending with component type support
+    /// </summary>
+    public async Task<AiraUnifiedChatMessageViewModel?> SendMessageAsync(string message, int userId, int threadId)
+    {
+        // ... existing code ...
+        
+        // Enhanced insights handling
+        if (aiResponse.Insights?.IsInsightsQuery == true)
+        {
+            result.InsightsCategory = aiResponse.Insights.Category;
+            result.InsightsData = aiResponse.Insights.InsightsData;
+            result.InsightsTimestamp = aiResponse.Insights.Metadata?.Timestamp;
+            
+            // Get component type from strategy
+            if (!string.IsNullOrEmpty(aiResponse.Insights.Category))
+            {
+                var strategy = strategyFactory.GetStrategy(aiResponse.Insights.Category);
+                result.ComponentType = strategy?.ComponentType;
+            }
+        }
+        
+        // ... rest of existing code ...
+    }
+}
+6.3 Updated AiraUnifiedChatMessageViewModel
+csharp// Add to AiraUnifiedChatMessageViewModel.cs
+
+public sealed class AiraUnifiedChatMessageViewModel
+{
+    // ... existing properties ...
+    
+    /// <summary>
+    /// Type of component to render for insights data
+    /// </summary>
+    public Type? ComponentType { get; set; }
+}
+
+DI Registration
+7.1 Updated ServiceCollectionExtensions
+csharp// In AiraUnifiedServiceCollectionExtensions.cs
+
+private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services, IConfiguration configuration)
+{
+    // ... existing registrations ...
+    
+    // === NEW INSIGHTS REGISTRATIONS ===
+    
+    // Core insights abstractions
+    services.AddScoped<IInsightsStrategyFactory, InsightsStrategyFactory>();
+    services.AddScoped<IInsightsOrchestrator, InsightsOrchestrator>();
+    
+    // Built-in insights strategies
+    services.AddScoped<IInsightsStrategy, ContentInsightsStrategy>();
+    services.AddScoped<IInsightsStrategy, EmailInsightsStrategy>();
+    services.AddScoped<IInsightsStrategy, MarketingInsightsStrategy>();
+    
+    // Legacy service - will be gradually refactored
+    services.AddScoped<IAiraUnifiedInsightsService>(sp => options?.AiraUnifiedUseMockInsights == true
+        ? new MockAiraUnifiedInsightsService()
+        : sp.GetRequiredService<AiraUnifiedInsightsService>());
+    
+    // ... existing registrations ...
+    
+    return services;
+}
+
+/// <summary>
+/// Extension method for registering custom insights strategies.
+/// </summary>
+public static IServiceCollection AddCustomInsightsStrategy<TStrategy>(this IServiceCollection services)
+    where TStrategy : class, IInsightsStrategy
+{
+    services.AddScoped<IInsightsStrategy, TStrategy>();
+    return services;
+}
+
+/// <summary>
+/// Extension method for auto-discovery of insights strategies from assembly.
+/// </summary>
+public static IServiceCollection AddInsightsStrategiesFromAssembly(this IServiceCollection services, Assembly assembly)
+{
+    var strategyTypes = assembly.GetTypes()
+        .Where(t => t.IsClass && !t.IsAbstract && typeof(IInsightsStrategy).IsAssignableFrom(t))
+        .Where(t => t != typeof(ContentInsightsStrategy) && 
+                    t != typeof(EmailInsightsStrategy) && 
+                    t != typeof(MarketingInsightsStrategy)); // Exclude built-ins
+    
+    foreach (var strategyType in strategyTypes)
+    {
+        services.AddScoped(typeof(IInsightsStrategy), strategyType);
+    }
+    
+    return services;
+}
+
+Example Implementation
+8.1 UsersInsightsDataModel
+csharp// In ExampleProject.Insights.Models namespace
+
+/// <summary>
+/// Data model for users insights.
+/// </summary>
+public sealed class UsersInsightsDataModel
+{
+    /// <summary>
+    /// Summary of user data
+    /// </summary>
+    public UsersSummaryModel Summary { get; set; } = new();
+    
+    /// <summary>
+    /// List of active users
+    /// </summary>
+    public List<UserModel> ActiveUsers { get; set; } = new();
+    
+    /// <summary>
+    /// User roles and their counts
+    /// </summary>
+    public List<UserRoleStatsModel> RoleStats { get; set; } = new();
+}
+
+/// <summary>
+/// Summary statistics for users.
+/// </summary>
+public sealed class UsersSummaryModel
+{
+    public int TotalUsers { get; set; }
+    public int ActiveUsers { get; set; }
+    public int InactiveUsers { get; set; }
+    public int NewUsersThisMonth { get; set; }
+}
+
+/// <summary>
+/// Individual user information.
+/// </summary>
+public sealed class UserModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public DateTime LastLogin { get; set; }
+    public string Role { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Statistics for user roles.
+/// </summary>
+public sealed class UserRoleStatsModel
+{
+    public string RoleName { get; set; } = string.Empty;
+    public int UserCount { get; set; }
+    public decimal Percentage { get; set; }
+}
+8.2 UsersInsightsStrategy
+csharp// In ExampleProject.Insights.Strategies namespace
+
+/// <summary>
+/// Example implementation of custom insights strategy for user data.
+/// </summary>
+public sealed class UsersInsightsStrategy : InsightsStrategyBase
+{
+    private readonly IUserService userService; // Your custom service
+    
+    public UsersInsightsStrategy(
+        IUserService userService,
+        IConfiguration configuration,
+        ILogger<UsersInsightsStrategy> logger) 
+        : base(configuration, logger)
+    {
+        this.userService = userService;
+    }
+    
+    public override string Category => "users";
+    public override Type ComponentType => typeof(UsersInsightsComponent);
+    
+    protected override async Task<object> LoadRealDataAsync(InsightsContext context)
+    {
+        var allUsers = await userService.GetAllUsersAsync();
+        var activeUsers = allUsers.Where(u => u.LastLogin > DateTime.UtcNow.AddDays(-30)).ToList();
+        var newUsers = allUsers.Where(u => u.CreatedDate > DateTime.UtcNow.AddDays(-30)).ToList();
+        
+        var roleStats = allUsers
+            .GroupBy(u => u.Role)
+            .Select(g => new UserRoleStatsModel
+            {
+                RoleName = g.Key,
+                UserCount = g.Count(),
+                Percentage = (decimal)g.Count() / allUsers.Count * 100
+            })
+            .ToList();
+        
+        return new UsersInsightsDataModel
+        {
+            Summary = new UsersSummaryModel
+            {
+                TotalUsers = allUsers.Count,
+                ActiveUsers = activeUsers.Count,
+                InactiveUsers = allUsers.Count - activeUsers.Count,
+                NewUsersThisMonth = newUsers.Count
+            },
+            ActiveUsers = activeUsers.Take(10).Select(u => new UserModel
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Email = u.Email,
+                LastLogin = u.LastLogin,
+                Role = u.Role
+            }).ToList(),
+            RoleStats = roleStats
+        };
+    }
+    
+    public override Task<object> LoadMockDataAsync(InsightsContext context)
+    {
+        return Task.FromResult<object>(new UsersInsightsDataModel
+        {
+            Summary = new UsersSummaryModel
+            {
+                TotalUsers = 1250,
+                ActiveUsers = 890,
+                InactiveUsers = 360,
+                NewUsersThisMonth = 45
+            },
+            ActiveUsers = new List<UserModel>
+            {
+                new() { Id = 1, Name = "John Doe", Email = "john@example.com", LastLogin = DateTime.UtcNow.AddHours(-2), Role = "Admin" },
+                new() { Id = 2, Name = "Jane Smith", Email = "jane@example.com", LastLogin = DateTime.UtcNow.AddHours(-5), Role = "Editor" },
+                new() { Id = 3, Name = "Bob Johnson", Email = "bob@example.com", LastLogin = DateTime.UtcNow.AddDays(-1), Role = "User" }
+            },
+            RoleStats = new List<UserRoleStatsModel>
+            {
+                new() { RoleName = "Admin", UserCount = 25, Percentage = 2.0M },
+                new() { RoleName = "Editor", UserCount = 150, Percentage = 12.0M },
+                new() { RoleName = "User", UserCount = 1075, Percentage = 86.0M }
+            }
+        });
+    }
+}
+8.3 UsersInsightsComponent.razor
+razor@using ExampleProject.Insights.Models
+
+<div class="insights-users">
+    <div>
+        <h2 class="k-title">Users Insights</h2>
+        <h3 class="k-subtitle">Summary</h3>
+        <div class="k-summary">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Total Users</h4>
+                <div class="k-summary_value">@Data.Summary.TotalUsers</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Active Users</h4>
+                <div class="k-summary_value">@Data.Summary.ActiveUsers</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Inactive Users</h4>
+                <div class="k-summary_value">@Data.Summary.InactiveUsers</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">New This Month</h4>
+                <div class="k-summary_value">@Data.Summary.NewUsersThisMonth</div>
+            </div>
+        </div>
+
+        <h3 class="k-subtitle">Active Users</h3>
+        <div class="k-content-items">
+            @foreach (var user in Data.ActiveUsers)
+            {
+                <div class="k-content-item">
+                    <div class="k-content-item_title">@user.Name</div>
+                    <div class="k-content-item_tags">
+                        <span class="k-content-item_tag">@user.Role</span>
+                    </div>
+                    <div class="k-content-item_grid">
+                        <div>
+                            <div class="k-content-item_label">Email</div>
+                            <div class="k-content-item_value">@user.Email</div>
+                        </div>
+                        <div>
+                            <div class="k-content-item_label">Last Login</div>
+                            <div class="k-content-item_value">@user.LastLogin.ToString("g")</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <h3 class="k-subtitle">Role Distribution</h3>
+        <div class="k-content-items">
+            @foreach (var roleStats in Data.RoleStats)
+            {
+                <div class="k-content-item">
+                    <div class="k-content-item_title">@roleStats.RoleName</div>
+                    <div class="k-content-item_grid">
+                        <div>
+                            <div class="k-content-item_label">User Count</div>
+                            <div class="k-content-item_value">@roleStats.UserCount</div>
+                        </div>
+                        <div>
+                            <div class="k-content-item_label">Percentage</div>
+                            <div class="k-content-item_value">@roleStats.Percentage.ToString("F1")%</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <div class="metadata">
+        <small>Request was generated at @Timestamp.ToString("g").</small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public UsersInsightsDataModel Data { get; set; } = new();
+    [Parameter] public DateTime Timestamp { get; set; }
+}
+8.4 Example Project Registration
+csharp// In Example Project Startup.cs or Program.cs
+
+public void ConfigureServices(IServiceCollection services)
+{
+    // ... other registrations ...
+    
+    // Add Kentico Aira Unified
+    services.AddKenticoAiraUnified(Configuration);
+    
+    // Add custom insights strategy
+    services.AddCustomInsightsStrategy<UsersInsightsStrategy>();
+    
+    // Or auto-discover from current assembly
+    // services.AddInsightsStrategiesFromAssembly(typeof(UsersInsightsStrategy).Assembly);
+    
+    // Register custom services
+    services.AddScoped<IUserService, UserService>();
+}
+
+Configuration
+9.1 Mock Data Configuration
+json{
+  "AiraUnified": {
+    "MockInsights": {
+      "All": false,
+      "content": false,
+      "email": false,
+      "marketing": false,
+      "users": true
+    }
+  }
+}
+9.2 Configuration Options
+
+AiraUnified:MockInsights:All - Global mock setting for all strategies
+AiraUnified:MockInsights:{Category} - Category-specific mock setting
+Category-specific settings override global settings
+
+
+Testing Strategy
+10.1 Unit Test Example
+csharppublic class UsersInsightsStrategyTests
+{
+    private readonly Mock<IUserService> mockUserService;
+    private readonly Mock<IConfiguration> mockConfiguration;
+    private readonly Mock<ILogger<UsersInsightsStrategy>> mockLogger;
+    private readonly UsersInsightsStrategy strategy;
+
+    public UsersInsightsStrategyTests()
+    {
+        mockUserService = new Mock<IUserService>();
+        mockConfiguration = new Mock<IConfiguration>();
+        mockLogger = new Mock<ILogger<UsersInsightsStrategy>>();
+        
+        strategy = new UsersInsightsStrategy(
+            mockUserService.Object,
+            mockConfiguration.Object,
+            mockLogger.Object);
+    }
+
+    [Fact]
+    public async Task LoadRealDataAsync_ShouldReturnCorrectData()
+    {
+        // Arrange
+        var users = new List<User>
+        {
+            new() { Id = 1, Name = "John", Role = "Admin", LastLogin = DateTime.UtcNow.AddDays(-1) },
+            new() { Id = 2, Name = "Jane", Role = "User", LastLogin = DateTime.UtcNow.AddDays(-5) }
+        };
+        
+        mockUserService.Setup(x => x.GetAllUsersAsync())
+            .ReturnsAsync(users);
+
+        var context = new InsightsContext { UserId = 1, Category = "users" };
+
+        // Act
+        var result = await strategy.LoadDataAsync(context);
+
+        // Assert
+        Assert.IsType<UsersInsightsDataModel>(result);
+        var data = (UsersInsightsDataModel)result;
+        Assert.Equal(2, data.Summary.TotalUsers);
+    }
+
+    [Fact]
+    public async Task LoadMockDataAsync_ShouldReturnMockData()
+    {
+        // Arrange
+        var context = new InsightsContext { UserId = 1, Category = "users" };
+
+        // Act
+        var result = await strategy.LoadMockDataAsync(context);
+
+        // Assert
+        Assert.IsType<UsersInsightsDataModel>(result);
+        var data = (UsersInsightsDataModel)result;
+        Assert.Equal(1250, data.Summary.TotalUsers);
+    }
+}
+10.2 Integration Test Example
+csharppublic class InsightsOrchestrationTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> factory;
+
+    public InsightsOrchestrationTests(WebApplicationFactory<Program> factory)
+    {
+        this.factory = factory;
+    }
+
+    [Fact]
+    public async Task ProcessInsightsAsync_WithValidCategory_ShouldReturnSuccess()
+    {
+        // Arrange
+        using var scope = factory.Services.CreateScope();
+        var orchestrator = scope.ServiceProvider.GetRequiredService<IInsightsOrchestrator>();
+        
+        var request = new InsightsRequest(1, "users");
+
+        // Act
+        var result = await orchestrator.ProcessInsightsAsync(request);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(typeof(UsersInsightsComponent), result.ComponentType);
+    }
+}
+
+Migration Guide
+11.1 Breaking Changes
+
+IInsightsService Interface Changes
+
+Method signatures remain the same
+Implementation moved to individual strategies
+
+
+Component Rendering Changes
+
+InsightsComponent.razor now requires ComponentType parameter
+Backward compatibility maintained for existing categories
+
+
+
+11.2 Migration Steps
+Step 1: Update DI Registration
+csharp// Old (remove this)
+services.AddScoped<IAiraUnifiedInsightsService, AiraUnifiedInsightsService>();
+
+// New (add this)
+services.AddScoped<IInsightsStrategyFactory, InsightsStrategyFactory>();
+services.AddScoped<IInsightsOrchestrator, InsightsOrchestrator>();
+services.AddScoped<IInsightsStrategy, ContentInsightsStrategy>();
+services.AddScoped<IInsightsStrategy, EmailInsightsStrategy>();
+services.AddScoped<IInsightsStrategy, MarketingInsightsStrategy>();
+Step 2: Update Component Usage
+razor<!-- Old -->
+<InsightsComponent Category="@message.InsightsCategory"
+                   Data="@message.InsightsData"
+                   Timestamp="@message.InsightsTimestamp" />
+
+<!-- New -->
+<InsightsComponent Category="@message.InsightsCategory"
+                   Data="@message.InsightsData"
+                   Timestamp="@message.InsightsTimestamp"
+                   ComponentType="@message.ComponentType" />
+Step 3: Add Custom Strategies
+csharp// Register custom strategy
+services.AddCustomInsightsStrategy<YourCustomInsightsStrategy>();
+11.3 Compatibility Notes
+
+Existing insights categories ("content", "email", "marketing") continue to work unchanged
+Mock data behavior remains the same
+Configuration structure is backward compatible
+RAG integration requires DTO updates (separate task)
+
+
+Implementation Checklist
+Phase 1: Core Infrastructure
+
+ Create core abstractions (IInsightsStrategy, InsightsContext, etc.)
+ Implement InsightsStrategyFactory
+ Implement InsightsOrchestrator
+ Create InsightsStrategyBase with mock support
+ Add unit tests for core components
+
+Phase 2: Built-in Strategy Refactoring
+
+ Refactor ContentInsightsStrategy
+ Refactor EmailInsightsStrategy
+ Refactor MarketingInsightsStrategy
+ Verify backward compatibility
+ Add integration tests
+
+Phase 3: Dynamic Rendering
+
+ Update InsightsComponent.razor for dynamic rendering
+ Add fallback rendering for unknown categories
+ Update AiraUnifiedChatMessageViewModel
+ Test component rendering with all strategies
+
+Phase 4: Chat Service Integration
+
+ Update AiraUnifiedChatService.AddInsightsData()
+ Update BlazorChatService for component type support
+ Update InsightsParser for enhanced parsing
+ Add error handling and logging
+
+Phase 5: DI and Configuration
+
+ Update AiraUnifiedServiceCollectionExtensions
+ Add extension methods for custom strategy registration
+ Add auto-discovery functionality
+ Update configuration handling
+
+Phase 6: Example Implementation
+
+ Create UsersInsightsDataModel
+ Implement UsersInsightsStrategy
+ Create UsersInsightsComponent.razor
+ Add example project registration
+ Create README documentation
+
+Phase 7: Testing and Documentation
+
+ Write comprehensive unit tests
+ Add integration tests
+ Performance testing with multiple strategies
+ Create developer documentation
+ Update migration guide
+
+
+This specification provides a complete roadmap for implementing the custom insights provider architecture. Each section includes detailed code examples, configuration options, and testing strategies to ensure a successful implementation that maintains backward compatibility while providing extensive customization capabilities.

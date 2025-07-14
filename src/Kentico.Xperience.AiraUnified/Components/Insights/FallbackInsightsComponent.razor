@@ -1,0 +1,25 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+<div class="insights-fallback">
+    <div class="alert alert-warning">
+        <h5><strong>Insights Loading Issue</strong></h5>
+        <p>There was a problem loading insights for category: <strong>@Data.Category</strong></p>
+        <p><em>@Data.Error</em></p>
+        
+        @if (!string.IsNullOrEmpty(Data.RawJson))
+        {
+            <details>
+                <summary>Technical Details (for developers)</summary>
+                <div class="mt-2">
+                    <small><strong>Timestamp:</strong> @Data.Timestamp.ToString("g")</small>
+                    <pre class="mt-1"><code>@Data.RawJson</code></pre>
+                </div>
+            </details>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public FallbackInsightsData Data { get; set; } = new();
+    [Parameter] public DateTime Timestamp { get; set; }
+}

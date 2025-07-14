@@ -3,7 +3,11 @@ using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.Chat;
 using Kentico.Xperience.AiraUnified.Chat.Models;
+using Kentico.Xperience.AiraUnified.Chat.Services;
 using Kentico.Xperience.AiraUnified.Insights;
+using Kentico.Xperience.AiraUnified.Insights.Abstractions;
+using Kentico.Xperience.AiraUnified.Insights.Implementation;
+using Kentico.Xperience.AiraUnified.Insights.Strategies;
 using Kentico.Xperience.AiraUnified.NavBar;
 
 using Microsoft.AspNetCore.Routing;
@@ -63,6 +67,15 @@ public static class AiraUnifiedServiceCollectionExtensions
             .AddScoped<IAiHttpClient>(sp => options?.AiraUnifiedUseMockClient == true ? new MockAiHttpClient() : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
             .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
 
+        // Register insights architecture components
+        services
+            .AddScoped<IInsightsOrchestrator, InsightsOrchestrator>()
+            .AddScoped<IInsightsStrategyFactory, InsightsStrategyFactory>()
+            .AddScoped<IInsightsStrategy, ContentInsightsStrategy>()
+            .AddScoped<IInsightsStrategy, EmailInsightsStrategy>()
+            .AddScoped<IInsightsStrategy, MarketingInsightsStrategy>()
+            .AddScoped<EnhancedInsightsParser>();
+
         services.AddServerSideBlazor(circuitOptions =>
         {
             circuitOptions.DetailedErrors = true;
@@ -73,6 +86,52 @@ public static class AiraUnifiedServiceCollectionExtensions
         
         services.AddScoped<IBlazorChatService, BlazorChatService>();
 
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a custom insights strategy implementation.
+    /// </summary>
+    /// <typeparam name="TStrategy">The strategy implementation type.</typeparam>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddInsightsStrategy<TStrategy>(this IServiceCollection services)
+        where TStrategy : class, IInsightsStrategy
+    {
+        return services.AddScoped<IInsightsStrategy, TStrategy>();
+    }
+
+    /// <summary>
+    /// Registers a custom insights strategy implementation with a factory.
+    /// </summary>
+    /// <typeparam name="TStrategy">The strategy implementation type.</typeparam>
+    /// <param name="services">The service collection.</param>
+    /// <param name="factory">The factory method to create the strategy instance.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddInsightsStrategy<TStrategy>(this IServiceCollection services, Func<IServiceProvider, TStrategy> factory)
+        where TStrategy : class, IInsightsStrategy
+    {
+        return services.AddScoped<IInsightsStrategy>(factory);
+    }
+
+    /// <summary>
+    /// Registers multiple custom insights strategy implementations.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="strategyTypes">The strategy implementation types.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddInsightsStrategies(this IServiceCollection services, params Type[] strategyTypes)
+    {
+        foreach (var strategyType in strategyTypes)
+        {
+            if (!typeof(IInsightsStrategy).IsAssignableFrom(strategyType))
+            {
+                throw new ArgumentException($"Type {strategyType.Name} must implement IInsightsStrategy", nameof(strategyTypes));
+            }
+            
+            services.AddScoped(typeof(IInsightsStrategy), strategyType);
+        }
+        
         return services;
     }
 }

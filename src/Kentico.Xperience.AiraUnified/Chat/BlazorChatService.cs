@@ -3,6 +3,8 @@ using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Chat.Services;
+using Kentico.Xperience.AiraUnified.Insights.Abstractions;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -16,15 +18,21 @@ internal sealed class BlazorChatService : IBlazorChatService
     private readonly IAiraUnifiedChatService airaUnifiedChatService;
     private readonly AdminUserManager adminUserManager;
     private readonly AuthenticationStateProvider authenticationStateProvider;
+    private readonly IInsightsStrategyFactory insightsStrategyFactory;
+    private readonly EnhancedInsightsParser enhancedInsightsParser;
 
     public BlazorChatService(
         IAiraUnifiedChatService airaUnifiedChatService,
         AdminUserManager adminUserManager,
-        AuthenticationStateProvider authenticationStateProvider)
+        AuthenticationStateProvider authenticationStateProvider,
+        IInsightsStrategyFactory insightsStrategyFactory,
+        EnhancedInsightsParser enhancedInsightsParser)
     {
         this.airaUnifiedChatService = airaUnifiedChatService;
         this.adminUserManager = adminUserManager;
         this.authenticationStateProvider = authenticationStateProvider;
+        this.insightsStrategyFactory = insightsStrategyFactory;
+        this.enhancedInsightsParser = enhancedInsightsParser;
     }
 
     public async Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId)
@@ -35,10 +43,11 @@ internal sealed class BlazorChatService : IBlazorChatService
         {
             if (message.IsInsightsMessage)
             {
-                var (category, data, timestamp) = InsightsParser.ParseSystemMessage(message.Message!);
+                var (category, data, timestamp, componentType) = enhancedInsightsParser.ParseSystemMessage(message.Message!);
                 message.InsightsCategory = category;
                 message.InsightsData = data;
                 message.InsightsTimestamp = timestamp;
+                message.ComponentType = componentType;
             }
         }
         
@@ -86,6 +95,13 @@ internal sealed class BlazorChatService : IBlazorChatService
             result.InsightsCategory = aiResponse.Insights.Category;
             result.InsightsData = aiResponse.Insights.InsightsData;
             result.InsightsTimestamp = aiResponse.Insights.Metadata?.Timestamp;
+            
+            // Set component type based on insights category
+            if (!string.IsNullOrEmpty(aiResponse.Insights.Category))
+            {
+                var strategy = insightsStrategyFactory.GetStrategy(aiResponse.Insights.Category);
+                result.ComponentType = strategy?.ComponentType;
+            }
         }
 
         // Handle quick prompts if available
@@ -139,15 +155,58 @@ internal sealed class BlazorChatService : IBlazorChatService
         }
         else
         {
+            // Use enhanced serialization format with type information
+            var insightsJson = CreateEnhancedInsightsJson(aiResponse.Insights!);
+            await airaUnifiedChatService.SaveMessage(insightsJson, userId,
+                ChatRoleType.System, thread);
+        }
+    }
+    
+    /// <summary>
+    /// Creates enhanced JSON format with type information for proper deserialization
+    /// </summary>
+    private string CreateEnhancedInsightsJson(InsightsResponseModel insights)
+    {
+        try
+        {
+            // Get strategy to determine data and component types
+            Type? dataType = null;
+            Type? componentType = null;
+            
+            if (!string.IsNullOrEmpty(insights.Category))
+            {
+                var strategy = insightsStrategyFactory.GetStrategy(insights.Category);
+                if (strategy != null)
+                {
+                    componentType = strategy.ComponentType;
+                    
+                    // Try to determine data type from the actual insights data
+                    if (insights.InsightsData != null)
+                    {
+                        dataType = insights.InsightsData.GetType();
+                    }
+                }
+            }
+            
+            // Create enhanced serialization model
+            var enhancedModel = InsightsSerializationModel.FromInsightsResponse(insights, dataType, componentType);
+            
             var options = new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-
-            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights, options);
-
-            await airaUnifiedChatService.SaveMessage(insightsJson, userId,
-                ChatRoleType.System, thread);
+            
+            return System.Text.Json.JsonSerializer.Serialize(enhancedModel, options);
+        }
+        catch (Exception)
+        {
+            // Fallback to legacy format if enhancement fails
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            
+            return System.Text.Json.JsonSerializer.Serialize(insights, options);
         }
     }
 }
