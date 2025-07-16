@@ -15,8 +15,8 @@ namespace Kentico.Xperience.AiraUnified.Insights.Strategies;
 /// </summary>
 internal sealed class MarketingInsightsStrategy : InsightsStrategyBase
 {
-    private readonly IAiraUnifiedInsightsService insightsService;
     private readonly IInfoProvider<ContactGroupInfo> contactGroupProvider;
+    private readonly IAiraUnifiedInsightsService insightsService;
 
     public MarketingInsightsStrategy(
         IAiraUnifiedInsightsService insightsService,
@@ -29,9 +29,15 @@ internal sealed class MarketingInsightsStrategy : InsightsStrategyBase
         this.contactGroupProvider = contactGroupProvider;
     }
 
+    /// <inheritdoc />
     public override string Category => "marketing";
+
+
+    /// <inheritdoc />
     public override Type ComponentType => typeof(MarketingInsightsComponent);
 
+
+    /// <inheritdoc />
     protected override async Task<object> LoadRealDataAsync(InsightsContext context)
     {
         var groups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
@@ -61,23 +67,21 @@ internal sealed class MarketingInsightsStrategy : InsightsStrategyBase
         };
     }
 
-    public override Task<object> LoadMockDataAsync(InsightsContext context) => Task.FromResult<object>(new MarketingInsightsDataModel
-    {
-        Contacts = new ContactsSummaryModel
+
+    /// <inheritdoc />
+    public override Task<object> LoadMockDataAsync(InsightsContext context) => Task.FromResult<object>(
+        new MarketingInsightsDataModel
         {
-            TotalCount = 1500,
-            ActiveCount = 1200,
-            InactiveCount = 300
-        },
-        ContactGroups =
+            Contacts = new ContactsSummaryModel { TotalCount = 1500, ActiveCount = 1200, InactiveCount = 300 },
+            ContactGroups =
             [
-                new() { Name = "Newsletter Subscribers", ContactCount = 800, RatioPercentage = 53.3M },
-                new() { Name = "Active Customers", ContactCount = 450, RatioPercentage = 30.0M }
+                new ContactGroupModel { Name = "Newsletter Subscribers", ContactCount = 800, RatioPercentage = 53.3M },
+                new ContactGroupModel { Name = "Active Customers", ContactCount = 450, RatioPercentage = 30.0M }
             ],
-        RecipientLists =
+            RecipientLists =
             [
-                new() { Name = "VIP Customers", ContactCount = 150, RatioPercentage = 10.0M },
-                new() { Name = "Trial Users", ContactCount = 100, RatioPercentage = 6.7M }
+                new ContactGroupModel { Name = "VIP Customers", ContactCount = 150, RatioPercentage = 10.0M },
+                new ContactGroupModel { Name = "Trial Users", ContactCount = 100, RatioPercentage = 6.7M }
             ]
-    });
+        });
 }

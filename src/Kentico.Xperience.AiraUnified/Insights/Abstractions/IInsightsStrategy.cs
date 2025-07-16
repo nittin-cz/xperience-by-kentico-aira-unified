@@ -11,11 +11,37 @@ public interface IInsightsStrategy
     /// </summary>
     string Category { get; }
 
+
     /// <summary>
     /// Type of Blazor component for rendering the data.
     /// Component must have parameters: Data (object) and Timestamp (DateTime?).
     /// </summary>
     Type ComponentType { get; }
+
+
+    /// <summary>
+    /// Determines whether to use mock data instead of real data.
+    /// Default implementation reads from configuration.
+    /// </summary>
+    bool UseMockData { get; }
+
+
+    /// <summary>
+    /// Insight category friendly name.
+    /// </summary>
+    string DisplayName { get; }
+
+
+    /// <summary>
+    /// Extended description of the category.
+    /// </summary>
+    string Description { get; }
+
+
+    /// <summary>
+    /// Related questions for this insights category.
+    /// </summary>
+    IEnumerable<string> FollowUpQuestions { get; }
 
     /// <summary>
     /// Loads insights data for the given context.
@@ -23,12 +49,6 @@ public interface IInsightsStrategy
     /// <param name="context">Context containing UserId and additional parameters</param>
     /// <returns>Object data for insights</returns>
     Task<object> LoadDataAsync(InsightsContext context);
-
-    /// <summary>
-    /// Determines whether to use mock data instead of real data.
-    /// Default implementation reads from configuration.
-    /// </summary>
-    bool UseMockData { get; }
 
     /// <summary>
     /// Provides mock data for development/testing purposes.

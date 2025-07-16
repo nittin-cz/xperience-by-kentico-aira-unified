@@ -24,9 +24,16 @@ internal sealed class ContentInsightsStrategy : InsightsStrategyBase
         : base(configuration, logger) =>
         this.insightsService = insightsService;
 
+
+    /// <inheritdoc />
     public override string Category => "content";
+
+
+    /// <inheritdoc />
     public override Type ComponentType => typeof(ContentInsightsComponent);
 
+
+    /// <inheritdoc />
     protected override async Task<object> LoadRealDataAsync(InsightsContext context)
     {
         var reusableDraftContent = await insightsService.GetContentInsights(
@@ -40,11 +47,12 @@ internal sealed class ContentInsightsStrategy : InsightsStrategyBase
 
         return new ContentInsightsDataModel
         {
-            Summary = new ContentSummaryModel
-            {
-                DraftCount = reusableDraftContent.Count + websiteDraftContent.Count,
-                ScheduledCount = reusableScheduledContent.Count + websiteScheduledContent.Count
-            },
+            Summary =
+                new ContentSummaryModel
+                {
+                    DraftCount = reusableDraftContent.Count + websiteDraftContent.Count,
+                    ScheduledCount = reusableScheduledContent.Count + websiteScheduledContent.Count
+                },
             ReusableContent = new ContentCategoryModel
             {
                 DraftCount = reusableDraftContent.Count,
@@ -60,14 +68,12 @@ internal sealed class ContentInsightsStrategy : InsightsStrategyBase
         };
     }
 
+
+    /// <inheritdoc />
     public override Task<object> LoadMockDataAsync(InsightsContext context) =>
         Task.FromResult<object>(new ContentInsightsDataModel
         {
-            Summary = new ContentSummaryModel
-            {
-                DraftCount = 15,
-                ScheduledCount = 5
-            },
+            Summary = new ContentSummaryModel { DraftCount = 15, ScheduledCount = 5 },
             ReusableContent = new ContentCategoryModel
             {
                 DraftCount = 8,

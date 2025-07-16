@@ -16,12 +16,5 @@ public interface IInsightsStrategyFactory
     /// Returns all available categories
     /// </summary>
     /// <returns>List of categories</returns>
-    IEnumerable<string> GetAvailableCategories();
-
-    /// <summary>
-    /// Checks if strategy exists for category
-    /// </summary>
-    /// <param name="category">Insights category</param>
-    /// <returns>True if strategy exists</returns>
-    bool HasStrategy(string category);
+    IEnumerable<IInsightsStrategy> GetAllStrategies();
 }

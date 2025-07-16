@@ -9,8 +9,8 @@ namespace Kentico.Xperience.AiraUnified.Insights.Implementation;
 /// </summary>
 internal sealed class InsightsStrategyFactory : IInsightsStrategyFactory
 {
-    private readonly IEnumerable<IInsightsStrategy> strategies;
     private readonly ILogger<InsightsStrategyFactory> logger;
+    private readonly IEnumerable<IInsightsStrategy> strategies;
     private readonly Dictionary<string, IInsightsStrategy> strategyLookup;
 
     public InsightsStrategyFactory(
@@ -22,24 +22,16 @@ internal sealed class InsightsStrategyFactory : IInsightsStrategyFactory
         strategyLookup = BuildStrategyLookup();
     }
 
-    public IInsightsStrategy? GetStrategy(string category)
-    {
-        if (string.IsNullOrWhiteSpace(category))
-        {
-            return null;
-        }
+    /// <inheritdoc />
+    public IInsightsStrategy? GetStrategy(string category) => string.IsNullOrWhiteSpace(category)
+        ? null
+        : strategyLookup.GetValueOrDefault(category.ToLowerInvariant());
 
-        return strategyLookup.TryGetValue(category.ToLowerInvariant(), out var strategy)
-            ? strategy
-            : null;
-    }
 
-    public IEnumerable<string> GetAvailableCategories()
-        => strategyLookup.Keys;
+    /// <inheritdoc />
+    public IEnumerable<IInsightsStrategy> GetAllStrategies()
+        => strategyLookup.Values;
 
-    public bool HasStrategy(string category)
-        => !string.IsNullOrWhiteSpace(category) &&
-           strategyLookup.ContainsKey(category.ToLowerInvariant());
 
     private Dictionary<string, IInsightsStrategy> BuildStrategyLookup()
     {
@@ -49,12 +41,12 @@ internal sealed class InsightsStrategyFactory : IInsightsStrategyFactory
         {
             var category = strategy.Category.ToLowerInvariant();
 
-            if (lookup.ContainsKey(category))
+            if (lookup.TryGetValue(category, out var value))
             {
                 logger.LogError(
                     "Duplicate insights strategy found for category '{Category}'. " +
                     "Existing: {ExistingType}, New: {NewType}",
-                    category, lookup[category].GetType().Name, strategy.GetType().Name);
+                    category, value.GetType().Name, strategy.GetType().Name);
                 continue;
             }
 

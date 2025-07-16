@@ -20,9 +20,15 @@ internal sealed class EmailInsightsStrategy : InsightsStrategyBase
         ILogger<EmailInsightsStrategy> logger)
         : base(configuration, logger) => this.insightsService = insightsService;
 
+    /// <inheritdoc />
     public override string Category => "email";
+
+
+    /// <inheritdoc />
     public override Type ComponentType => typeof(EmailInsightsComponent);
 
+
+    /// <inheritdoc />
     protected override async Task<object> LoadRealDataAsync(InsightsContext context)
     {
         var emailInsights = await insightsService.GetEmailInsights();
@@ -37,20 +43,23 @@ internal sealed class EmailInsightsStrategy : InsightsStrategyBase
         };
     }
 
-    public override Task<object> LoadMockDataAsync(InsightsContext context) => Task.FromResult<object>(new EmailInsightsDataModel
-    {
-        Summary = new EmailSummaryModel
+
+    /// <inheritdoc />
+    public override Task<object> LoadMockDataAsync(InsightsContext context) => Task.FromResult<object>(
+        new EmailInsightsDataModel
         {
-            DraftCount = 5,
-            ScheduledCount = 2,
-            SentCount = 10,
-            TotalCount = 17,
-            AverageOpenRate = 24.5,
-            AverageClickRate = 3.2
-        },
-        Campaigns =
+            Summary = new EmailSummaryModel
+            {
+                DraftCount = 5,
+                ScheduledCount = 2,
+                SentCount = 10,
+                TotalCount = 17,
+                AverageOpenRate = 24.5,
+                AverageClickRate = 3.2
+            },
+            Campaigns =
             [
-                new()
+                new EmailCampaignModel
                 {
                     Id = "1",
                     Name = "Mock Monthly Newsletter",
@@ -69,5 +78,5 @@ internal sealed class EmailInsightsStrategy : InsightsStrategyBase
                     }
                 }
             ]
-    });
+        });
 }
