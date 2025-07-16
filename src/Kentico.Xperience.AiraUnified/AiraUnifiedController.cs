@@ -58,61 +58,6 @@ internal sealed class AiraUnifiedController(
         });
     }
     
-    /// <summary>
-    /// Endpoint exposing access to the Chat page.
-    /// </summary>
-    /// <param name="chatThreadId">The chat thread id. If not specified, a new thread will be created.</param>
-    /// <returns>A view containing the chat interface.</returns>
-    [HttpGet]
-    public async Task<IActionResult> Index(int? chatThreadId = null)
-    {
-        var configuration = await GetConfiguration();
-        var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
-
-        var user = await adminUserManager.GetUserAsync(User);
-
-        // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware
-        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
-
-        // Only the URLs which origin from the input of the Admin user in aira unified need verification.
-        var removePromptUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.RemoveUsedPromptGroupRelativeUrl);
-        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
-        var historyUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl, AiraUnifiedConstants.ChatHistoryUrl);
-        var chatUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl, AiraUnifiedConstants.ChatMessageUrl);
-
-        if (removePromptUrl is null
-            || navigationUrl is null
-            || historyUrl is null
-            || chatUrl is null)
-        {
-            eventLogService.LogError(nameof(AiraUnifiedController), nameof(Index), InvalidPathBaseErrorMessage);
-
-            return BadRequest(InvalidPathBaseErrorMessage);
-        }
-
-        var chatModel = new ChatViewModel
-        {
-            AiraUnifiedPathBase = configuration.AiraUnifiedPathBase,
-            AIIconImagePath = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
-            RemovePromptUrl = removePromptUrl.ToString(),
-            ServicePageViewModel = new ServicePageViewModel()
-            {
-                ChatAiraIconUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureStarImgPath}",
-                ChatUnavailableIconUrl = $"/{AiraUnifiedConstants.RCLUrlPrefix}/{AiraUnifiedConstants.PictureChatBotSmileBubbleOrangeImgPath}",
-                ChatUnavailableMainMessage = Resource.ServicePageChatUnavailable,
-                ChatUnavailableTryAgainMessage = Resource.ServicePageChatTryAgainLater
-            },
-            NavigationUrl = navigationUrl.ToString(),
-            NavigationPageIdentifier = AiraUnifiedConstants.ChatRelativeUrl,
-            HistoryUrl = historyUrl.ToString(),
-            ChatUrl = chatUrl.ToString(),
-            ThreadId = chatThread.ThreadId,
-            ThreadName = chatThread.ThreadName,
-            LogoImgRelativePath = logoUrl
-        };
-
-        return View("~/Chat/Chat.cshtml", chatModel);
-    }
 
 
     /// <summary>
@@ -346,7 +291,7 @@ internal sealed class AiraUnifiedController(
                 return Ok(result);
             }
 
-            await SaveMessages(aiResponse, user, thread);
+            await airaUnifiedChatService.SaveMessages(aiResponse, userId, thread);
 
             await airaUnifiedChatService.UpdateChatSummary(userId, message);
 
@@ -520,28 +465,4 @@ internal sealed class AiraUnifiedController(
         return new ConfigurationModel(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase);
     }
 
-    private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, AdminApplicationUser user,
-        AiraUnifiedChatThreadInfo thread)
-    {
-        if (!aiResponse.Insights?.IsInsightsQuery ?? true)
-        {
-            foreach (var response in aiResponse.Responses)
-            {
-                await airaUnifiedChatService.SaveMessage(response.Content, user.UserID,
-                    ChatRoleType.AIAssistant, thread);
-            }
-        }
-        else
-        {
-            var options = new System.Text.Json.JsonSerializerOptions
-            {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-            };
-
-            var insightsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.Insights, options);
-
-            await airaUnifiedChatService.SaveMessage(insightsJson, user.UserID,
-                ChatRoleType.System, thread);
-        }
-    }
 }

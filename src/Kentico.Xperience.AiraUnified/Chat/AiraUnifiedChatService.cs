@@ -260,20 +260,6 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
 
     /// <inheritdoc />
-    public async Task<bool> ValidateUserThread(int userId, int threadId)
-    {
-        var thread = (await airaUnifiedChatThreadProvider
-            .Get()
-            .WhereEquals(nameof(AiraUnifiedChatThreadInfo.AiraUnifiedChatThreadId), threadId)
-            .TopN(1)
-            .GetEnumerableTypedResultAsync())
-            .FirstOrDefault();
-
-        return thread is not null && thread.AiraUnifiedChatThreadUserId == userId;
-    }
-
-
-    /// <inheritdoc />
     public async Task<AiraUnifiedAIResponse?> GetAIResponseOrNull(string message, int numberOfIncludedHistoryMessages, int userId)
     {
         var textMessageHistory = (await airaUnifiedChatMessageProvider.Get()
@@ -471,92 +457,6 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
 
     /// <summary>
-    /// Gets marketing insights data.
-    /// </summary>
-    /// <returns>A task containing the marketing insights data.</returns>
-    private async Task<object?> GetMarketingInsights()
-    {
-        var groups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
-        var contactGroupNames = groups.Where(x => !x.ContactGroupIsRecipientList).Select(x => x.ContactGroupDisplayName).ToArray();
-        var recipientListGroupNames = groups.Where(x => x.ContactGroupIsRecipientList).Select(x => x.ContactGroupDisplayName).ToArray();
-
-        var contactGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(contactGroupNames);
-        var recipientListGroupInsights = airaUnifiedInsightsService.GetContactGroupInsights(recipientListGroupNames);
-
-        return new MarketingInsightsDataModel
-        {
-            Contacts = new ContactsSummaryModel() { TotalCount = contactGroupInsights.AllCount },
-            ContactGroups = contactGroupInsights.Groups.Select(item => new ContactGroupModel()
-            {
-                Name = item.Name,
-                ContactCount = item.Count,
-                RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
-            }).ToList(),
-            RecipientLists = recipientListGroupInsights.Groups.Select(item => new ContactGroupModel()
-            {
-                Name = item.Name,
-                ContactCount = item.Count,
-                RatioPercentage = (decimal)item.Count / contactGroupInsights.AllCount * 100
-            }).ToList(),
-        };
-    }
-
-
-    /// <summary>
-    /// Gets email insights data.
-    /// </summary>
-    /// <returns>A task containing the email insights data.</returns>
-    private async Task<object?> GetEmailInsights()
-    {
-        var emailInsights = await airaUnifiedInsightsService.GetEmailInsights();
-
-        return new EmailInsightsDataModel()
-        {
-            Summary = new EmailSummaryModel()
-            {
-                SentCount = emailInsights.Select(i => i.Metrics).Sum(i => i?.TotalSent ?? 0)
-            },
-            Campaigns = emailInsights
-        };
-    }
-
-
-    /// <summary>
-    /// Gets content insights data for a specific user.
-    /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <returns>A task containing the content insights data.</returns>
-    private async Task<ContentInsightsDataModel> GetContentInsights(int userId)
-    {
-        var reusableDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
-        var reusableScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Reusable, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-        var websiteDraftContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsDraftIdentifier);
-        var websiteScheduledContentInsights = await airaUnifiedInsightsService.GetContentInsights(ContentType.Website, userId, AiraUnifiedConstants.InsightsScheduledIdentifier);
-
-        return new ContentInsightsDataModel
-        {
-            Summary = new ContentSummaryModel()
-            {
-                DraftCount = reusableDraftContentInsights.Count + websiteDraftContentInsights.Count,
-                ScheduledCount = reusableScheduledContentInsights.Count + websiteScheduledContentInsights.Count
-            },
-            ReusableContent = new ContentCategoryModel()
-            {
-                DraftCount = reusableDraftContentInsights.Count,
-                ScheduledCount = reusableScheduledContentInsights.Count,
-                Items = reusableDraftContentInsights.Concat(reusableScheduledContentInsights).ToList()
-            },
-            WebsiteContent = new ContentCategoryModel()
-            {
-                DraftCount = websiteDraftContentInsights.Count,
-                ScheduledCount = websiteScheduledContentInsights.Count,
-                Items = websiteScheduledContentInsights.Concat(websiteDraftContentInsights).ToList()
-            }
-        };
-    }
-
-
-    /// <summary>
     /// Gets the chat role string based on the message info.
     /// </summary>
     /// <param name="chatMessage">The chat message info.</param>
@@ -672,7 +572,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <param name="userId">The user ID.</param>
     /// <param name="thread">The chat thread info.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, int userId, AiraUnifiedChatThreadInfo thread)
+    public async Task SaveMessages(AiraUnifiedAIResponse aiResponse, int userId, AiraUnifiedChatThreadInfo thread)
     {
         if (!aiResponse.Insights?.IsInsightsQuery ?? true)
         {

@@ -137,4 +137,13 @@ internal interface IAiraUnifiedChatService
     /// <param name="promptGroupId">Prompt group id.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task RemoveUsedPromptsAsync(string promptGroupId);
+
+    /// <summary>
+    /// Saves AI response messages with enhanced insights processing.
+    /// </summary>
+    /// <param name="aiResponse">The AI response containing messages and insights.</param>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="thread">The chat thread information.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task SaveMessages(AiraUnifiedAIResponse aiResponse, int userId, AiraUnifiedChatThreadInfo thread);
 }
