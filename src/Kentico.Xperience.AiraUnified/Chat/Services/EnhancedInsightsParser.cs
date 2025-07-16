@@ -1,8 +1,9 @@
-using System.Reflection;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
+
 using Kentico.Xperience.AiraUnified.Insights.Abstractions;
 using Kentico.Xperience.AiraUnified.Insights.Models;
+
+using Microsoft.Extensions.Logging;
 
 namespace Kentico.Xperience.AiraUnified.Chat.Services;
 
@@ -13,7 +14,7 @@ internal sealed class EnhancedInsightsParser
 {
     private readonly IInsightsStrategyFactory strategyFactory;
     private readonly ILogger<EnhancedInsightsParser> logger;
-    
+
     public EnhancedInsightsParser(
         IInsightsStrategyFactory strategyFactory,
         ILogger<EnhancedInsightsParser> logger)
@@ -21,7 +22,7 @@ internal sealed class EnhancedInsightsParser
         this.strategyFactory = strategyFactory;
         this.logger = logger;
     }
-    
+
     /// <summary>
     /// Parses system message JSON to extract insights data with full type support.
     /// Supports both legacy format (v1) and new format (v2) for backward compatibility.
@@ -33,14 +34,14 @@ internal sealed class EnhancedInsightsParser
         try
         {
             var rawData = JsonSerializer.Deserialize<JsonElement>(json);
-            
+
             // Check for version to determine parsing strategy
             var version = 1; // Default to legacy format
             if (rawData.TryGetProperty("version", out var versionElement))
             {
                 version = versionElement.GetInt32();
             }
-            
+
             return version switch
             {
                 2 => ParseEnhancedFormat(rawData),
@@ -53,7 +54,7 @@ internal sealed class EnhancedInsightsParser
             return (null, null, null, null);
         }
     }
-    
+
     /// <summary>
     /// Parses the new enhanced format (v2) with full type information
     /// </summary>
@@ -63,25 +64,27 @@ internal sealed class EnhancedInsightsParser
         {
             var serializationModel = JsonSerializer.Deserialize<InsightsSerializationModel>(rawData.GetRawText());
             if (serializationModel == null)
+            {
                 return (null, null, null, null);
-            
+            }
+
             var category = serializationModel.Category;
             var timestamp = serializationModel.Metadata?.Timestamp;
-            
+
             // Resolve component type from stored type name
             Type? componentType = null;
             if (!string.IsNullOrEmpty(serializationModel.ComponentType))
             {
                 componentType = ResolveTypeFromName(serializationModel.ComponentType);
             }
-            
+
             // If we don't have component type from storage, try to get it from strategy
             if (componentType == null && !string.IsNullOrEmpty(category))
             {
                 var strategy = strategyFactory.GetStrategy(category);
                 componentType = strategy?.ComponentType;
             }
-            
+
             // Deserialize data using type information
             object? data = null;
             if (!string.IsNullOrEmpty(serializationModel.InsightsData))
@@ -101,7 +104,7 @@ internal sealed class EnhancedInsightsParser
                     data = DeserializeUsingStrategy(category, serializationModel.InsightsData);
                 }
             }
-            
+
             return (category, data, timestamp, componentType);
         }
         catch (Exception ex)
@@ -110,7 +113,7 @@ internal sealed class EnhancedInsightsParser
             return (null, null, null, null);
         }
     }
-    
+
     /// <summary>
     /// Parses the legacy format (v1) for backward compatibility
     /// </summary>
@@ -120,22 +123,26 @@ internal sealed class EnhancedInsightsParser
         {
             // Extract category
             if (!rawData.TryGetProperty("category", out var categoryElement))
+            {
                 return (null, null, null, null);
-            
+            }
+
             var category = categoryElement.GetString();
-            
+
             // Extract insights data
             if (!rawData.TryGetProperty("insightsData", out var dataElement))
+            {
                 return (category, null, null, null);
-            
+            }
+
             // Extract timestamp from metadata
             DateTime? timestamp = null;
-            if (rawData.TryGetProperty("metadata", out var metadataElement) && 
+            if (rawData.TryGetProperty("metadata", out var metadataElement) &&
                 metadataElement.TryGetProperty("timestamp", out var timestampElement))
             {
                 timestamp = timestampElement.GetDateTime();
             }
-            
+
             // Get component type from strategy
             Type? componentType = null;
             if (!string.IsNullOrEmpty(category))
@@ -143,36 +150,33 @@ internal sealed class EnhancedInsightsParser
                 var strategy = strategyFactory.GetStrategy(category);
                 componentType = strategy?.ComponentType;
             }
-            
+
             // Deserialize data using strategy or fallback to hardcoded types
             object? data = null;
             if (!string.IsNullOrEmpty(category))
             {
                 data = DeserializeUsingStrategy(category, dataElement.GetRawText());
-                
+
                 // Fallback to legacy hardcoded deserialization if strategy fails
-                if (data == null)
+                data ??= category.ToLowerInvariant() switch
                 {
-                    data = category.ToLowerInvariant() switch
-                    {
-                        "content" => JsonSerializer.Deserialize<ContentInsightsDataModel>(dataElement.GetRawText()),
-                        "email" => JsonSerializer.Deserialize<EmailInsightsDataModel>(dataElement.GetRawText()),
-                        "marketing" => JsonSerializer.Deserialize<MarketingInsightsDataModel>(dataElement.GetRawText()),
-                        _ => null
-                    };
-                }
+                    "content" => JsonSerializer.Deserialize<ContentInsightsDataModel>(dataElement.GetRawText()),
+                    "email" => JsonSerializer.Deserialize<EmailInsightsDataModel>(dataElement.GetRawText()),
+                    "marketing" => JsonSerializer.Deserialize<MarketingInsightsDataModel>(dataElement.GetRawText()),
+                    _ => null
+                };
             }
-            
+
             return (category, data, timestamp, componentType);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to parse legacy format insights data for category: {Category}", 
+            logger.LogError(ex, "Failed to parse legacy format insights data for category: {Category}",
                 rawData.TryGetProperty("category", out var cat) ? cat.GetString() : "unknown");
             return (null, null, null, null);
         }
     }
-    
+
     /// <summary>
     /// Attempts to deserialize data using the insights strategy
     /// </summary>
@@ -186,7 +190,7 @@ internal sealed class EnhancedInsightsParser
                 logger.LogWarning("No strategy found for category: {Category}", category);
                 return CreateFallbackData(category, jsonData);
             }
-            
+
             // Try to get the expected data type from the strategy
             var dataType = GetStrategyDataType(strategy);
             if (dataType != null)
@@ -197,13 +201,13 @@ internal sealed class EnhancedInsightsParser
                 }
                 catch (JsonException ex)
                 {
-                    logger.LogWarning(ex, "JSON deserialization failed for type {DataType}, category: {Category}. Using fallback.", 
+                    logger.LogWarning(ex, "JSON deserialization failed for type {DataType}, category: {Category}. Using fallback.",
                         dataType.Name, category);
                     return CreateFallbackData(category, jsonData);
                 }
             }
-            
-            logger.LogWarning("Could not determine data type for strategy: {StrategyType}, category: {Category}. Using fallback.", 
+
+            logger.LogWarning("Could not determine data type for strategy: {StrategyType}, category: {Category}. Using fallback.",
                 strategy.GetType().Name, category);
             return CreateFallbackData(category, jsonData);
         }
@@ -213,7 +217,7 @@ internal sealed class EnhancedInsightsParser
             return CreateFallbackData(category, jsonData);
         }
     }
-    
+
     /// <summary>
     /// Creates fallback data when deserialization fails
     /// </summary>
@@ -235,7 +239,7 @@ internal sealed class EnhancedInsightsParser
             return null;
         }
     }
-    
+
     /// <summary>
     /// Attempts to determine the data type expected by a strategy through reflection
     /// </summary>
@@ -252,12 +256,12 @@ internal sealed class EnhancedInsightsParser
                 task.Wait();
                 return task.Result?.GetType();
             }
-            
+
             // Fallback: try to analyze component type parameter attributes
             var componentType = strategy.ComponentType;
             var dataParameter = componentType?.GetProperties()
                 .FirstOrDefault(p => p.Name == "Data" && p.PropertyType != typeof(object));
-            
+
             return dataParameter?.PropertyType;
         }
         catch (Exception ex)
@@ -266,7 +270,7 @@ internal sealed class EnhancedInsightsParser
             return null;
         }
     }
-    
+
     /// <summary>
     /// Resolves a Type from its assembly-qualified name with error handling
     /// </summary>

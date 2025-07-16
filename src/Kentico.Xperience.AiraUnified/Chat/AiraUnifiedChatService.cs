@@ -1,18 +1,13 @@
 ﻿using CMS.Base;
-using CMS.ContactManagement;
 using CMS.DataEngine;
 using CMS.DataEngine.Query;
 
-using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
 using Kentico.Xperience.AiraUnified.Chat.Services;
-using Kentico.Xperience.AiraUnified.Insights;
-using Kentico.Xperience.AiraUnified.Insights.Models;
 using Kentico.Xperience.AiraUnified.Insights.Abstractions;
-
-using Microsoft.AspNetCore.Components.Authorization;
+using Kentico.Xperience.AiraUnified.Insights.Models;
 
 namespace Kentico.Xperience.AiraUnified.Chat;
 
@@ -26,12 +21,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     private readonly IInfoProvider<AiraUnifiedChatMessageInfo> airaUnifiedChatMessageProvider;
     private readonly IInfoProvider<AiraUnifiedChatSummaryInfo> airaUnifiedChatSummaryProvider;
     private readonly IInfoProvider<AiraUnifiedChatThreadInfo> airaUnifiedChatThreadProvider;
-    private readonly IInfoProvider<ContactGroupInfo> contactGroupProvider;
-    private readonly IAiraUnifiedInsightsService airaUnifiedInsightsService;
     private readonly IInsightsOrchestrator insightsOrchestrator;
     private readonly IAiHttpClient aiHttpClient;
-    private readonly AdminUserManager adminUserManager;
-    private readonly AuthenticationStateProvider authenticationStateProvider;
     private readonly IInsightsStrategyFactory insightsStrategyFactory;
     private readonly EnhancedInsightsParser enhancedInsightsParser;
 
@@ -42,41 +33,29 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <param name="airaUnifiedChatPromptGroupProvider">Provider for chat prompt groups.</param>
     /// <param name="airaUnifiedChatPromptProvider">Provider for chat prompts.</param>
     /// <param name="airaUnifiedChatThreadProvider">Provider for chat threads.</param>
-    /// <param name="contactGroupProvider">Provider for contact groups.</param>
     /// <param name="airaUnifiedChatMessageProvider">Provider for chat messages.</param>
     /// <param name="airaUnifiedChatSummaryProvider">Provider for chat summaries.</param>
-    /// <param name="airaUnifiedInsightsService">Service for insights data.</param>
     /// <param name="insightsOrchestrator">Orchestrator for insights processing.</param>
     /// <param name="aiHttpClient">Client for AI service communication.</param>
-    /// <param name="adminUserManager">Manager for admin users.</param>
-    /// <param name="authenticationStateProvider">Provider for authentication state.</param>
     /// <param name="insightsStrategyFactory">Factory for insights strategies.</param>
     /// <param name="enhancedInsightsParser">Parser for enhanced insights.</param>
     public AiraUnifiedChatService(IInfoProvider<AiraUnifiedChatPromptGroupInfo> airaUnifiedChatPromptGroupProvider,
         IInfoProvider<AiraUnifiedChatPromptInfo> airaUnifiedChatPromptProvider,
         IInfoProvider<AiraUnifiedChatThreadInfo> airaUnifiedChatThreadProvider,
-        IInfoProvider<ContactGroupInfo> contactGroupProvider,
         IInfoProvider<AiraUnifiedChatMessageInfo> airaUnifiedChatMessageProvider,
         IInfoProvider<AiraUnifiedChatSummaryInfo> airaUnifiedChatSummaryProvider,
-        IAiraUnifiedInsightsService airaUnifiedInsightsService,
         IInsightsOrchestrator insightsOrchestrator,
         IAiHttpClient aiHttpClient,
-        AdminUserManager adminUserManager,
-        AuthenticationStateProvider authenticationStateProvider,
         IInsightsStrategyFactory insightsStrategyFactory,
         EnhancedInsightsParser enhancedInsightsParser)
     {
         this.airaUnifiedChatPromptGroupProvider = airaUnifiedChatPromptGroupProvider;
         this.airaUnifiedChatPromptProvider = airaUnifiedChatPromptProvider;
-        this.contactGroupProvider = contactGroupProvider;
         this.airaUnifiedChatMessageProvider = airaUnifiedChatMessageProvider;
         this.airaUnifiedChatThreadProvider = airaUnifiedChatThreadProvider;
-        this.airaUnifiedInsightsService = airaUnifiedInsightsService;
         this.insightsOrchestrator = insightsOrchestrator;
         this.airaUnifiedChatSummaryProvider = airaUnifiedChatSummaryProvider;
         this.aiHttpClient = aiHttpClient;
-        this.adminUserManager = adminUserManager;
-        this.authenticationStateProvider = authenticationStateProvider;
         this.insightsStrategyFactory = insightsStrategyFactory;
         this.enhancedInsightsParser = enhancedInsightsParser;
     }
@@ -418,17 +397,17 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task AddInsightsData(int userId, AiraUnifiedAIResponse? aiResponse)
     {
-        if (aiResponse?.Insights?.IsInsightsQuery != true || 
+        if (aiResponse?.Insights?.IsInsightsQuery != true ||
             string.IsNullOrWhiteSpace(aiResponse.Insights.Category))
         {
             return;
         }
-        
+
         try
         {
             var request = new InsightsRequest(userId, aiResponse.Insights.Category);
             var result = await insightsOrchestrator.ProcessInsightsAsync(request);
-            
+
             if (result.Success)
             {
                 aiResponse.Insights.InsightsData = result.Data;
@@ -443,15 +422,11 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             else
             {
                 // Log warning but don't fail the request
-                // logger.LogWarning("Failed to load insights for category '{Category}': {Error}", 
-                //     aiResponse.Insights.Category, result.ErrorMessage);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log error but don't fail the request
-            // logger.LogError(ex, "Unexpected error while loading insights for category '{Category}'", 
-            //     aiResponse.Insights.Category);
         }
     }
 
@@ -474,7 +449,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     public async Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId)
     {
         var historyMessages = await GetUserChatHistory(userId, threadId);
-        
+
         foreach (var message in historyMessages)
         {
             if (message.IsInsightsMessage)
@@ -486,7 +461,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 message.ComponentType = componentType;
             }
         }
-        
+
         return historyMessages;
     }
 
@@ -532,7 +507,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             result.InsightsCategory = aiResponse.Insights.Category;
             result.InsightsData = aiResponse.Insights.InsightsData;
             result.InsightsTimestamp = aiResponse.Insights.Metadata?.Timestamp;
-            
+
             // Set component type based on insights category
             if (!string.IsNullOrEmpty(aiResponse.Insights.Category))
             {
@@ -553,10 +528,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     }
 
     /// <inheritdoc />
-    public async Task<AiraUnifiedChatThreadModel> GetOrCreateThreadAsync(int userId, int? threadId = null)
-    {
-        return await GetAiraChatThreadModel(userId, setAsLastUsed: true, threadId);
-    }
+    public async Task<AiraUnifiedChatThreadModel> GetOrCreateThreadAsync(int userId, int? threadId = null) => await GetAiraChatThreadModel(userId, setAsLastUsed: true, threadId);
 
     /// <inheritdoc />
     public async Task RemoveUsedPromptsAsync(string promptGroupId)
@@ -588,7 +560,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             await SaveMessage(insightsJson, userId, ChatRoleType.System, thread);
         }
     }
-    
+
     /// <summary>
     /// Creates enhanced JSON format with type information for proper deserialization.
     /// </summary>
@@ -601,14 +573,14 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             // Get strategy to determine data and component types
             Type? dataType = null;
             Type? componentType = null;
-            
+
             if (!string.IsNullOrEmpty(insights.Category))
             {
                 var strategy = insightsStrategyFactory.GetStrategy(insights.Category);
                 if (strategy != null)
                 {
                     componentType = strategy.ComponentType;
-                    
+
                     // Try to determine data type from the actual insights data
                     if (insights.InsightsData != null)
                     {
@@ -616,15 +588,15 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                     }
                 }
             }
-            
+
             // Create enhanced serialization model
             var enhancedModel = InsightsSerializationModel.FromInsightsResponse(insights, dataType, componentType);
-            
+
             var options = new System.Text.Json.JsonSerializerOptions
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            
+
             return System.Text.Json.JsonSerializer.Serialize(enhancedModel, options);
         }
         catch (Exception)
@@ -634,7 +606,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             {
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };
-            
+
             return System.Text.Json.JsonSerializer.Serialize(insights, options);
         }
     }

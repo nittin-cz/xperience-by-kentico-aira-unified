@@ -1,10 +1,12 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using CMS.ContactManagement;
 using CMS.DataEngine;
+
+using Kentico.Xperience.AiraUnified.Components.Insights;
 using Kentico.Xperience.AiraUnified.Insights.Abstractions;
 using Kentico.Xperience.AiraUnified.Insights.Models;
-using Kentico.Xperience.AiraUnified.Components.Insights;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Kentico.Xperience.AiraUnified.Insights.Strategies;
 
@@ -15,21 +17,21 @@ internal sealed class MarketingInsightsStrategy : InsightsStrategyBase
 {
     private readonly IAiraUnifiedInsightsService insightsService;
     private readonly IInfoProvider<ContactGroupInfo> contactGroupProvider;
-    
+
     public MarketingInsightsStrategy(
         IAiraUnifiedInsightsService insightsService,
         IInfoProvider<ContactGroupInfo> contactGroupProvider,
         IConfiguration configuration,
-        ILogger<MarketingInsightsStrategy> logger) 
+        ILogger<MarketingInsightsStrategy> logger)
         : base(configuration, logger)
     {
         this.insightsService = insightsService;
         this.contactGroupProvider = contactGroupProvider;
     }
-    
+
     public override string Category => "marketing";
     public override Type ComponentType => typeof(MarketingInsightsComponent);
-    
+
     protected override async Task<object> LoadRealDataAsync(InsightsContext context)
     {
         var groups = await contactGroupProvider.Get().GetEnumerableTypedResultAsync();
@@ -58,27 +60,24 @@ internal sealed class MarketingInsightsStrategy : InsightsStrategyBase
             }).ToList()
         };
     }
-    
-    public override Task<object> LoadMockDataAsync(InsightsContext context)
+
+    public override Task<object> LoadMockDataAsync(InsightsContext context) => Task.FromResult<object>(new MarketingInsightsDataModel
     {
-        return Task.FromResult<object>(new MarketingInsightsDataModel
+        Contacts = new ContactsSummaryModel
         {
-            Contacts = new ContactsSummaryModel 
-            { 
-                TotalCount = 1500,
-                ActiveCount = 1200,
-                InactiveCount = 300
-            },
-            ContactGroups = new List<ContactGroupModel>
-            {
+            TotalCount = 1500,
+            ActiveCount = 1200,
+            InactiveCount = 300
+        },
+        ContactGroups =
+            [
                 new() { Name = "Newsletter Subscribers", ContactCount = 800, RatioPercentage = 53.3M },
                 new() { Name = "Active Customers", ContactCount = 450, RatioPercentage = 30.0M }
-            },
-            RecipientLists = new List<ContactGroupModel>
-            {
+            ],
+        RecipientLists =
+            [
                 new() { Name = "VIP Customers", ContactCount = 150, RatioPercentage = 10.0M },
                 new() { Name = "Trial Users", ContactCount = 100, RatioPercentage = 6.7M }
-            }
-        });
-    }
+            ]
+    });
 }

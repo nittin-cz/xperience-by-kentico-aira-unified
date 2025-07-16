@@ -53,7 +53,7 @@ internal sealed class AiraUnifiedChatMessageViewModel
     /// Application insights for current message.
     /// </summary>
     public InsightsResponseModel? Insights { get; set; }
-    
+
     /// <summary>
     /// Indicates if this is a system message containing insights data.
     /// </summary>

@@ -8,8 +8,8 @@ public record InsightsRequest(int UserId, string Category)
     /// <summary>
     /// Additional parameters for the strategy
     /// </summary>
-    public Dictionary<string, object> Parameters { get; init; } = new();
-    
+    public Dictionary<string, object> Parameters { get; init; } = [];
+
     /// <summary>
     /// Creates context from request
     /// </summary>

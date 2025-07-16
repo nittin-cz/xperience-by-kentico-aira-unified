@@ -9,24 +9,24 @@ public class InsightsMetadata
     /// UTC timestamp when insights data was generated
     /// </summary>
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-    
+
     /// <summary>
     /// Category of the insights
     /// </summary>
     public string? Category { get; set; }
-    
+
     /// <summary>
     /// Whether mock data was used
     /// </summary>
     public bool UseMockData { get; set; }
-    
+
     /// <summary>
     /// Version of the system that generated the data
     /// </summary>
     public string? Version { get; set; }
-    
+
     /// <summary>
     /// Additional metadata properties
     /// </summary>
-    public Dictionary<string, object> Properties { get; set; } = new();
+    public Dictionary<string, object> Properties { get; set; } = [];
 }

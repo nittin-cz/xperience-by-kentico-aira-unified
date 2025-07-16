@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Logging;
 using Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+using Microsoft.Extensions.Logging;
 
 namespace Kentico.Xperience.AiraUnified.Insights.Implementation;
 
@@ -10,7 +11,7 @@ internal sealed class InsightsOrchestrator : IInsightsOrchestrator
 {
     private readonly IInsightsStrategyFactory strategyFactory;
     private readonly ILogger<InsightsOrchestrator> logger;
-    
+
     public InsightsOrchestrator(
         IInsightsStrategyFactory strategyFactory,
         ILogger<InsightsOrchestrator> logger)
@@ -18,24 +19,24 @@ internal sealed class InsightsOrchestrator : IInsightsOrchestrator
         this.strategyFactory = strategyFactory;
         this.logger = logger;
     }
-    
+
     public async Task<InsightsResult> ProcessInsightsAsync(InsightsRequest request)
     {
         try
         {
-            logger.LogDebug("Processing insights request for category '{Category}', UserId: {UserId}", 
+            logger.LogDebug("Processing insights request for category '{Category}', UserId: {UserId}",
                 request.Category, request.UserId);
-            
+
             var strategy = strategyFactory.GetStrategy(request.Category);
             if (strategy == null)
             {
                 logger.LogWarning("No strategy found for category: {Category}", request.Category);
                 return InsightsResult.NotFound(request.Category);
             }
-            
+
             var context = request.ToContext();
             var data = await strategy.LoadDataAsync(context);
-            
+
             var metadata = new InsightsMetadata
             {
                 Timestamp = DateTime.UtcNow,
@@ -43,9 +44,9 @@ internal sealed class InsightsOrchestrator : IInsightsOrchestrator
                 UseMockData = strategy.UseMockData,
                 Version = GetType().Assembly.GetName().Version?.ToString()
             };
-            
+
             logger.LogDebug("Successfully processed insights for category '{Category}'", request.Category);
-            
+
             return InsightsResult.CreateSuccess(data, metadata, strategy.ComponentType);
         }
         catch (Exception ex)

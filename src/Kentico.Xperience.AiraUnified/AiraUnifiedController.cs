@@ -2,7 +2,6 @@
 
 using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin;
-using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Assets;
 using Kentico.Xperience.AiraUnified.AssetUploader;
 using Kentico.Xperience.AiraUnified.Authentication;
@@ -41,13 +40,13 @@ internal sealed class AiraUnifiedController(
     [HttpGet]
     public async Task<IActionResult> BlazorChat(int? chatThreadId = null)
     {
-        var configuration = await GetConfiguration();
+        await GetConfiguration();
         var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
         var user = await adminUserManager.GetUserAsync(User);
 
         var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
 
-        // Vrátit Blazor komponentu s parametry
+        // Return Blazor component with parameters
         return View("~/Views/Chat/BlazorChatHost.cshtml", new BlazorChatViewModel
         {
             ThreadId = chatThread.ThreadId,
@@ -57,7 +56,7 @@ internal sealed class AiraUnifiedController(
             BaseUrl = HttpContext.Request.GetBaseUrl()
         });
     }
-    
+
 
 
     /// <summary>

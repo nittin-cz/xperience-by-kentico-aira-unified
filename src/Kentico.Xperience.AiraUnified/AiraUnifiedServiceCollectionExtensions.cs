@@ -94,10 +94,7 @@ public static class AiraUnifiedServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddInsightsStrategy<TStrategy>(this IServiceCollection services)
-        where TStrategy : class, IInsightsStrategy
-    {
-        return services.AddScoped<IInsightsStrategy, TStrategy>();
-    }
+        where TStrategy : class, IInsightsStrategy => services.AddScoped<IInsightsStrategy, TStrategy>();
 
     /// <summary>
     /// Registers a custom insights strategy implementation with a factory.
@@ -107,10 +104,7 @@ public static class AiraUnifiedServiceCollectionExtensions
     /// <param name="factory">The factory method to create the strategy instance.</param>
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddInsightsStrategy<TStrategy>(this IServiceCollection services, Func<IServiceProvider, TStrategy> factory)
-        where TStrategy : class, IInsightsStrategy
-    {
-        return services.AddScoped<IInsightsStrategy>(factory);
-    }
+        where TStrategy : class, IInsightsStrategy => services.AddScoped<IInsightsStrategy>(factory);
 
     /// <summary>
     /// Registers multiple custom insights strategy implementations.
@@ -124,12 +118,12 @@ public static class AiraUnifiedServiceCollectionExtensions
         {
             if (!typeof(IInsightsStrategy).IsAssignableFrom(strategyType))
             {
-                throw new ArgumentException($"Type {strategyType.Name} must implement IInsightsStrategy", nameof(strategyTypes));
+                throw new ArgumentException($@"Type {strategyType.Name} must implement IInsightsStrategy", nameof(strategyTypes));
             }
-            
+
             services.AddScoped(typeof(IInsightsStrategy), strategyType);
         }
-        
+
         return services;
     }
 }

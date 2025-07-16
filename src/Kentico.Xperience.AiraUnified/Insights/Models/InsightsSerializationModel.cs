@@ -13,68 +13,65 @@ public sealed class InsightsSerializationModel
     /// </summary>
     [JsonPropertyName("version")]
     public int Version { get; set; } = 2;
-    
+
     /// <summary>
     /// Indicates if this is an insights query
     /// </summary>
     [JsonPropertyName("isInsightsQuery")]
     public bool IsInsightsQuery { get; set; }
-    
+
     /// <summary>
     /// Category of the insights (e.g., "content", "email", "marketing", "users")
     /// </summary>
     [JsonPropertyName("category")]
     public string? Category { get; set; }
-    
+
     /// <summary>
     /// Description of the query
     /// </summary>
     [JsonPropertyName("queryDescription")]
     public string? QueryDescription { get; set; }
-    
+
     /// <summary>
     /// Assembly-qualified name of the data type for proper deserialization
     /// </summary>
     [JsonPropertyName("dataType")]
     public string? DataType { get; set; }
-    
+
     /// <summary>
     /// Assembly-qualified name of the component type for rendering
     /// </summary>
     [JsonPropertyName("componentType")]
     public string? ComponentType { get; set; }
-    
+
     /// <summary>
     /// Serialized insights data as JSON
     /// </summary>
     [JsonPropertyName("insightsData")]
     public string? InsightsData { get; set; }
-    
+
     /// <summary>
     /// Metadata about the insights
     /// </summary>
     [JsonPropertyName("metadata")]
     public InsightsMetadataModel? Metadata { get; set; }
-    
+
     /// <summary>
     /// Creates an enhanced serialization model from insights response
     /// </summary>
-    public static InsightsSerializationModel FromInsightsResponse(InsightsResponseModel insights, Type? dataType = null, Type? componentType = null)
+    public static InsightsSerializationModel FromInsightsResponse(InsightsResponseModel insights, Type? dataType = null, Type? componentType = null) => new()
     {
-        return new InsightsSerializationModel
-        {
-            IsInsightsQuery = insights.IsInsightsQuery,
-            Category = insights.Category,
-            QueryDescription = insights.QueryDescription,
-            DataType = dataType?.AssemblyQualifiedName,
-            ComponentType = componentType?.AssemblyQualifiedName,
-            InsightsData = insights.InsightsData != null 
+        IsInsightsQuery = insights.IsInsightsQuery,
+        Category = insights.Category,
+        QueryDescription = insights.QueryDescription,
+        DataType = dataType?.AssemblyQualifiedName,
+        ComponentType = componentType?.AssemblyQualifiedName,
+        InsightsData = insights.InsightsData != null
                 ? System.Text.Json.JsonSerializer.Serialize(insights.InsightsData)
                 : null,
-            Metadata = insights.Metadata
-        };
-    }
-    
+        Metadata = insights.Metadata
+    };
+
     /// <summary>
     /// Converts back to standard insights response model
     /// </summary>

@@ -2,16 +2,35 @@
 
 namespace Kentico.Xperience.AiraUnified.Components.Insights;
 
+/// <summary>
+/// Blazor component for displaying insights data.
+/// </summary>
 public partial class InsightsComponent : ComponentBase
 {
-    [Parameter] public string? Category { get; set; }
-    [Parameter] public object? Data { get; set; }
-    [Parameter] public DateTime? Timestamp { get; set; }
-    [Parameter] public Type? ComponentType { get; set; }
-    
     /// <summary>
-    /// Renders the component dynamically based on ComponentType
+    /// Gets or sets the category of the insights.
     /// </summary>
+    [Parameter] public string? Category { get; set; }
+
+    /// <summary>
+    /// Gets or sets the data for the insights.
+    /// </summary>
+    [Parameter] public object? Data { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timestamp for the insights.
+    /// </summary>
+    [Parameter] public DateTime? Timestamp { get; set; }
+
+    /// <summary>
+    /// Gets or sets the component type for dynamic rendering.
+    /// </summary>
+    [Parameter] public Type? ComponentType { get; set; }
+
+    /// <summary>
+    /// Renders the component dynamically based on ComponentType.
+    /// </summary>
+    /// <returns>A render fragment for the dynamic component.</returns>
     private RenderFragment RenderDynamicComponent() => builder =>
     {
         if (ComponentType == null || Data == null)

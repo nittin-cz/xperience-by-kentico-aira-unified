@@ -1,11 +1,12 @@
 using CMS.ContentEngine;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Kentico.Xperience.AiraUnified.Admin;
+using Kentico.Xperience.AiraUnified.Components.Insights;
 using Kentico.Xperience.AiraUnified.Insights.Abstractions;
 using Kentico.Xperience.AiraUnified.Insights.Models;
-using Kentico.Xperience.AiraUnified.Components.Insights;
-using Kentico.Xperience.AiraUnified.Admin;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Kentico.Xperience.AiraUnified.Insights.Strategies;
 
@@ -15,11 +16,11 @@ namespace Kentico.Xperience.AiraUnified.Insights.Strategies;
 internal sealed class ContentInsightsStrategy : InsightsStrategyBase
 {
     private readonly IAiraUnifiedInsightsService insightsService;
-    
+
     public ContentInsightsStrategy(
         IAiraUnifiedInsightsService insightsService,
         IConfiguration configuration,
-        ILogger<ContentInsightsStrategy> logger) 
+        ILogger<ContentInsightsStrategy> logger)
         : base(configuration, logger) =>
         this.insightsService = insightsService;
 
@@ -58,7 +59,7 @@ internal sealed class ContentInsightsStrategy : InsightsStrategyBase
             }
         };
     }
-    
+
     public override Task<object> LoadMockDataAsync(InsightsContext context) =>
         Task.FromResult<object>(new ContentInsightsDataModel
         {

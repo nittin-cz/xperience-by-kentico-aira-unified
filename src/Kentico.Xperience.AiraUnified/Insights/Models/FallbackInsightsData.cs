@@ -10,17 +10,17 @@ public sealed class FallbackInsightsData
     /// The category that failed to deserialize
     /// </summary>
     public string Category { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// The raw JSON data that failed to deserialize
     /// </summary>
     public string RawJson { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Error message describing the failure
     /// </summary>
     public string Error { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Timestamp when the fallback was created
     /// </summary>

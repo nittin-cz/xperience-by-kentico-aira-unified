@@ -11,13 +11,13 @@ public interface IInsightsStrategyFactory
     /// <param name="category">Insights category</param>
     /// <returns>Strategy or null if not found</returns>
     IInsightsStrategy? GetStrategy(string category);
-    
+
     /// <summary>
     /// Returns all available categories
     /// </summary>
     /// <returns>List of categories</returns>
     IEnumerable<string> GetAvailableCategories();
-    
+
     /// <summary>
     /// Checks if strategy exists for category
     /// </summary>
