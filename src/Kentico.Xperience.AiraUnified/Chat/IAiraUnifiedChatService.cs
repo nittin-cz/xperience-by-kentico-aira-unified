@@ -105,4 +105,36 @@ internal interface IAiraUnifiedChatService
     /// <param name="summary">New summary.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task UpdateChatSummary(int userId, string summary);
+
+    /// <summary>
+    /// Gets chat history for a specific thread with enhanced insights parsing.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
+    /// <returns>A task returning enhanced chat history with insights data.</returns>
+    Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId);
+
+    /// <summary>
+    /// Sends a message and returns the AI response with enhanced insights processing.
+    /// </summary>
+    /// <param name="message">The user message.</param>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
+    /// <returns>A task returning the AI response with insights data.</returns>
+    Task<AiraUnifiedChatMessageViewModel?> SendMessageAsync(string message, int userId, int threadId);
+
+    /// <summary>
+    /// Gets or creates a chat thread for the user.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The optional thread id.</param>
+    /// <returns>A task returning the chat thread model.</returns>
+    Task<AiraUnifiedChatThreadModel> GetOrCreateThreadAsync(int userId, int? threadId = null);
+
+    /// <summary>
+    /// Removes used prompt group.
+    /// </summary>
+    /// <param name="promptGroupId">Prompt group id.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task RemoveUsedPromptsAsync(string promptGroupId);
 }

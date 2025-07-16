@@ -83,8 +83,6 @@ public static class AiraUnifiedServiceCollectionExtensions
             circuitOptions.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
             circuitOptions.MaxBufferedUnacknowledgedRenderBatches = 10;
         });
-        
-        services.AddScoped<IBlazorChatService, BlazorChatService>();
 
         return services;
     }

@@ -9,7 +9,7 @@ namespace Kentico.Xperience.AiraUnified.Components
 {
     public partial class BlazorChatPage : ComponentBase
     {
-        [Inject] private IBlazorChatService ChatService { get; set; } = null!;
+        [Inject] private IAiraUnifiedChatService ChatService { get; set; } = null!;
         [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
 
         [Parameter] public int ThreadId { get; set; }

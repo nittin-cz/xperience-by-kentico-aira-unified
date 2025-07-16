@@ -3,12 +3,16 @@ using CMS.ContactManagement;
 using CMS.DataEngine;
 using CMS.DataEngine.Query;
 
+using Kentico.Membership;
 using Kentico.Xperience.AiraUnified.Admin;
 using Kentico.Xperience.AiraUnified.Admin.InfoModels;
 using Kentico.Xperience.AiraUnified.Chat.Models;
+using Kentico.Xperience.AiraUnified.Chat.Services;
 using Kentico.Xperience.AiraUnified.Insights;
 using Kentico.Xperience.AiraUnified.Insights.Models;
 using Kentico.Xperience.AiraUnified.Insights.Abstractions;
+
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Kentico.Xperience.AiraUnified.Chat;
 
@@ -26,6 +30,10 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     private readonly IAiraUnifiedInsightsService airaUnifiedInsightsService;
     private readonly IInsightsOrchestrator insightsOrchestrator;
     private readonly IAiHttpClient aiHttpClient;
+    private readonly AdminUserManager adminUserManager;
+    private readonly AuthenticationStateProvider authenticationStateProvider;
+    private readonly IInsightsStrategyFactory insightsStrategyFactory;
+    private readonly EnhancedInsightsParser enhancedInsightsParser;
 
 
     /// <summary>
@@ -40,6 +48,10 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
     /// <param name="airaUnifiedInsightsService">Service for insights data.</param>
     /// <param name="insightsOrchestrator">Orchestrator for insights processing.</param>
     /// <param name="aiHttpClient">Client for AI service communication.</param>
+    /// <param name="adminUserManager">Manager for admin users.</param>
+    /// <param name="authenticationStateProvider">Provider for authentication state.</param>
+    /// <param name="insightsStrategyFactory">Factory for insights strategies.</param>
+    /// <param name="enhancedInsightsParser">Parser for enhanced insights.</param>
     public AiraUnifiedChatService(IInfoProvider<AiraUnifiedChatPromptGroupInfo> airaUnifiedChatPromptGroupProvider,
         IInfoProvider<AiraUnifiedChatPromptInfo> airaUnifiedChatPromptProvider,
         IInfoProvider<AiraUnifiedChatThreadInfo> airaUnifiedChatThreadProvider,
@@ -48,7 +60,11 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         IInfoProvider<AiraUnifiedChatSummaryInfo> airaUnifiedChatSummaryProvider,
         IAiraUnifiedInsightsService airaUnifiedInsightsService,
         IInsightsOrchestrator insightsOrchestrator,
-        IAiHttpClient aiHttpClient)
+        IAiHttpClient aiHttpClient,
+        AdminUserManager adminUserManager,
+        AuthenticationStateProvider authenticationStateProvider,
+        IInsightsStrategyFactory insightsStrategyFactory,
+        EnhancedInsightsParser enhancedInsightsParser)
     {
         this.airaUnifiedChatPromptGroupProvider = airaUnifiedChatPromptGroupProvider;
         this.airaUnifiedChatPromptProvider = airaUnifiedChatPromptProvider;
@@ -59,6 +75,10 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         this.insightsOrchestrator = insightsOrchestrator;
         this.airaUnifiedChatSummaryProvider = airaUnifiedChatSummaryProvider;
         this.aiHttpClient = aiHttpClient;
+        this.adminUserManager = adminUserManager;
+        this.authenticationStateProvider = authenticationStateProvider;
+        this.insightsStrategyFactory = insightsStrategyFactory;
+        this.enhancedInsightsParser = enhancedInsightsParser;
     }
 
 
@@ -549,4 +569,173 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             ChatRoleType.System => AiraUnifiedConstants.AiraUnifiedSystemRoleName,
             _ => AiraUnifiedConstants.AIRequestUserRoleName
         };
+
+    /// <inheritdoc />
+    public async Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId)
+    {
+        var historyMessages = await GetUserChatHistory(userId, threadId);
+        
+        foreach (var message in historyMessages)
+        {
+            if (message.IsInsightsMessage)
+            {
+                var (category, data, timestamp, componentType) = enhancedInsightsParser.ParseSystemMessage(message.Message!);
+                message.InsightsCategory = category;
+                message.InsightsData = data;
+                message.InsightsTimestamp = timestamp;
+                message.ComponentType = componentType;
+            }
+        }
+        
+        return historyMessages;
+    }
+
+    /// <inheritdoc />
+    public async Task<AiraUnifiedChatMessageViewModel?> SendMessageAsync(string message, int userId, int threadId)
+    {
+        var thread = await GetAiraUnifiedThreadInfoOrNull(userId, threadId);
+        if (thread == null)
+        {
+            return null;
+        }
+
+        // Save user message
+        await SaveMessage(message, userId, ChatRoleType.User, thread);
+
+        // Get AI response
+        var aiResponse = await GetAIResponseOrNull(message, 5, userId);
+        if (aiResponse == null)
+        {
+            return new AiraUnifiedChatMessageViewModel
+            {
+                ServiceUnavailable = true,
+                Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName
+            };
+        }
+
+        // Save AI response (including insights, if they exist)
+        await SaveMessages(aiResponse, userId, thread);
+
+        // Update chat summary
+        await UpdateChatSummary(userId, message);
+
+        var result = new AiraUnifiedChatMessageViewModel
+        {
+            Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName,
+            Message = aiResponse.Responses[0].Content,
+            Insights = aiResponse.Insights
+        };
+
+        // Set insights data for immediate rendering
+        if (aiResponse.Insights?.IsInsightsQuery == true)
+        {
+            result.InsightsCategory = aiResponse.Insights.Category;
+            result.InsightsData = aiResponse.Insights.InsightsData;
+            result.InsightsTimestamp = aiResponse.Insights.Metadata?.Timestamp;
+            
+            // Set component type based on insights category
+            if (!string.IsNullOrEmpty(aiResponse.Insights.Category))
+            {
+                var strategy = insightsStrategyFactory.GetStrategy(aiResponse.Insights.Category);
+                result.ComponentType = strategy?.ComponentType;
+            }
+        }
+
+        // Handle quick prompts if available
+        if (aiResponse.QuickOptions != null)
+        {
+            var promptGroup = await SaveAiraPrompts(userId, aiResponse.QuickOptions, threadId);
+            result.QuickPrompts = promptGroup.QuickPrompts;
+            result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<AiraUnifiedChatThreadModel> GetOrCreateThreadAsync(int userId, int? threadId = null)
+    {
+        return await GetAiraChatThreadModel(userId, setAsLastUsed: true, threadId);
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveUsedPromptsAsync(string promptGroupId)
+    {
+        RemoveUsedPrompts(promptGroupId);
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Saves messages from AI response including insights handling.
+    /// </summary>
+    /// <param name="aiResponse">The AI response containing messages and insights.</param>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="thread">The chat thread info.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private async Task SaveMessages(AiraUnifiedAIResponse aiResponse, int userId, AiraUnifiedChatThreadInfo thread)
+    {
+        if (!aiResponse.Insights?.IsInsightsQuery ?? true)
+        {
+            foreach (var response in aiResponse.Responses)
+            {
+                await SaveMessage(response.Content, userId, ChatRoleType.AIAssistant, thread);
+            }
+        }
+        else
+        {
+            // Use enhanced serialization format with type information
+            var insightsJson = CreateEnhancedInsightsJson(aiResponse.Insights!);
+            await SaveMessage(insightsJson, userId, ChatRoleType.System, thread);
+        }
+    }
+    
+    /// <summary>
+    /// Creates enhanced JSON format with type information for proper deserialization.
+    /// </summary>
+    /// <param name="insights">The insights response model.</param>
+    /// <returns>Enhanced JSON string with type information.</returns>
+    private string CreateEnhancedInsightsJson(InsightsResponseModel insights)
+    {
+        try
+        {
+            // Get strategy to determine data and component types
+            Type? dataType = null;
+            Type? componentType = null;
+            
+            if (!string.IsNullOrEmpty(insights.Category))
+            {
+                var strategy = insightsStrategyFactory.GetStrategy(insights.Category);
+                if (strategy != null)
+                {
+                    componentType = strategy.ComponentType;
+                    
+                    // Try to determine data type from the actual insights data
+                    if (insights.InsightsData != null)
+                    {
+                        dataType = insights.InsightsData.GetType();
+                    }
+                }
+            }
+            
+            // Create enhanced serialization model
+            var enhancedModel = InsightsSerializationModel.FromInsightsResponse(insights, dataType, componentType);
+            
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            
+            return System.Text.Json.JsonSerializer.Serialize(enhancedModel, options);
+        }
+        catch (Exception)
+        {
+            // Fallback to legacy format if enhancement fails
+            var options = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            
+            return System.Text.Json.JsonSerializer.Serialize(insights, options);
+        }
+    }
 }
