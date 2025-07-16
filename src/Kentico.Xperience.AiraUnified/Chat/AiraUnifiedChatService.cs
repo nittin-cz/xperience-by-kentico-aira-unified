@@ -171,7 +171,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         return new AiraUnifiedChatThreadModel
         {
-            ThreadName = chatThread.AiraUnifiedChatThreadName, ThreadId = chatThread.AiraUnifiedChatThreadId
+            ThreadName = chatThread.AiraUnifiedChatThreadName,
+            ThreadId = chatThread.AiraUnifiedChatThreadId
         };
     }
 
@@ -262,7 +263,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 .GetEnumerableTypedResultAsync())
             .Select(item => new AiraUnifiedChatMessageModel
             {
-                Role = GetChatRole(item), Content = item.AiraUnifiedChatMessageText
+                Role = GetChatRole(item),
+                Content = item.AiraUnifiedChatMessageText
             })
             .ToList();
 
@@ -285,7 +287,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 Id = strategy.Category,
                 Name = strategy.DisplayName,
                 Description = strategy?.Description ?? string.Empty,
-                FollowUpQuestions = strategy?.FollowUpQuestions?.ToList() ?? new List<string>()
+                FollowUpQuestions = strategy?.FollowUpQuestions?.ToList() ?? []
             })
             .ToList();
 
@@ -394,7 +396,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         return new AiraUnifiedChatThreadModel
         {
-            ThreadId = newChatThread.AiraUnifiedChatThreadId, ThreadName = newChatThread.AiraUnifiedChatThreadName
+            ThreadId = newChatThread.AiraUnifiedChatThreadId,
+            ThreadName = newChatThread.AiraUnifiedChatThreadName
         };
     }
 

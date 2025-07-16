@@ -83,7 +83,7 @@ public abstract class InsightsStrategyBase : IInsightsStrategy
             Id = Category,
             Name = Category,
             Description = $"Insights for {Category}",
-            FollowUpQuestions = new List<string>()
+            FollowUpQuestions = []
         };
     }
 }

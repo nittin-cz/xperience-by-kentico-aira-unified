@@ -32,5 +32,5 @@ internal sealed class AiraUnifiedAIRequest
     /// Gets or sets the insights categories.
     /// </summary>
     [JsonPropertyName("insight_categories")]
-    public List<AiraInsightCategory> InsightsCategories { get; set; } = new();
+    public List<AiraInsightCategory> InsightsCategories { get; set; } = [];
 }

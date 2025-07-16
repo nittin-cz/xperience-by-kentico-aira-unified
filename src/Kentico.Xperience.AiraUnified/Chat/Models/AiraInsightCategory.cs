@@ -32,5 +32,5 @@ internal sealed class AiraInsightCategory
     /// List of follow-up questions for this category.
     /// </summary>
     [JsonPropertyName("follow_up_questions")]
-    public List<string> FollowUpQuestions { get; set; } = new();
+    public List<string> FollowUpQuestions { get; set; } = [];
 }
