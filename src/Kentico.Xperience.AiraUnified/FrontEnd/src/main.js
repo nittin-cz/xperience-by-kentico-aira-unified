@@ -112,6 +112,7 @@ function openModalLogin(signinElement) {
   const baseUrl = signinElement.dataset.baseUrl || "";
   const airaUnifiedBaseUrl = signinElement.dataset.airaUnifiedBaseUrl || "";
   const chatUrl = signinElement.dataset.chatUrl || "";
+  const adminUrl = signinElement.dataset.adminUrl || "";
 
   const body = document.getElementsByClassName("c-app_body")[0];
 
@@ -131,7 +132,7 @@ function openModalLogin(signinElement) {
     `;
 
   const iframe = document.createElement("iframe");
-  iframe.src = "/admin";
+  iframe.src = adminUrl;
   iframe.style = `
         width: 100%;
         height: 100%;

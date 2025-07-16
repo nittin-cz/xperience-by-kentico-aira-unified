@@ -555,7 +555,8 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         var userProvider = context.RequestServices.GetRequiredService<IInfoProvider<UserInfo>>();
 
         var user = await adminUserManager.GetUserAsync(context.User);
-        var signInRedirectUrl = $"{airaUnifiedPathBase}/{AiraUnifiedConstants.SigninRelativeUrl}";
+        var baseUrl = context.Request.GetBaseUrl();
+        var signInRedirectUrl = $"{baseUrl}{airaUnifiedPathBase}/{AiraUnifiedConstants.SigninRelativeUrl}";
 
         if (user is null || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any())
         {
@@ -584,7 +585,8 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
 
         var user = await adminUserManager.GetUserAsync(context.User);
 
-        var fullRedirectUrl = $"{airaUnifiedPathBase}/{redirectSubPath}";
+        var baseUrl = context.Request.GetBaseUrl();
+        var fullRedirectUrl = $"{baseUrl}{airaUnifiedPathBase}/{redirectSubPath}";
 
         if (user is null
             || !userProvider.Get().WhereEquals(nameof(UserInfo.UserGUID), user.UserGUID).Any()
