@@ -1,0 +1,76 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+<div class="k-content-item">
+    <div class="k-content-item_title">@Campaign.Name</div>
+    <div class="k-content-item_tags">
+        <span class="k-content-item_tag">@Campaign.Status Draft</span>
+        <span class="k-content-item_tag">@Campaign.Type Type</span>
+    </div>
+    
+    @if (Campaign.Metrics != null)
+    {
+        <div class="k-content-item_grid">
+            <div>
+                <div class="k-content-item_label">Last Modified</div>
+                <div class="k-content-item_value">@(Campaign.LastModified?.ToString("yyyy-MM-dd") ?? "-")</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Sent Date</div>
+                <div class="k-content-item_value">@(Campaign.SentDate?.ToString("yyyy-MM-dd") ?? "-")</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Clicks</div>
+                <div class="k-content-item_value">@Campaign.Metrics.Clicks</div>
+            </div>
+        </div>
+        
+        <div class="k-content-item_grid">
+            <div>
+                <div class="k-content-item_label">Delivered</div>
+                <div class="k-content-item_value">@Campaign.Metrics.Delivered</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Hard bounces</div>
+                <div class="k-content-item_value">@(Campaign.Metrics.HardBounces?.ToString() ?? "-")</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Open rate</div>
+                <div class="k-content-item_value">@Campaign.Metrics.OpenRate</div>
+            </div>
+        </div>
+        
+        <div class="k-content-item_grid">
+            <div>
+                <div class="k-content-item_label">Opened</div>
+                <div class="k-content-item_value">@Campaign.Metrics.Opened</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Soft bounces</div>
+                <div class="k-content-item_value">@(Campaign.Metrics.SoftBounces?.ToString() ?? "-")</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Spam reports</div>
+                <div class="k-content-item_value">@Campaign.Metrics.SpamReports</div>
+            </div>
+        </div>
+        
+        <div class="k-content-item_grid">
+            <div>
+                <div class="k-content-item_label">Total sent</div>
+                <div class="k-content-item_value">@Campaign.Metrics.TotalSent</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Unique clicks</div>
+                <div class="k-content-item_value">@Campaign.Metrics.UniqueClicks</div>
+            </div>
+            <div>
+                <div class="k-content-item_label">Unsubscribe rate</div>
+                <div class="k-content-item_value">@Campaign.Metrics.UnsubscribeRate</div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public EmailCampaignModel Campaign { get; set; } = new();
+}

@@ -78,9 +78,9 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         [
             CreateAiraEndpointWithQueryParams(configuration,
                 AiraUnifiedConstants.ChatRelativeUrl,
-                nameof(AiraUnifiedController.Index),
+                nameof(AiraUnifiedController.BlazorChat),
                 AiraUnifiedConstants.ChatThreadIdParameterName,
-                (controller, threadId) => controller.Index(threadId),
+                (controller, threadId) => controller.BlazorChat(threadId),
                 requiredPermission: SystemPermissions.VIEW
             ),
             CreateAiraEndpointWithRouteValue(configuration,

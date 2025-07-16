@@ -16,6 +16,7 @@
 *.DotSettings.user
 *.sln.docstates
 .vs
+*.sln.DotSettings
 
 # Build results
 

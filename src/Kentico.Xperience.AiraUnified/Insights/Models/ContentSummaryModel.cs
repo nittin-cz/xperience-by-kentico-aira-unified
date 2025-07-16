@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents summary statistics for content items including counts by status.
 /// </summary>
-internal sealed class ContentSummaryModel
+public sealed class ContentSummaryModel
 {
     /// <summary>
     /// Gets or sets the number of content items in draft status.

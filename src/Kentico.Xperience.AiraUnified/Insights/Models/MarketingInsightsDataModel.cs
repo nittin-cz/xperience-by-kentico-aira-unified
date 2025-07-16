@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents marketing insights data including contact statistics and contact group information.
 /// </summary>
-internal sealed class MarketingInsightsDataModel
+public sealed class MarketingInsightsDataModel
 {
     /// <summary>
     /// Gets or sets the summary statistics for all contacts in the system.

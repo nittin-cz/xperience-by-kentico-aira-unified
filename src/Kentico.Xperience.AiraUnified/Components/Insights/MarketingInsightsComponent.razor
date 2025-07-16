@@ -1,0 +1,47 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+<div class="insights-marketing">
+    <div>
+        <h2 class="k-title">Marketing Insights</h2>
+        <h3 class="k-subtitle">Contacts</h3>
+        <div class="k-summary">
+            <div class="k-summary_item span-2">
+                <h4 class="k-summary_title">Total Count</h4>
+                <div class="k-summary_value">@(Data.Contacts.TotalCount)</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Active</h4>
+                <div class="k-summary_value">@(Data.Contacts.ActiveCount?.ToString() ?? "-")</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Inactive</h4>
+                <div class="k-summary_value">@(Data.Contacts.InactiveCount?.ToString() ?? "-")</div>
+            </div>
+        </div>
+
+        <h3 class="k-subtitle">Contact Groups</h3>
+        <div class="k-content-items">
+            @foreach (var group in Data.ContactGroups)
+            {
+                <ContactGroupComponent Group="@group" />
+            }
+        </div>
+        
+        <h3 class="k-subtitle">Recipient Lists</h3>
+        <div class="k-content-items">
+            @foreach (var list in Data.RecipientLists)
+            {
+                <ContactGroupComponent Group="@list" />
+            }
+        </div>
+    </div>
+    
+    <div class="metadata">
+        <small>Request was generated at @Timestamp.ToString("g").</small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public MarketingInsightsDataModel Data { get; set; } = new();
+    [Parameter] public DateTime Timestamp { get; set; }
+}

@@ -5,7 +5,7 @@ namespace Kentico.Xperience.AiraUnified.Insights.Models;
 /// <summary>
 /// Content item model.
 /// </summary>
-internal sealed class ContentItemModel
+public sealed class ContentItemModel
 {
     /// <summary>
     /// Content item id.

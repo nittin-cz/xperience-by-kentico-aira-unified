@@ -1,0 +1,26 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+@using CMS.ContentEngine
+
+<div class="k-content-item">
+    <div class="k-content-item_title">@Item.DisplayName</div>
+    <div class="k-content-item_tags">
+        <span class="k-content-item_tag">@GetStatusText(Item.VersionStatus)</span>
+        <span class="k-content-item_tag">@Item.ContentTypeName</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ContentItemModel Item { get; set; } = new();
+
+    private string GetStatusText(VersionStatus status)
+    {
+        return status switch
+        {
+            VersionStatus.InitialDraft => "Initial Draft",
+            VersionStatus.Draft => "Draft",
+            VersionStatus.Published => "Published",
+            VersionStatus.Unpublished => "Unpublished",
+            _ => status.ToString()
+        };
+    }
+}

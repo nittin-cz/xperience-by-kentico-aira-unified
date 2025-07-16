@@ -26,4 +26,11 @@ internal sealed class AiraUnifiedAIRequest
     /// </summary>
     [JsonPropertyName("chat_state")]
     public string ChatState { get; set; } = string.Empty;
+
+
+    /// <summary>
+    /// Gets or sets the insights categories.
+    /// </summary>
+    [JsonPropertyName("insight_categories")]
+    public List<AiraInsightCategory> InsightsCategories { get; set; } = [];
 }

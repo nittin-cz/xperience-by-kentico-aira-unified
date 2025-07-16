@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a contact group with its metrics and statistics.
 /// </summary>
-internal sealed class ContactGroupModel
+public sealed class ContactGroupModel
 {
     /// <summary>
     /// Gets or sets the display name of the contact group.

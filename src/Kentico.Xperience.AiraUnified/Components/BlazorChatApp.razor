@@ -1,0 +1,21 @@
+@using Kentico.Xperience.AiraUnified.Admin
+<div class="page-wrapper">
+    <div class="content-wrapper">
+        <section class="c-section app">
+            <div class="c-app aira-unified">
+                <div class="c-app_inner is-loaded">
+                    <div class="c-app_header">
+                        <NavigationComponent PageIdentifier="@AiraUnifiedConstants.ChatRelativeUrl" BaseUrl="@BaseUrl" />
+                    </div>
+                    <div class="c-app_body">
+                        <BlazorChatPage ThreadId="@ThreadId" 
+                                        ThreadName="@ThreadName" 
+                                        UserId="@UserId" 
+                                        LogoImgRelativePath="@LogoImgRelativePath" 
+                                        BaseUrl="@BaseUrl" />
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

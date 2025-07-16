@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents metadata information about the insights data including timestamp, instance details, and data freshness.
 /// </summary>
-internal sealed class InsightsMetadataModel
+public sealed class InsightsMetadataModel
 {
     /// <summary>
     /// Gets or sets the UTC timestamp when the insights data was generated.

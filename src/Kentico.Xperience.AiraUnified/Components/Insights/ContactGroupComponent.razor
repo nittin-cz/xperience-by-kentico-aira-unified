@@ -1,0 +1,15 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+<div class="k-content-item">
+    <div class="k-content-item_title">@Group.Name</div>
+    <div class="k-content-item_grid">
+        <div>
+            <div class="k-content-item_label">Contacts</div>
+            <div class="k-content-item_value">@Group.ContactCount</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ContactGroupModel Group { get; set; } = new();
+}

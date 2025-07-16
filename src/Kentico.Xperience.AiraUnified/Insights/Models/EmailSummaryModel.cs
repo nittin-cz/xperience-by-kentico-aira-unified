@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents summary statistics for email campaigns including counts by status and average engagement metrics.
 /// </summary>
-internal sealed class EmailSummaryModel
+public sealed class EmailSummaryModel
 {
     /// <summary>
     /// Gets or sets the number of email campaigns in draft status.

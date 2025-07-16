@@ -1,0 +1,78 @@
+@using CustomInsights.Models
+
+<div class="insights-users">
+    <div>
+        <h2 class="k-title">Users Insights</h2>
+        <h3 class="k-subtitle">Summary</h3>
+        <div class="k-summary">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Total Users</h4>
+                <div class="k-summary_value">@Data.Summary.TotalUsers</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Active Users</h4>
+                <div class="k-summary_value">@Data.Summary.ActiveUsers</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Inactive Users</h4>
+                <div class="k-summary_value">@Data.Summary.InactiveUsers</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">New This Month</h4>
+                <div class="k-summary_value">@Data.Summary.NewUsersThisMonth</div>
+            </div>
+        </div>
+
+        <h3 class="k-subtitle">Active Users</h3>
+        <div class="k-content-items">
+            @foreach (var user in Data.ActiveUsers)
+            {
+                <div class="k-content-item">
+                    <div class="k-content-item_title">@user.Name</div>
+                    <div class="k-content-item_tags">
+                        <span class="k-content-item_tag">@user.Role</span>
+                    </div>
+                    <div class="k-content-item_grid">
+                        <div>
+                            <div class="k-content-item_label">Email</div>
+                            <div class="k-content-item_value">@user.Email</div>
+                        </div>
+                        <div>
+                            <div class="k-content-item_label">Last Login</div>
+                            <div class="k-content-item_value">@user.LastLogin.ToString("g")</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <h3 class="k-subtitle">Role Distribution</h3>
+        <div class="k-content-items">
+            @foreach (var roleStats in Data.RoleStats)
+            {
+                <div class="k-content-item">
+                    <div class="k-content-item_title">@roleStats.RoleName</div>
+                    <div class="k-content-item_grid">
+                        <div>
+                            <div class="k-content-item_label">User Count</div>
+                            <div class="k-content-item_value">@roleStats.UserCount</div>
+                        </div>
+                        <div>
+                            <div class="k-content-item_label">Percentage</div>
+                            <div class="k-content-item_value">@roleStats.Percentage.ToString("F1")%</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <div class="metadata">
+        <small>Request was generated at @Timestamp.ToString("g").</small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public UsersInsightsDataModel Data { get; set; } = new();
+    [Parameter] public DateTime Timestamp { get; set; }
+}

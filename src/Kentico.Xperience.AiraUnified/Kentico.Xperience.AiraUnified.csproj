@@ -58,4 +58,11 @@
 	    <DependentUpon>AiraUnifiedResources.resx</DependentUpon>
 	  </Compile>
 	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Views\**\*.cshtml" />
+		<EmbeddedResource Include="wwwroot\**\*" />
+	</ItemGroup>
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Views\Shared\Components\Layout\BlazorLayout.razor" />
+	</ItemGroup>
 </Project>
