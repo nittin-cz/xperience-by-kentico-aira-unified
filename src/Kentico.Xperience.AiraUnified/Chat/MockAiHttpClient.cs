@@ -39,7 +39,8 @@ internal sealed class MockAiHttpClient : IAiHttpClient
             [
                 new ResponseMessageModel
                 {
-                    Content = "MOCK: Hello! I'm your AI assistant. How can I help you today?", ContentType = "text"
+                    Content = "MOCK: Hello! I'm your AI assistant. How can I help you today?",
+                    ContentType = "text"
                 }
             ],
             QuickOptions =
@@ -84,7 +85,8 @@ internal sealed class MockAiHttpClient : IAiHttpClient
             [
                 new ResponseMessageModel
                 {
-                    Content = $"I understand you're asking about: {request.ChatMessage}", ContentType = "text"
+                    Content = $"I understand you're asking about: {request.ChatMessage}",
+                    ContentType = "text"
                 }
             ],
             Insights = isInsightsQuery
