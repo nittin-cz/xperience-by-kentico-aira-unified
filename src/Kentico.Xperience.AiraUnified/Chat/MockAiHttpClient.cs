@@ -71,6 +71,7 @@ internal sealed class MockAiHttpClient : IAiHttpClient
         });
 
 
+
     private Task<AiraUnifiedAIResponse?> GetOngoingMessageResponse(AiraUnifiedAIRequest request)
     {
         // Check if the message contains any insights-related keywords
