@@ -80,7 +80,10 @@ public abstract class InsightsStrategyBase : IInsightsStrategy
 
         return config ?? new AiraInsightCategory
         {
-            Id = Category, Name = Category, Description = $"Insights for {Category}", FollowUpQuestions = []
+            Id = Category,
+            Name = Category,
+            Description = $"Insights for {Category}",
+            FollowUpQuestions = []
         };
     }
 }

@@ -125,7 +125,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         return new AiraUnifiedChatThreadModel
         {
-            ThreadName = chatThread.AiraUnifiedChatThreadName, ThreadId = chatThread.AiraUnifiedChatThreadId
+            ThreadName = chatThread.AiraUnifiedChatThreadName,
+            ThreadId = chatThread.AiraUnifiedChatThreadId
         };
     }
 
@@ -216,7 +217,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 .GetEnumerableTypedResultAsync())
             .Select(item => new AiraUnifiedChatMessageModel
             {
-                Role = GetChatRole(item), Content = item.AiraUnifiedChatMessageText
+                Role = GetChatRole(item),
+                Content = item.AiraUnifiedChatMessageText
             })
             .ToList();
 
@@ -331,7 +333,8 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         return new AiraUnifiedChatThreadModel
         {
-            ThreadId = newChatThread.AiraUnifiedChatThreadId, ThreadName = newChatThread.AiraUnifiedChatThreadName
+            ThreadId = newChatThread.AiraUnifiedChatThreadId,
+            ThreadName = newChatThread.AiraUnifiedChatThreadName
         };
     }
 
@@ -603,7 +606,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             .OrderBy(x => x.CreatedWhen)
             .ToList();
     }
-    
+
 
     private async Task AddInitialMessages(int userId, AiraUnifiedChatThreadInfo newChatThread, ChatStateType chatState)
     {
@@ -620,7 +623,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         };
 
         var initialMessages = await aiHttpClient.SendRequestAsync(request);
-        
+
         if (initialMessages != null)
         {
             foreach (var message in initialMessages.Responses)

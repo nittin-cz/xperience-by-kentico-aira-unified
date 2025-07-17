@@ -186,39 +186,6 @@ internal sealed class AiraUnifiedEndpointDataSource : MutableEndpointDataSource
         });
 
 
-    private static Endpoint CreateAiraEndpointWithRouteValue(AiraUnifiedConfigurationItemInfo configurationInfo,
-        string subPath, string actionName, string actionParameterName,
-        Func<AiraUnifiedController, int, Task<IActionResult>> action, string? requiredPermission = null)
-        => CreateEndpoint($"{configurationInfo.AiraUnifiedConfigurationItemAiraPathBase}/{subPath}", async context =>
-        {
-            var airaUnifiedController = await GetAiraUnifiedControllerInContext(context, actionName);
-
-            if (!await ValidateRequestXorSetRedirect(context, configurationInfo, requiredPermission))
-            {
-                return;
-            }
-
-            if (!context.Request.RouteValues.TryGetValue(actionParameterName, out var actionParameterStringValue) ||
-                !int.TryParse(actionParameterStringValue?.ToString(), out var actionParameterIntValue))
-            {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync($"Missing {actionParameterName}");
-                return;
-            }
-
-            if (!await CheckHttps(context) ||
-                (requiredPermission is not null && !await AuthorizeOrSetRedirectToSignIn(context,
-                    configurationInfo.AiraUnifiedConfigurationItemAiraPathBase, requiredPermission))
-               )
-            {
-                return;
-            }
-
-            var result = await action.Invoke(airaUnifiedController, actionParameterIntValue);
-            await result.ExecuteResultAsync(airaUnifiedController.ControllerContext);
-        });
-
-
     private static Endpoint CreateAiraEndpointFromIFormCollectionWithRouteValue(
         AiraUnifiedConfigurationItemInfo configurationInfo, string subPath, string actionName,
         string actionParameterName, Func<AiraUnifiedController, IFormCollection, int, Task<IActionResult>> action,
