@@ -64,59 +64,6 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
 
     /// <inheritdoc />
-    public async Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId)
-    {
-        var chatPrompts = (await airaUnifiedChatPromptProvider
-                .Get()
-                .Source(x => x.InnerJoin<AiraUnifiedChatPromptGroupInfo>(
-                    nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptChatPromptGroupId),
-                    nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId)
-                ))
-                .WhereEquals(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupUserId), userId)
-                .WhereEquals(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupThreadId), threadId)
-                .Columns(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen),
-                    nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId),
-                    nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptText))
-                .OrderBy(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen))
-                .GetDataContainerResultAsync())
-            .GroupBy(x =>
-                new { PromptGroupId = x[nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId)] as int? }
-            );
-
-        var textMessages = (await airaUnifiedChatMessageProvider.Get()
-                .WhereEquals(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageUserId), userId)
-                .WhereEquals(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageThreadId), threadId)
-                .GetEnumerableTypedResultAsync())
-            .Select(x => new AiraUnifiedChatMessageViewModel
-            {
-                Role = GetChatRole(x).ToLowerInvariant(),
-                CreatedWhen = x.AiraUnifiedChatMessageCreatedWhen,
-                Message = x.AiraUnifiedChatMessageText
-            });
-
-        return chatPrompts.Select(x =>
-            {
-                var prompts = x.AsEnumerable();
-
-                return new AiraUnifiedChatMessageViewModel
-                {
-                    QuickPrompts =
-                        prompts.Select(x => (string)x[nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptText)])
-                            .ToList(),
-                    Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName,
-                    QuickPromptsGroupId = x.Key.PromptGroupId!.ToString()!,
-                    CreatedWhen =
-                        (DateTime)prompts.First()[
-                            nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen)]
-                };
-            })
-            .Union(textMessages)
-            .OrderBy(x => x.CreatedWhen)
-            .ToList();
-    }
-
-
-    /// <inheritdoc />
     public async Task<AiraUnifiedChatThreadModel> GetAiraChatThreadModel(int userId, bool setAsLastUsed,
         int? threadId = null)
     {
@@ -169,10 +116,16 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             await airaUnifiedChatThreadProvider.SetAsync(chatThread);
         }
 
+        if (chatThread.AiraUnifiedChatThreadLastUsedWhen < DateTime.UtcNow.AddDays(-1))
+        {
+            await AddInitialMessages(userId, chatThread, ChatStateType.Returning);
+            chatThread.AiraUnifiedChatThreadLastUsedWhen = DateTime.UtcNow;
+            await airaUnifiedChatThreadProvider.SetAsync(chatThread);
+        }
+
         return new AiraUnifiedChatThreadModel
         {
-            ThreadName = chatThread.AiraUnifiedChatThreadName,
-            ThreadId = chatThread.AiraUnifiedChatThreadId
+            ThreadName = chatThread.AiraUnifiedChatThreadName, ThreadId = chatThread.AiraUnifiedChatThreadId
         };
     }
 
@@ -263,8 +216,7 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
                 .GetEnumerableTypedResultAsync())
             .Select(item => new AiraUnifiedChatMessageModel
             {
-                Role = GetChatRole(item),
-                Content = item.AiraUnifiedChatMessageText
+                Role = GetChatRole(item), Content = item.AiraUnifiedChatMessageText
             })
             .ToList();
 
@@ -304,25 +256,6 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         await AddInsightsData(userId, aiResponse);
 
         return aiResponse;
-    }
-
-
-    /// <inheritdoc />
-    public async Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState)
-    {
-        var request = new AiraUnifiedAIRequest
-        {
-            ChatState = chatState switch
-            {
-                ChatStateType.Initial => nameof(ChatStateType.Initial),
-                ChatStateType.Returning => nameof(ChatStateType.Returning),
-                ChatStateType.Ongoing => nameof(ChatStateType.Ongoing),
-                _ => throw new NotImplementedException(
-                    $"The {chatState} is missing implementation in {nameof(GetAIResponseOrNull)}")
-            }
-        };
-
-        return await aiHttpClient.SendRequestAsync(request);
     }
 
 
@@ -394,10 +327,11 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
 
         await airaUnifiedChatThreadProvider.SetAsync(newChatThread);
 
+        await AddInitialMessages(userId, newChatThread, ChatStateType.Initial);
+
         return new AiraUnifiedChatThreadModel
         {
-            ThreadId = newChatThread.AiraUnifiedChatThreadId,
-            ThreadName = newChatThread.AiraUnifiedChatThreadName
+            ThreadId = newChatThread.AiraUnifiedChatThreadId, ThreadName = newChatThread.AiraUnifiedChatThreadName
         };
     }
 
@@ -498,16 +432,6 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
         return result;
     }
 
-    /// <inheritdoc />
-    public async Task<AiraUnifiedChatThreadModel> GetOrCreateThreadAsync(int userId, int? threadId = null) =>
-        await GetAiraChatThreadModel(userId, true, threadId);
-
-    /// <inheritdoc />
-    public async Task RemoveUsedPromptsAsync(string promptGroupId)
-    {
-        RemoveUsedPrompts(promptGroupId);
-        await Task.CompletedTask;
-    }
 
     /// <summary>
     /// Saves messages from AI response including insights handling.
@@ -625,6 +549,90 @@ internal sealed class AiraUnifiedChatService : IAiraUnifiedChatService
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
             return JsonSerializer.Serialize(insights, options);
+        }
+    }
+
+
+    private async Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId)
+    {
+        var chatPrompts = (await airaUnifiedChatPromptProvider
+                .Get()
+                .Source(x => x.InnerJoin<AiraUnifiedChatPromptGroupInfo>(
+                    nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptChatPromptGroupId),
+                    nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId)
+                ))
+                .WhereEquals(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupUserId), userId)
+                .WhereEquals(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupThreadId), threadId)
+                .Columns(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen),
+                    nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId),
+                    nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptText))
+                .OrderBy(nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen))
+                .GetDataContainerResultAsync())
+            .GroupBy(x =>
+                new { PromptGroupId = x[nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupId)] as int? }
+            );
+
+        var textMessages = (await airaUnifiedChatMessageProvider.Get()
+                .WhereEquals(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageUserId), userId)
+                .WhereEquals(nameof(AiraUnifiedChatMessageInfo.AiraUnifiedChatMessageThreadId), threadId)
+                .GetEnumerableTypedResultAsync())
+            .Select(x => new AiraUnifiedChatMessageViewModel
+            {
+                Role = GetChatRole(x).ToLowerInvariant(),
+                CreatedWhen = x.AiraUnifiedChatMessageCreatedWhen,
+                Message = x.AiraUnifiedChatMessageText
+            });
+
+        return chatPrompts.Select(x =>
+            {
+                var prompts = x.AsEnumerable();
+
+                return new AiraUnifiedChatMessageViewModel
+                {
+                    QuickPrompts =
+                        prompts.Select(x => (string)x[nameof(AiraUnifiedChatPromptInfo.AiraUnifiedChatPromptText)])
+                            .ToList(),
+                    Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName,
+                    QuickPromptsGroupId = x.Key.PromptGroupId!.ToString()!,
+                    CreatedWhen =
+                        (DateTime)prompts.First()[
+                            nameof(AiraUnifiedChatPromptGroupInfo.AiraUnifiedChatPromptGroupCreatedWhen)]
+                };
+            })
+            .Union(textMessages)
+            .OrderBy(x => x.CreatedWhen)
+            .ToList();
+    }
+    
+
+    private async Task AddInitialMessages(int userId, AiraUnifiedChatThreadInfo newChatThread, ChatStateType chatState)
+    {
+        var request = new AiraUnifiedAIRequest
+        {
+            ChatState = chatState switch
+            {
+                ChatStateType.Initial => nameof(ChatStateType.Initial),
+                ChatStateType.Returning => nameof(ChatStateType.Returning),
+                ChatStateType.Ongoing => nameof(ChatStateType.Ongoing),
+                _ => throw new NotImplementedException(
+                    $"The {chatState} is missing implementation in {nameof(GetAIResponseOrNull)}")
+            }
+        };
+
+        var initialMessages = await aiHttpClient.SendRequestAsync(request);
+        
+        if (initialMessages != null)
+        {
+            foreach (var message in initialMessages.Responses)
+            {
+                await SaveMessage(message.Content, userId, ChatRoleType.AIAssistant,
+                    newChatThread);
+            }
+
+            if (initialMessages.QuickOptions.Count > 0)
+            {
+                await SaveAiraPrompts(userId, initialMessages.QuickOptions, newChatThread.AiraUnifiedChatThreadId);
+            }
         }
     }
 }

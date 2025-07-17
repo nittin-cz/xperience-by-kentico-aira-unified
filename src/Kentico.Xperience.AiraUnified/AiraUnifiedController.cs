@@ -44,25 +44,25 @@ internal sealed class AiraUnifiedController(
         var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
         var user = await adminUserManager.GetUserAsync(User);
 
-        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, setAsLastUsed: true, chatThreadId);
+        var chatThread = await airaUnifiedChatService.GetAiraChatThreadModel(user!.UserID, true, chatThreadId);
 
         // Return Blazor component with parameters
-        return View("~/Views/Chat/BlazorChatHost.cshtml", new BlazorChatViewModel
-        {
-            ThreadId = chatThread.ThreadId,
-            ThreadName = chatThread.ThreadName,
-            UserId = user.UserID,
-            LogoImgRelativePath = logoUrl,
-            BaseUrl = HttpContext.Request.GetBaseUrl()
-        });
+        return View("~/Views/Chat/BlazorChatHost.cshtml",
+            new BlazorChatViewModel
+            {
+                ThreadId = chatThread.ThreadId,
+                ThreadName = chatThread.ThreadName,
+                UserId = user.UserID,
+                LogoImgRelativePath = logoUrl,
+                BaseUrl = HttpContext.Request.GetBaseUrl()
+            });
     }
-
 
 
     /// <summary>
     /// Retrieves all chat threads for the current user.
     /// </summary>
-    /// <returns>A list of chat threads wrapped in <see cref="AiraUnifiedChatThreadsViewModel"/>.</returns>
+    /// <returns>A list of chat threads wrapped in <see cref="AiraUnifiedChatThreadsViewModel" />.</returns>
     [HttpGet]
     public async Task<IActionResult> GetChatThreads()
     {
@@ -70,10 +70,7 @@ internal sealed class AiraUnifiedController(
 
         var chatThreads = await airaUnifiedChatService.GetThreads(user!.UserID);
 
-        return Ok(new AiraUnifiedChatThreadsViewModel
-        {
-            ChatThreads = chatThreads
-        });
+        return Ok(new AiraUnifiedChatThreadsViewModel { ChatThreads = chatThreads });
     }
 
 
@@ -86,17 +83,23 @@ internal sealed class AiraUnifiedController(
     {
         var configuration = await GetConfiguration();
 
-        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
-        var userThreadCollectionUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatThreadSelectorRelativeUrl, AiraUnifiedConstants.AllChatThreadsRelativeUrl);
-        var chatUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl);
-        var newChatThreadUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NewChatThreadRelativeUrl);
+        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase,
+            AiraUnifiedConstants.NavigationUrl);
+        var userThreadCollectionUrl = navigationService.BuildUriOrNull(configuration.BaseUrl,
+            configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatThreadSelectorRelativeUrl,
+            AiraUnifiedConstants.AllChatThreadsRelativeUrl);
+        var chatUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase,
+            AiraUnifiedConstants.ChatRelativeUrl);
+        var newChatThreadUrl = navigationService.BuildUriOrNull(configuration.BaseUrl,
+            configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NewChatThreadRelativeUrl);
 
         if (navigationUrl is null
             || userThreadCollectionUrl is null
             || chatUrl is null
             || newChatThreadUrl is null)
         {
-            eventLogService.LogError(nameof(AiraUnifiedController), nameof(ChatThreadSelector), InvalidPathBaseErrorMessage);
+            eventLogService.LogError(nameof(AiraUnifiedController), nameof(ChatThreadSelector),
+                InvalidPathBaseErrorMessage);
 
             return BadRequest(InvalidPathBaseErrorMessage);
         }
@@ -128,7 +131,8 @@ internal sealed class AiraUnifiedController(
         var user = await adminUserManager.GetUserAsync(User);
 
         await airaUnifiedChatService.CreateNewChatThread(user!.UserID);
-        var chatRedirectUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.ChatRelativeUrl);
+        var chatRedirectUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase,
+            AiraUnifiedConstants.ChatRelativeUrl);
 
         if (chatRedirectUrl is null)
         {
@@ -144,8 +148,8 @@ internal sealed class AiraUnifiedController(
     /// <summary>
     /// Retrieves the navigation view model.
     /// </summary>
-    /// <param name="request">The <see cref="NavBarRequestModel"/> containing the page identifier.</param>
-    /// <returns>A <see cref="NavBarViewModel"/> containing the navigation view model.</returns>
+    /// <param name="request">The <see cref="NavBarRequestModel" /> containing the page identifier.</param>
+    /// <returns>A <see cref="NavBarViewModel" /> containing the navigation view model.</returns>
     [HttpPost]
     public async Task<IActionResult> Navigation([FromBody] NavBarRequestModel request)
     {
@@ -155,13 +159,15 @@ internal sealed class AiraUnifiedController(
             return BadRequest("The navigation menu for the specified page does not exist.");
         }
 
-        var model = await navigationService.GetNavBarViewModel(request.PageIdentifier, baseUrl: HttpContext.Request.GetBaseUrl());
+        var model = await navigationService.GetNavBarViewModel(request.PageIdentifier,
+            HttpContext.Request.GetBaseUrl());
 
         // Only the URLs which origin from the input of the Admin user in aira unified need verification.
         if (model.ChatItem.Url is null
             || model.SmartUploadItem is null)
         {
-            eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel), InvalidPathBaseErrorMessage);
+            eventLogService.LogError(nameof(INavigationService), nameof(INavigationService.GetNavBarViewModel),
+                InvalidPathBaseErrorMessage);
 
             return BadRequest(InvalidPathBaseErrorMessage);
         }
@@ -171,73 +177,14 @@ internal sealed class AiraUnifiedController(
 
 
     /// <summary>
-    /// Endpoint exposing the user's chat history.
-    /// </summary>
-    /// <param name="chatThreadId">The chat thread id to retrieve history for.</param>
-    /// <returns>A list of chat messages wrapped in <see cref="AiraUnifiedChatMessageViewModel"/>. If no history exists, initial AI messages will be added.</returns>
-    [HttpGet]
-    public async Task<IActionResult> GetOrCreateChatHistory(int chatThreadId)
-    {
-        var user = await adminUserManager.GetUserAsync(User);
-
-        // User can not be null, because he is already checked in the AiraUnifiedEndpointDataSource middleware.
-        var history = await airaUnifiedChatService.GetUserChatHistory(user!.UserID, chatThreadId);
-        var chatThreadState = history.Count == 0 ? ChatStateType.Initial : ChatStateType.Returning;
-
-        if (chatThreadState == ChatStateType.Returning && history[^1].CreatedWhen.AddDays(1) > DateTime.UtcNow)
-        {
-            return Ok(history);
-        }
-
-        var initialMessages = await airaUnifiedChatService.GetInitialAIMessage(chatThreadState);
-
-        if (initialMessages is null || initialMessages.Responses is null)
-        {
-            history.Add(new AiraUnifiedChatMessageViewModel
-            {
-                ServiceUnavailable = true
-            });
-
-            return Ok(history);
-        }
-
-        var thread = await airaUnifiedChatService.GetAiraUnifiedThreadInfoOrNull(user.UserID, chatThreadId);
-
-        var messages = initialMessages.Responses.Select(message => new AiraUnifiedChatMessageViewModel
-        {
-            Message = message.Content,
-            Role = AiraUnifiedConstants.AiraUnifiedFrontEndChatComponentAIAssistantRoleName
-        });
-
-        history.AddRange(messages);
-
-        if (thread is not null)
-        {
-            foreach (var message in initialMessages.Responses)
-            {
-                await airaUnifiedChatService.SaveMessage(message.Content, user.UserID, ChatRoleType.AIAssistant, thread);
-            }
-        }
-
-        var lastMessage = history[^1];
-
-        if (initialMessages.QuickOptions is not null && chatThreadState != ChatStateType.Returning)
-        {
-            var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(user.UserID, initialMessages.QuickOptions, chatThreadId);
-            lastMessage.QuickPrompts = promptGroup.QuickPrompts;
-            lastMessage.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
-        }
-
-        return Ok(history);
-    }
-
-
-    /// <summary>
     /// Endpoint allowing chat communication via the chat interface.
     /// </summary>
-    /// <param name="request">The <see cref="IFormCollection"/> containing the chat message.</param>
+    /// <param name="request">The <see cref="IFormCollection" /> containing the chat message.</param>
     /// <param name="chatThreadId">The chat thread id to post the message to.</param>
-    /// <returns>A chat message response wrapped in <see cref="AiraUnifiedChatMessageViewModel"/>. If the service is unavailable, an error message will be returned.</returns>
+    /// <returns>
+    /// A chat message response wrapped in <see cref="AiraUnifiedChatMessageViewModel" />. If the service is
+    /// unavailable, an error message will be returned.
+    /// </returns>
     [HttpPost]
     public async Task<IActionResult> PostChatMessage(IFormCollection request, int chatThreadId)
     {
@@ -257,6 +204,7 @@ internal sealed class AiraUnifiedController(
         {
             return Ok();
         }
+
         if (string.IsNullOrEmpty(message))
         {
             return Ok();
@@ -278,14 +226,11 @@ internal sealed class AiraUnifiedController(
 
         try
         {
-            var aiResponse = await airaUnifiedChatService.GetAIResponseOrNull(message, numberOfIncludedHistoryMessages: 5, userId);
+            var aiResponse = await airaUnifiedChatService.GetAIResponseOrNull(message, 5, userId);
 
             if (aiResponse is null)
             {
-                result = new AiraUnifiedChatMessageViewModel
-                {
-                    ServiceUnavailable = true,
-                };
+                result = new AiraUnifiedChatMessageViewModel { ServiceUnavailable = true };
 
                 return Ok(result);
             }
@@ -303,7 +248,8 @@ internal sealed class AiraUnifiedController(
 
             if (aiResponse.QuickOptions is not null)
             {
-                var promptGroup = await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.QuickOptions, chatThreadId);
+                var promptGroup =
+                    await airaUnifiedChatService.SaveAiraPrompts(userId, aiResponse.QuickOptions, chatThreadId);
                 result.QuickPrompts = promptGroup.QuickPrompts;
                 result.QuickPromptsGroupId = promptGroup.QuickPromptsGroupId.ToString();
             }
@@ -325,7 +271,7 @@ internal sealed class AiraUnifiedController(
     /// <summary>
     /// Endpoint allowing removal of a used suggested prompt group.
     /// </summary>
-    /// <param name="model">The <see cref="AiraUnifiedUsedPromptGroupModel"/> with the information about the prompt group.</param>
+    /// <param name="model">The <see cref="AiraUnifiedUsedPromptGroupModel" /> with the information about the prompt group.</param>
     /// <returns>An empty response.</returns>
     [HttpPost]
     public IActionResult RemoveUsedPromptGroup([FromBody] AiraUnifiedUsedPromptGroupModel model)
@@ -339,7 +285,7 @@ internal sealed class AiraUnifiedController(
     /// <summary>
     /// Endpoint allowing upload of files via smart upload.
     /// </summary>
-    /// <param name="request">The <see cref="IFormCollection"/> containing the uploaded files.</param>
+    /// <param name="request">The <see cref="IFormCollection" /> containing the uploaded files.</param>
     /// <returns>An empty response on success, or a BadRequest response if the file format is not allowed.</returns>
     [HttpPost]
     public async Task<IActionResult> PostImages(IFormCollection request)
@@ -368,9 +314,13 @@ internal sealed class AiraUnifiedController(
         var configuration = await GetConfiguration();
 
         // Only the URLs which origin from the input of the Admin user in aira unified need verification.
-        var allowedFileExtensionsUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl, AiraUnifiedConstants.SmartUploadAllowedFileExtensionsUrl);
-        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.NavigationUrl);
-        var uploadUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl, AiraUnifiedConstants.SmartUploadUploadUrl);
+        var allowedFileExtensionsUrl = navigationService.BuildUriOrNull(configuration.BaseUrl,
+            configuration.AiraUnifiedPathBase, AiraUnifiedConstants.SmartUploadRelativeUrl,
+            AiraUnifiedConstants.SmartUploadAllowedFileExtensionsUrl);
+        var navigationUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase,
+            AiraUnifiedConstants.NavigationUrl);
+        var uploadUrl = navigationService.BuildUriOrNull(configuration.BaseUrl, configuration.AiraUnifiedPathBase,
+            AiraUnifiedConstants.SmartUploadRelativeUrl, AiraUnifiedConstants.SmartUploadUploadUrl);
 
         if (allowedFileExtensionsUrl is null
             || navigationUrl is null
@@ -422,7 +372,9 @@ internal sealed class AiraUnifiedController(
         var baseUrl = HttpContext.Request.GetBaseUrl();
 
         // Only the URLs which origin from the input of the Admin user in aira unified need verification.
-        var chatUrl = navigationService.BuildUriOrNull(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatRelativeUrl, AiraUnifiedConstants.ChatMessageUrl);
+        var chatUrl = navigationService.BuildUriOrNull(baseUrl,
+            airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase, AiraUnifiedConstants.ChatRelativeUrl,
+            AiraUnifiedConstants.ChatMessageUrl);
 
         if (chatUrl is null)
         {
@@ -437,7 +389,9 @@ internal sealed class AiraUnifiedController(
 #pragma warning restore S6932 //
 #pragma warning restore IDE0079 // Remove unnecessary suppression
 
-        var errorMessage = string.IsNullOrEmpty(missingPermission) ? null : $"You do not have the Aira Unified {missingPermission} permission.";
+        var errorMessage = string.IsNullOrEmpty(missingPermission)
+            ? null
+            : $"You do not have the Aira Unified {missingPermission} permission.";
 
         var logoUrl = await airaUnifiedAssetService.GetSanitizedLogoUrl();
 
@@ -453,9 +407,6 @@ internal sealed class AiraUnifiedController(
     }
 
 
-    private sealed record ConfigurationModel(string BaseUrl, string AiraUnifiedPathBase);
-
-
     private async Task<ConfigurationModel> GetConfiguration()
     {
         var airaUnifiedConfiguration = await airaUnifiedConfigurationService.GetAiraUnifiedConfiguration();
@@ -464,4 +415,6 @@ internal sealed class AiraUnifiedController(
         return new ConfigurationModel(baseUrl, airaUnifiedConfiguration.AiraUnifiedConfigurationItemAiraPathBase);
     }
 
+
+    private sealed record ConfigurationModel(string BaseUrl, string AiraUnifiedPathBase);
 }

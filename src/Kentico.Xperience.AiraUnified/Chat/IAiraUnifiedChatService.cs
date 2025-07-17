@@ -9,15 +9,6 @@ namespace Kentico.Xperience.AiraUnified.Chat;
 internal interface IAiraUnifiedChatService
 {
     /// <summary>
-    /// Returns the chat history of a user.
-    /// </summary>
-    /// <param name="userId">Admin application user id.</param>
-    /// <param name="threadId">The chat thread id.</param>
-    /// <returns>A task returning a List of <see cref="AiraUnifiedChatMessageViewModel"/> in User's history.</returns>
-    Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId);
-
-
-    /// <summary>
     /// Generates new suggested prompts for a user and saves them in the history.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
@@ -91,14 +82,6 @@ internal interface IAiraUnifiedChatService
 
 
     /// <summary>
-    /// Gets an initial AI message displayed in a new thread or when returning to a thread.
-    /// </summary>
-    /// <param name="chatState">The <see cref="ChatStateType"/> of the chat context.</param>
-    /// <returns>A task containing the initial AI response.</returns>
-    Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState);
-
-
-    /// <summary>
     /// Updates the chat summary of a user.
     /// </summary>
     /// <param name="userId">The user id.</param>
@@ -123,20 +106,6 @@ internal interface IAiraUnifiedChatService
     /// <returns>A task returning the AI response with insights data.</returns>
     Task<AiraUnifiedChatMessageViewModel?> SendMessageAsync(string message, int userId, int threadId);
 
-    /// <summary>
-    /// Gets or creates a chat thread for the user.
-    /// </summary>
-    /// <param name="userId">Admin application user id.</param>
-    /// <param name="threadId">The optional thread id.</param>
-    /// <returns>A task returning the chat thread model.</returns>
-    Task<AiraUnifiedChatThreadModel> GetOrCreateThreadAsync(int userId, int? threadId = null);
-
-    /// <summary>
-    /// Removes used prompt group.
-    /// </summary>
-    /// <param name="promptGroupId">Prompt group id.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    Task RemoveUsedPromptsAsync(string promptGroupId);
 
     /// <summary>
     /// Saves AI response messages with enhanced insights processing.

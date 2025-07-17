@@ -57,7 +57,11 @@ public partial class BlazorChatPage : ComponentBase
     /// Initializes the component and loads chat history.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
-    protected override async Task OnInitializedAsync() => await LoadChatHistory();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadChatHistory();
+        await ScrollToBottom();
+    }
 
     /// <summary>
     /// Executes after the component has been rendered.
@@ -168,16 +172,12 @@ public partial class BlazorChatPage : ComponentBase
     /// <param name="prompt">The prompt text to use.</param>
     /// <param name="groupId">The group ID for the prompt.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task UseQuickPrompt(string prompt, string groupId)
+    private Task UseQuickPrompt(string prompt)
     {
         currentMessage = prompt;
-        await SendMessage();
+        StateHasChanged();
 
-        if (!string.IsNullOrEmpty(groupId))
-        {
-            await ChatService.RemoveUsedPromptsAsync(groupId);
-            StateHasChanged();
-        }
+        return Task.FromResult(0);
     }
 
     /// <summary>
