@@ -24,10 +24,11 @@ public static class AiraUnifiedServiceCollectionExtensions
     /// <summary>
     /// Adds Aira Unified services and custom module to application.
     /// </summary>
-    /// <param name="services"><see cref="IServiceCollection"/>The application services.</param>
-    /// <param name="configuration">The application <see cref="IConfiguration"/>.</param>
-    /// <returns>The <see cref="IServiceCollection"/> application services.</returns>
-    public static IServiceCollection AddKenticoAiraUnified(this IServiceCollection services, IConfiguration configuration)
+    /// <param name="services"><see cref="IServiceCollection" />The application services.</param>
+    /// <param name="configuration">The application <see cref="IConfiguration" />.</param>
+    /// <returns>The <see cref="IServiceCollection" /> application services.</returns>
+    public static IServiceCollection AddKenticoAiraUnified(this IServiceCollection services,
+        IConfiguration configuration)
         => services.AddKenticoAiraUnifiedInternal(configuration);
 
 
@@ -39,12 +40,14 @@ public static class AiraUnifiedServiceCollectionExtensions
     public static void UseAiraUnifiedEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var dataSource = endpoints.ServiceProvider.GetService<AiraUnifiedEndpointDataSource>()
-            ?? throw new InvalidOperationException("Did you forget to call Services.AddKenticoAiraUnified()?");
+                         ?? throw new InvalidOperationException(
+                             "Did you forget to call Services.AddKenticoAiraUnified()?");
         endpoints.DataSources.Add(dataSource);
     }
 
 
-    private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddKenticoAiraUnifiedInternal(this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddControllersWithViews();
         services.AddHttpClient();
@@ -57,14 +60,15 @@ public static class AiraUnifiedServiceCollectionExtensions
             .AddScoped<ContentItemAssetUploaderComponent>()
             .AddScoped<AiraUnifiedConfigurationService>()
             .AddScoped<IAiraUnifiedConfigurationService, AiraUnifiedConfigurationService>()
-            .AddScoped<IAiraUnifiedInsightsService>(sp => options?.AiraUnifiedUseMockInsights == true
-                ? new MockAiraUnifiedInsightsService()
-                : sp.GetRequiredService<AiraUnifiedInsightsService>())
-            .AddScoped<AiraUnifiedInsightsService>()
             .AddScoped<IAiraUnifiedAssetService, AiraUnifiedAssetService>()
             .AddScoped<IAiraUnifiedChatService, AiraUnifiedChatService>()
             .AddScoped<INavigationService, NavigationService>()
-            .AddScoped<IAiHttpClient>(sp => options?.AiraUnifiedUseMockClient == true ? new MockAiHttpClient() : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
+            .AddScoped<IAiHttpClient>(sp =>
+                options?.AiraUnifiedUseMockClient == true
+                    ? new MockAiHttpClient(sp.GetRequiredService<IInsightsStrategyFactory>())
+                    : new AiHttpClient(sp.GetRequiredService<IHttpClientFactory>(),
+                        sp.GetRequiredService<IOptions<AiraUnifiedOptions>>()))
+            .AddScoped<IAiraUnifiedInsightsService, AiraUnifiedInsightsService>()
             .Configure<AiraUnifiedOptions>(configuration.GetSection(nameof(AiraUnifiedOptions)));
 
         // Register insights architecture components
@@ -103,7 +107,8 @@ public static class AiraUnifiedServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="factory">The factory method to create the strategy instance.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddInsightsStrategy<TStrategy>(this IServiceCollection services, Func<IServiceProvider, TStrategy> factory)
+    public static IServiceCollection AddInsightsStrategy<TStrategy>(this IServiceCollection services,
+        Func<IServiceProvider, TStrategy> factory)
         where TStrategy : class, IInsightsStrategy => services.AddScoped<IInsightsStrategy>(factory);
 
     /// <summary>
@@ -112,13 +117,15 @@ public static class AiraUnifiedServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="strategyTypes">The strategy implementation types.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddInsightsStrategies(this IServiceCollection services, params Type[] strategyTypes)
+    public static IServiceCollection AddInsightsStrategies(this IServiceCollection services,
+        params Type[] strategyTypes)
     {
         foreach (var strategyType in strategyTypes)
         {
             if (!typeof(IInsightsStrategy).IsAssignableFrom(strategyType))
             {
-                throw new ArgumentException($@"Type {strategyType.Name} must implement IInsightsStrategy", nameof(strategyTypes));
+                throw new ArgumentException($@"Type {strategyType.Name} must implement IInsightsStrategy",
+                    nameof(strategyTypes));
             }
 
             services.AddScoped(typeof(IInsightsStrategy), strategyType);

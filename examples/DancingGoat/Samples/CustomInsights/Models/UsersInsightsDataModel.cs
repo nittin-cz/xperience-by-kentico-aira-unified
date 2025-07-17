@@ -1,4 +1,4 @@
-namespace CustomInsights.Models;
+namespace Samples.DancingGoat.Models;
 
 /// <summary>
 /// Data model for users insights.
@@ -9,12 +9,12 @@ public sealed class UsersInsightsDataModel
     /// Summary of user data
     /// </summary>
     public UsersSummaryModel Summary { get; set; } = new();
-    
+
     /// <summary>
     /// List of active users
     /// </summary>
     public List<UserModel> ActiveUsers { get; set; } = new();
-    
+
     /// <summary>
     /// User roles and their counts
     /// </summary>

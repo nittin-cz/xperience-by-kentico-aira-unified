@@ -43,8 +43,8 @@ public abstract class InsightsStrategyBase : IInsightsStrategy
     /// Checks category-specific setting first, then global setting.
     /// </summary>
     public virtual bool UseMockData =>
-        Configuration.GetValue<bool>($"AiraUnifiedOptions:MockInsights:{Category}") ||
-        Configuration.GetValue("AiraUnifiedOptions:MockInsights:All", false);
+        Configuration.GetValue<bool>($"AiraUnifiedOptions:AiraUnifiedMockInsights:{Category}") ||
+        Configuration.GetValue("AiraUnifiedOptions:AiraUnifiedMockInsights:All", false);
 
 
     /// <summary>
@@ -75,15 +75,12 @@ public abstract class InsightsStrategyBase : IInsightsStrategy
 
     private AiraInsightCategory LoadCategoryConfiguration()
     {
-        var config = Configuration.GetSection($"AiraUnifiedOptions:InsightsCategories:{Category}")
+        var config = Configuration.GetSection($"AiraUnifiedOptions:AiraUnifiedInsightsCategories:{Category}")
             .Get<AiraInsightCategory>();
 
         return config ?? new AiraInsightCategory
         {
-            Id = Category,
-            Name = Category,
-            Description = $"Insights for {Category}",
-            FollowUpQuestions = []
+            Id = Category, Name = Category, Description = $"Insights for {Category}", FollowUpQuestions = []
         };
     }
 }
