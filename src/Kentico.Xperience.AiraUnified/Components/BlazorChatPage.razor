@@ -43,12 +43,13 @@
                 }
                 else
                 {
-                    <div class="message-with-avatar">
-                        <div class="message-avatar">
-                            <div class="avatar ai-avatar">A</div>
-                        </div>
-                        @if (message.ServiceUnavailable || (message.IsInsightsMessage && message.InsightsData != null) || (message.Insights?.IsInsightsQuery == true && message.Insights.InsightsData != null) || !string.IsNullOrEmpty(message.Message))
-                        {
+                    @if (message.ServiceUnavailable || (message.IsInsightsMessage && message.InsightsData != null) || (message.Insights?.IsInsightsQuery == true && message.Insights.InsightsData != null) || !string.IsNullOrEmpty(message.Message))
+                    {
+                        <div class="message-with-avatar">
+                            <div class="message-avatar">
+                                <div class="avatar ai-avatar">A</div>
+                            </div>
+
                             <div class="message-content ai-message-content">
                                 @if (message.ServiceUnavailable)
                                 {
@@ -69,11 +70,16 @@
                                     @message.Message
                                 }
                             </div>
-                        }
+                        </div>
+                    }
 
-
-                        @if (message.QuickPrompts?.Any() == true)
-                        {
+                    @if (message.QuickPrompts?.Any() == true)
+                    {
+                        <div class="message-with-avatar">
+                            <div class="message-avatar">
+                                <div class="avatar ai-avatar">A</div>
+                            </div>
+                        
                             <div class="quick-prompts">
                                 @foreach (var prompt in message.QuickPrompts)
                                 {
@@ -83,8 +89,8 @@
                                     </button>
                                 }
                             </div>
-                        }
-                    </div>
+                        </div>
+                    }
                 }
 
 
