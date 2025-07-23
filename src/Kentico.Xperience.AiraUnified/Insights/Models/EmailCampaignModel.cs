@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents an email campaign with its metadata and performance metrics.
 /// </summary>
-internal sealed class EmailCampaignModel
+public sealed class EmailCampaignModel
 {
     /// <summary>
     /// Gets or sets the unique identifier of the email campaign.

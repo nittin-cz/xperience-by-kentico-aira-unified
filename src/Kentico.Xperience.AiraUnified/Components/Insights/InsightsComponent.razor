@@ -1,0 +1,24 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+@if (Category != null && Data != null && ComponentType != null)
+{
+    <div class="insights-container">
+        @RenderDynamicComponent()
+    </div>
+}
+else if (Data is FallbackInsightsData fallbackData)
+{
+    <FallbackInsightsComponent Data="@fallbackData" Timestamp="@(Timestamp ?? DateTime.Now)" />
+}
+else if (Data != null)
+{
+    <div class="insights-fallback">
+        <div class="alert alert-warning">
+            <strong>Unknown insights type:</strong> @(Category ?? "Unknown")
+        </div>
+        <details>
+            <summary>Raw data</summary>
+            <pre><code>@System.Text.Json.JsonSerializer.Serialize(Data, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</code></pre>
+        </details>
+    </div>
+}

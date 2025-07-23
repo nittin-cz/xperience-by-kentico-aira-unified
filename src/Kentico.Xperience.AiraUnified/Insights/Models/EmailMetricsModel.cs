@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents performance metrics for an email campaign including delivery, engagement, and bounce statistics.
 /// </summary>
-internal sealed class EmailMetricsModel
+public sealed class EmailMetricsModel
 {
     /// <summary>
     /// Gets or sets the total number of emails sent in the campaign.

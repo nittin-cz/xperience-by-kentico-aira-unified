@@ -14,7 +14,7 @@ internal sealed class AiraUnifiedOptions
 
 
     /// <summary>
-    /// The AI service endpoint URL. If not specified, falls back to <see cref="AiraUnifiedConstants.AiraUnifiedAIEndpoint"/>.
+    /// The AI service endpoint URL. If not specified, falls back to <see cref="AiraUnifiedConstants.AiraUnifiedAIEndpoint" />.
     /// </summary>
     public string? AiraUnifiedAIEndpoint { get; set; } = AiraUnifiedConstants.AiraUnifiedAIEndpoint;
 
@@ -26,12 +26,8 @@ internal sealed class AiraUnifiedOptions
 
 
     /// <summary>
-    /// Whether to use mock insights service for local development.
-    /// </summary>
-    public bool AiraUnifiedUseMockInsights { get; set; }
-
-    /// <summary>
-    /// The Xperience By Kentico Admin ui path. Allows for overriding the admin path in case your administration uses a different domain.
+    /// The Xperience By Kentico Admin ui path. Allows for overriding the admin path in case your administration uses a
+    /// different domain.
     /// </summary>
     public string? XbyKAdminPath { get; set; }
 }

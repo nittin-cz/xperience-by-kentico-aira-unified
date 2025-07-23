@@ -13,6 +13,10 @@ namespace Kentico.Xperience.AiraUnified.Admin;
 /// </summary>
 internal sealed class AiraUnifiedAdminModule() : AdminModule(nameof(AiraUnifiedAdminModule))
 {
+    /// <summary>
+    /// Initializes the admin module with the specified parameters.
+    /// </summary>
+    /// <param name="parameters">The module initialization parameters.</param>
     protected override void OnInit(ModuleInitParameters parameters)
     {
         base.OnInit(parameters);

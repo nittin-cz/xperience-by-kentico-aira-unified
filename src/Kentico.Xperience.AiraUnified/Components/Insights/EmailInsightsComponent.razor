@@ -1,0 +1,51 @@
+@using Kentico.Xperience.AiraUnified.Insights.Models
+
+<div class="insights-email">
+    <div>
+        <h2 class="k-title">E-mails Insights</h2>
+        <h3 class="k-subtitle">Summary</h3>
+        <div class="k-summary">
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Drafts</h4>
+                <div class="k-summary_value">@Data.Summary.DraftCount</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Scheduled</h4>
+                <div class="k-summary_value">@Data.Summary.ScheduledCount</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Sent</h4>
+                <div class="k-summary_value">@Data.Summary.SentCount</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Total</h4>
+                <div class="k-summary_value">@Data.Summary.TotalCount</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Avg. Open Rate</h4>
+                <div class="k-summary_value">@Data.Summary.AverageOpenRate</div>
+            </div>
+            <div class="k-summary_item">
+                <h4 class="k-summary_title">Avg. Click Rate</h4>
+                <div class="k-summary_value">@Data.Summary.AverageClickRate</div>
+            </div>
+        </div>
+
+        <h3 class="k-subtitle">Regular Emails</h3>
+        <div class="k-content-items">
+            @foreach (var campaign in Data.Campaigns)
+            {
+                <EmailCampaignComponent Campaign="@campaign" />
+            }
+        </div>
+    </div>
+    
+    <div class="metadata">
+        <small>Request was generated at @Timestamp.ToString("g").</small>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EmailInsightsDataModel Data { get; set; } = new();
+    [Parameter] public DateTime Timestamp { get; set; }
+}

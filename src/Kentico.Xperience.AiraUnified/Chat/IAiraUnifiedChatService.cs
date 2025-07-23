@@ -9,15 +9,6 @@ namespace Kentico.Xperience.AiraUnified.Chat;
 internal interface IAiraUnifiedChatService
 {
     /// <summary>
-    /// Returns the chat history of a user.
-    /// </summary>
-    /// <param name="userId">Admin application user id.</param>
-    /// <param name="threadId">The chat thread id.</param>
-    /// <returns>A task returning a List of <see cref="AiraUnifiedChatMessageViewModel"/> in User's history.</returns>
-    Task<List<AiraUnifiedChatMessageViewModel>> GetUserChatHistory(int userId, int threadId);
-
-
-    /// <summary>
     /// Generates new suggested prompts for a user and saves them in the history.
     /// </summary>
     /// <param name="userId">Admin application user id.</param>
@@ -91,18 +82,37 @@ internal interface IAiraUnifiedChatService
 
 
     /// <summary>
-    /// Gets an initial AI message displayed in a new thread or when returning to a thread.
-    /// </summary>
-    /// <param name="chatState">The <see cref="ChatStateType"/> of the chat context.</param>
-    /// <returns>A task containing the initial AI response.</returns>
-    Task<AiraUnifiedAIResponse?> GetInitialAIMessage(ChatStateType chatState);
-
-
-    /// <summary>
     /// Updates the chat summary of a user.
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="summary">New summary.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task UpdateChatSummary(int userId, string summary);
+
+    /// <summary>
+    /// Gets chat history for a specific thread with enhanced insights parsing.
+    /// </summary>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
+    /// <returns>A task returning enhanced chat history with insights data.</returns>
+    Task<List<AiraUnifiedChatMessageViewModel>> GetChatHistoryAsync(int userId, int threadId);
+
+    /// <summary>
+    /// Sends a message and returns the AI response with enhanced insights processing.
+    /// </summary>
+    /// <param name="message">The user message.</param>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="threadId">The chat thread id.</param>
+    /// <returns>A task returning the AI response with insights data.</returns>
+    Task<AiraUnifiedChatMessageViewModel?> SendMessageAsync(string message, int userId, int threadId);
+
+
+    /// <summary>
+    /// Saves AI response messages with enhanced insights processing.
+    /// </summary>
+    /// <param name="aiResponse">The AI response containing messages and insights.</param>
+    /// <param name="userId">Admin application user id.</param>
+    /// <param name="thread">The chat thread information.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task SaveMessages(AiraUnifiedAIResponse aiResponse, int userId, AiraUnifiedChatThreadInfo thread);
 }

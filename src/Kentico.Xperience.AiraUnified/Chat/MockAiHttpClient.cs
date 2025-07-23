@@ -1,4 +1,5 @@
 using Kentico.Xperience.AiraUnified.Chat.Models;
+using Kentico.Xperience.AiraUnified.Insights.Abstractions;
 using Kentico.Xperience.AiraUnified.Insights.Models;
 
 using static Kentico.Xperience.AiraUnified.Chat.Models.ChatStateType;
@@ -10,6 +11,11 @@ namespace Kentico.Xperience.AiraUnified.Chat;
 /// </summary>
 internal sealed class MockAiHttpClient : IAiHttpClient
 {
+    private readonly IInsightsStrategyFactory insightsStrategyFactory;
+
+    public MockAiHttpClient(IInsightsStrategyFactory insightsStrategyFactory) =>
+        this.insightsStrategyFactory = insightsStrategyFactory;
+
     /// <inheritdoc />
     public Task<AiraUnifiedAIResponse?> SendRequestAsync(AiraUnifiedAIRequest request)
     {
@@ -26,37 +32,47 @@ internal sealed class MockAiHttpClient : IAiHttpClient
     }
 
 
-    private static Task<AiraUnifiedAIResponse?> GetInitialMessageResponse() => Task.FromResult<AiraUnifiedAIResponse?>(new AiraUnifiedAIResponse
-    {
-        Responses =
-        [
-            new ResponseMessageModel { Content = "MOCK: Hello! I'm your AI assistant. How can I help you today?", ContentType = "text" }
-        ],
-        QuickOptions =
-        [
-            "What can you help me with?",
-            "How do I create content?",
-            "How do I manage contacts?"
-        ]
-    });
+    private static Task<AiraUnifiedAIResponse?> GetInitialMessageResponse() => Task.FromResult<AiraUnifiedAIResponse?>(
+        new AiraUnifiedAIResponse
+        {
+            Responses =
+            [
+                new ResponseMessageModel
+                {
+                    Content = "MOCK: Hello! I'm your AI assistant. How can I help you today?",
+                    ContentType = "text"
+                }
+            ],
+            QuickOptions =
+            [
+                "What can you help me with?",
+                "How do I create content?",
+                "How do I manage contacts?"
+            ]
+        });
 
 
-    private static Task<AiraUnifiedAIResponse?> GetReturningMessageResponse() => Task.FromResult<AiraUnifiedAIResponse?>(new AiraUnifiedAIResponse
-    {
-        Responses =
-        [
-            new ResponseMessageModel { Content = "MOCK: Welcome back! I'm here to help you. What would you like to know?", ContentType = "text" }
-        ],
-        QuickOptions =
-        [
-            "Continue previous conversation",
-            "Start new topic",
-            "Show me my content"
-        ]
-    });
+    private static Task<AiraUnifiedAIResponse?> GetReturningMessageResponse() =>
+        Task.FromResult<AiraUnifiedAIResponse?>(new AiraUnifiedAIResponse
+        {
+            Responses =
+            [
+                new ResponseMessageModel
+                {
+                    Content = "MOCK: Welcome back! I'm here to help you. What would you like to know?",
+                    ContentType = "text"
+                }
+            ],
+            QuickOptions =
+            [
+                "Continue previous conversation",
+                "Start new topic",
+                "Show me my content"
+            ]
+        });
 
 
-    private static Task<AiraUnifiedAIResponse?> GetOngoingMessageResponse(AiraUnifiedAIRequest request)
+    private Task<AiraUnifiedAIResponse?> GetOngoingMessageResponse(AiraUnifiedAIRequest request)
     {
         // Check if the message contains any insights-related keywords
         var isInsightsQuery = request.ChatMessage.Contains("insights", StringComparison.OrdinalIgnoreCase);
@@ -67,30 +83,28 @@ internal sealed class MockAiHttpClient : IAiHttpClient
             Summary = $"This is a mock response to: {request.ChatMessage}",
             Responses =
             [
-                new ResponseMessageModel { Content = $"I understand you're asking about: {request.ChatMessage}", ContentType = "text" }
-            ],
-            Insights = isInsightsQuery ? new InsightsResponseModel
-            {
-                IsInsightsQuery = true,
-                Category = category,
-                Metadata = new InsightsMetadataModel
+                new ResponseMessageModel
                 {
-                    Timestamp = DateTime.UtcNow
+                    Content = $"I understand you're asking about: {request.ChatMessage}",
+                    ContentType = "text"
                 }
-            } : new InsightsResponseModel { IsInsightsQuery = false }
+            ],
+            Insights = isInsightsQuery
+                ? new InsightsResponseModel
+                {
+                    IsInsightsQuery = true,
+                    Category = category,
+                    Metadata = new InsightsMetadataModel { Timestamp = DateTime.UtcNow }
+                }
+                : new InsightsResponseModel { IsInsightsQuery = false }
         });
     }
 
 
-    private static string? GetInsightsCategory(string message)
+    private string? GetInsightsCategory(string message)
     {
         message = message.ToLowerInvariant();
-        return message switch
-        {
-            var m when m.Contains("content") => "content",
-            var m when m.Contains("email") => "email",
-            var m when m.Contains("marketing") => "marketing",
-            _ => null
-        };
+
+        return insightsStrategyFactory.GetAllStrategies().FirstOrDefault(i => message.Contains(i.Category))?.Category;
     }
 }
